@@ -82,9 +82,10 @@ begin
           if Injections[j].VType = vtObject then
           begin
             // PropList^[i].PropType^.Name - ClassName of the property
-            if Injections[j].VObject.ClassName = PropList^[i].PropType^.Name
-            then
-              SetObjectProp(ACommand, PropList^[i].Name, Injections[j].VObject);
+            if Injections[j].VObject.ClassName = String
+              (PropList^[i].PropType^.Name) then
+              SetObjectProp(ACommand, String(PropList^[i].Name),
+                Injections[j].VObject);
           end
           else
             Assert(False,
