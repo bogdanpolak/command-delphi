@@ -27,12 +27,15 @@ implementation
 
 {$R *.dfm}
 
-uses Command.Button1;
+uses Command.Button1, Command.Button2;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   Button1.Action := TCommandVclFactory.CreateAction<TButon1Command>(Self,
     'Run command: Button1', [Memo1]);
+  Button2.Action := TCommandVclFactory.CreateAction<TButon2Command>(Self,
+    'Run command: Button2', [Memo1,Edit1]);
+  ReportMemoryLeaksOnShutdown := true;
 end;
 
 end.
