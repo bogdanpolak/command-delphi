@@ -3,7 +3,7 @@ unit Vcl.Pattern.Command;
 interface
 
 uses
-  System.Classes, System.SysUtils, System.Actions,
+  System.Classes, System.SysUtils, System.Actions, System.TypInfo,
   Vcl.ActnList;
 
 type
@@ -22,9 +22,12 @@ type
   end;
 
   TCommandVclFactory = class(TComponent)
+  private
+    class procedure InjectProperties(ACommand: TCommand;
+      const Injections: array of const);
   public
     class function CreateAction<T: TCommand>(AOwner: TComponent;
-      const ACaption: string): TAction;
+      const ACaption: string; const Injections: array of const): TAction;
   end;
 
   TCommandAction = class(TAction)
@@ -56,10 +59,46 @@ end;
 // ------------------------------------------------------------------------
 { TActionFactory }
 
-class function TCommandVclFactory.CreateAction<T>(AOwner: TComponent;
-  const ACaption: string): TAction;
+class procedure TCommandVclFactory.InjectProperties(ACommand: TCommand;
+  const Injections: array of const);
 var
-  Command: TCommand;
+  PropList: PPropList;
+  PropCount: Integer;
+  i: Integer;
+  j: Integer;
+begin
+  // Inject dependencies to the command.
+  // Limitations of this version:
+  //  * only TObject and descendants injections is supported
+  //  * properties must have different types (ClassName)
+  try
+    PropCount := System.TypInfo.GetPropList(ACommand, PropList);
+    for i := 0 to PropCount - 1 do
+    begin
+      if PropList^[i].PropType^.Kind = tkClass then
+      begin
+        // Do injection
+        for j := 0 to High(Injections) do
+          if Injections[j].VType = vtObject then
+          begin
+            // PropList^[i].PropType^.Name - ClassName of the property
+            if Injections[j].VObject.ClassName = PropList^[i].PropType^.Name
+            then
+              SetObjectProp(ACommand, PropList^[i].Name, Injections[j].VObject);
+          end
+          else
+            Assert(False,
+              'Not supported yet! Only objects can be injected to a command');
+      end;
+    end;
+  finally
+    FreeMem(PropList);
+  end;
+end;
+
+class function TCommandVclFactory.CreateAction<T>(AOwner: TComponent;
+  const ACaption: string; const Injections: array of const): TAction;
+var
   act: TCommandAction;
 begin
   act := TCommandAction.Create(AOwner);
@@ -68,6 +107,7 @@ begin
     Command := T.Create(act);
     Caption := ACaption;
   end;
+  InjectProperties (act.Command, Injections);
   Result := act;
 end;
 
