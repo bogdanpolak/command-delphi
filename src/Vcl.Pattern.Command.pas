@@ -69,8 +69,8 @@ var
 begin
   // Inject dependencies to the command.
   // Limitations of this version:
-  //  * only TObject and descendants injections is supported
-  //  * properties must have different types (ClassName)
+  // * only TObject and descendants injections is supported
+  // * properties must have different types (ClassName)
   try
     PropCount := System.TypInfo.GetPropList(ACommand, PropList);
     for i := 0 to PropCount - 1 do
@@ -107,7 +107,7 @@ begin
     Command := T.Create(act);
     Caption := ACaption;
   end;
-  InjectProperties (act.Command, Injections);
+  InjectProperties(act.Command, Injections);
   Result := act;
 end;
 
