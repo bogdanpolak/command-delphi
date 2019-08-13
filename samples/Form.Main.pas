@@ -20,6 +20,7 @@ type
     Bevel2: TBevel;
     btnExecuteTwoCommands: TButton;
     procedure FormCreate(Sender: TObject);
+    procedure btnExecuteTwoCommandsClick(Sender: TObject);
   private
   public
   end;
@@ -32,6 +33,12 @@ implementation
 {$R *.dfm}
 
 uses Command.Button1, Command.Button2;
+
+procedure TForm1.btnExecuteTwoCommandsClick(Sender: TObject);
+begin
+  TCommandVclFactory.ExecuteCommand<TButon1Command>([Memo1]);
+  TCommandVclFactory.ExecuteCommand<TButon2Command>([Memo1, Edit1]);
+end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin

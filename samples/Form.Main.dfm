@@ -84,6 +84,7 @@ object Form1: TForm1
       Align = alTop
       Caption = 'btnExecuteTwoCommands'
       TabOrder = 3
+      OnClick = btnExecuteTwoCommandsClick
       ExplicitLeft = 2
       ExplicitTop = 167
       ExplicitWidth = 181
