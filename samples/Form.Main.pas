@@ -4,9 +4,10 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages,
-  System.SysUtils, System.Variants, System.Classes,
+  System.SysUtils, System.Variants, System.Classes, System.Actions,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  System.Actions, Vcl.ActnList, Vcl.Pattern.Command;
+  Vcl.ActnList, Vcl.ExtCtrls,
+  Vcl.Pattern.Command;
 
 type
   TForm1 = class(TForm)
@@ -15,6 +16,9 @@ type
     Button2: TButton;
     Memo1: TMemo;
     Edit1: TEdit;
+    Bevel1: TBevel;
+    Bevel2: TBevel;
+    btnExecuteTwoCommands: TButton;
     procedure FormCreate(Sender: TObject);
   private
   public
@@ -31,6 +35,7 @@ uses Command.Button1, Command.Button2;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+  Memo1.Clear;
   Button1.Action := TCommandVclFactory.CreateCommandAction<TButon1Command>(Self,
     'Run command: Button1', [Memo1]);
   Button2.Action := TCommandVclFactory.CreateCommandAction<TButon2Command>(Self,
