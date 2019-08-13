@@ -23,7 +23,26 @@ object Form1: TForm1
     Align = alLeft
     Caption = 'GroupBox1'
     TabOrder = 0
-    ExplicitTop = -2
+    object Bevel1: TBevel
+      AlignWithMargins = True
+      Left = 5
+      Top = 55
+      Width = 175
+      Height = 18
+      Align = alTop
+      Shape = bsSpacer
+    end
+    object Bevel2: TBevel
+      AlignWithMargins = True
+      Left = 5
+      Top = 146
+      Width = 175
+      Height = 18
+      Align = alTop
+      Shape = bsSpacer
+      ExplicitLeft = 7
+      ExplicitTop = 170
+    end
     object Button1: TButton
       AlignWithMargins = True
       Left = 5
@@ -37,25 +56,38 @@ object Form1: TForm1
     object Button2: TButton
       AlignWithMargins = True
       Left = 5
-      Top = 55
+      Top = 79
       Width = 175
       Height = 34
       Align = alTop
       Caption = 'Button2'
       TabOrder = 1
+      ExplicitTop = 55
     end
     object Edit1: TEdit
       AlignWithMargins = True
       Left = 5
-      Top = 95
+      Top = 119
       Width = 175
       Height = 21
       Align = alTop
       TabOrder = 2
       Text = 'Edit1'
-      ExplicitLeft = 32
-      ExplicitTop = 112
-      ExplicitWidth = 121
+      ExplicitTop = 95
+    end
+    object btnExecuteTwoCommands: TButton
+      AlignWithMargins = True
+      Left = 5
+      Top = 170
+      Width = 175
+      Height = 34
+      Align = alTop
+      Caption = 'btnExecuteTwoCommands'
+      TabOrder = 3
+      OnClick = btnExecuteTwoCommandsClick
+      ExplicitLeft = 2
+      ExplicitTop = 167
+      ExplicitWidth = 181
     end
   end
   object Memo1: TMemo
@@ -75,6 +107,5 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1
-    ExplicitWidth = 275
   end
 end
