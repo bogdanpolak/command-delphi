@@ -23,7 +23,6 @@ object Form1: TForm1
     Align = alLeft
     Caption = 'GroupBox1'
     TabOrder = 0
-    ExplicitTop = -2
     object Button1: TButton
       AlignWithMargins = True
       Left = 5
@@ -53,9 +52,6 @@ object Form1: TForm1
       Align = alTop
       TabOrder = 2
       Text = 'Edit1'
-      ExplicitLeft = 32
-      ExplicitTop = 112
-      ExplicitWidth = 121
     end
   end
   object Memo1: TMemo
@@ -75,6 +71,5 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1
-    ExplicitWidth = 275
   end
 end
