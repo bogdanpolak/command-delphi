@@ -26,6 +26,10 @@ type
     class procedure InjectProperties(ACommand: TCommand;
       const Injections: array of const);
   public
+    class function CreateCommand<T: TCommand>(AOwner: TComponent;
+      const Injections: array of const): T;
+    class procedure ExecuteCommand<T: TCommand>(const Injections
+      : array of const);
     class function CreateCommandAction<T: TCommand>(AOwner: TComponent;
       const ACaption: string; const Injections: array of const): TAction;
   end;
@@ -94,6 +98,27 @@ begin
     end;
   finally
     FreeMem(PropList);
+  end;
+end;
+
+class function TCommandVclFactory.CreateCommand<T>(AOwner: TComponent;
+  const Injections: array of const): T;
+begin
+  Result := T.Create(AOwner);
+  InjectProperties(Result, Injections);
+end;
+
+class procedure TCommandVclFactory.ExecuteCommand<T>(const Injections
+  : array of const);
+var
+  command: T;
+begin
+  try
+    command := T.Create(nil);
+    InjectProperties(command, Injections);
+    command.Execute;
+  finally
+    command.Free;
   end;
 end;
 
