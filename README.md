@@ -14,7 +14,7 @@ The project contains two versions of the pattern implementation:
 1) classic Gang of Four `ICommand` interface
 1) VCL `TCommand` class based on TComponent
 
-## Modernization legacy VCL projects
+## Modernization process
 
 The `TCommand` component was created to help the **modernization of the legacy VCL code**. It assists the extraction of tangled code, which after securing it with unit tests, can be refactored into cleaner and cheaper to maintain object-oriented code.
 
