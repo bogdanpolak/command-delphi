@@ -31,23 +31,23 @@ uses Command.Button1, Command.Button2;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  Button1.Action := TCommandVclFactory.CreateAction<TButon1Command>(Self,
+  Button1.Action := TCommandVclFactory.CreateCommandAction<TButon1Command>(Self,
     'Run command: Button1', [Memo1]);
-  Button2.Action := TCommandVclFactory.CreateAction<TButon2Command>(Self,
-    'Run command: Button2', [Memo1,Edit1]);
+  Button2.Action := TCommandVclFactory.CreateCommandAction<TButon2Command>(Self,
+    'Run command: Button2', [Memo1, Edit1]);
   {
-    . Button2.Action := TCommandVclFactory.CreateAction<TButon2Command>(Self,
+    . Button2.Action := TCommandVclFactory.CreateCommandAction<TButon2Command>(Self,
     .   'Run command: Button2', [InjectProperty('Memo', Memo1),
     .   InjectProperty('Edit', Edit1)]);
     .
-    . Button2.Action := TCommandVclFactory.CreateAction<TButon2Command>(Self,
+    . Button2.Action := TCommandVclFactory.CreateCommandAction<TButon2Command>(Self,
     .   'Run command: Button2', TPublishedIjector.Create.Inject('Memo', Memo1)
     .   .Injcect('Edit', Edit1));
     .
-    . Button2.Action := TCommandVclFactory.CreateAction<TButon2Command>(Self,
+    . Button2.Action := TCommandVclFactory.CreateCommandAction<TButon2Command>(Self,
     .   'Run command: Button2', ['Memo','Edit'], [Memo1,Edit1]);
     .
-    . Button2.Action := TCommandVclFactory.CreateAction<TButon2Command>(Self,
+    . Button2.Action := TCommandVclFactory.CreateCommandAction<TButon2Command>(Self,
     .   'Run command: Button2', [['property.Memo',Memo1],['Edit',Edit1]]);
     .
   }

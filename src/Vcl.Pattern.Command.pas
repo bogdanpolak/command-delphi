@@ -26,7 +26,7 @@ type
     class procedure InjectProperties(ACommand: TCommand;
       const Injections: array of const);
   public
-    class function CreateAction<T: TCommand>(AOwner: TComponent;
+    class function CreateCommandAction<T: TCommand>(AOwner: TComponent;
       const ACaption: string; const Injections: array of const): TAction;
   end;
 
@@ -97,7 +97,7 @@ begin
   end;
 end;
 
-class function TCommandVclFactory.CreateAction<T>(AOwner: TComponent;
+class function TCommandVclFactory.CreateCommandAction<T>(AOwner: TComponent;
   const ACaption: string; const Injections: array of const): TAction;
 var
   act: TCommandAction;
