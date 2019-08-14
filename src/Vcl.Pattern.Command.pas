@@ -14,9 +14,11 @@ type
   TCommand = class(TComponent, ICommand)
   strict private
     // FReceiver: TReceiver;
-    // procedure Guard; - before execute, assert the injection of all required propertied (Reciver, etc)
+  strict protected
+    // procedure Guard; - assert injections of all required properties
+    procedure Guard; virtual; abstract;
   public
-    procedure Execute; virtual; abstract;
+    procedure Execute; virtual;
     // call receiver method(s) or just do the job (merged command)
     // property Receiver: TReceiver read FReceiver set FReceiver;
   end;
@@ -38,12 +40,20 @@ type
   strict private
     FCommand: TCommand;
     procedure OnExecuteEvent(Sender: TObject);
-  published
+  public
     constructor Create(AOwner: TComponent); override;
     property Command: TCommand read FCommand write FCommand;
   end;
 
 implementation
+
+// ------------------------------------------------------------------------
+{ TCommand }
+
+procedure TCommand.Execute;
+begin
+  Guard;
+end;
 
 // ------------------------------------------------------------------------
 { TCommandAction }
