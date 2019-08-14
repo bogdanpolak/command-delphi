@@ -11,6 +11,8 @@ type
   private
     FMemo: TMemo;
     FEdit: TEdit;
+  protected
+    procedure Guard; override;
   public
     procedure Execute; override;
   published
@@ -19,6 +21,13 @@ type
   end;
 
 implementation
+
+procedure TButon2Command.Guard;
+begin
+  inherited;
+  Assert(Memo<>nil);
+  Assert(Edit<>nil);
+end;
 
 procedure TButon2Command.Execute;
 begin

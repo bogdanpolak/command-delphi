@@ -10,6 +10,8 @@ type
   TButon1Command = class (TCommand)
   private
     FMemo: TMemo;
+  protected
+    procedure Guard; override;
   public
     procedure Execute; override;
   published
@@ -17,6 +19,12 @@ type
   end;
 
 implementation
+
+procedure TButon1Command.Guard;
+begin
+  inherited;
+  Assert(Memo<>nil);
+end;
 
 procedure TButon1Command.Execute;
 begin
