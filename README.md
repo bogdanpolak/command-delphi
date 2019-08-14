@@ -40,16 +40,21 @@ Methods of the class `TCommandVclFactory`:
 1)  `procedure ExecuteCommand` - executes a command (creates a command, injects dependencies executes it and removes)
 1)  `function CreateCommandAction` - creates TAction, which contains embedded TCommand and injects dependencies
 
-**Samples**
+## Samples
 
+Creates command and inject dependencies:
 ```pas
 ACommand := TCommandVclFactory.CreateCommand<TButon2Command>(
     AOwner, [Memo1, Edit1]);
 ```
+
+Creates command, inject dependencies, execute it and remove:
 ```pas
 TCommandVclFactory.ExecuteCommand<TButon2Command>(
     [Memo1, Edit1]);
 ```
+
+Create `TCommandAction` and command with injection:
 ```pas
 act := TCommandVclFactory.CreateCommandAction
     <TButon1Command>(Self, 'Run command: Button1',
@@ -58,7 +63,6 @@ Button1.Action := act;
 ```
 
 Sample `TCommand` component:
-
 ```pas
 type
   TButon2Command = class (TCommand)
