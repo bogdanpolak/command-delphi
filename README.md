@@ -22,6 +22,16 @@ The `TCommand` component was created to help the **modernization of the legacy V
 
 ![](/docs/resources/moderniz-process.png)
 
+## TCommand component
+
+The easiest way to use the `TCommand` component is to create a new class, paste long method into Execute method and add all dependencies as properties to published section. See sample bellow.
+
+Created object you can wrap into TCommandAction object and use it as classic VCL action. You can use the factory for this task (described below)
+
+Diagram of TCommand usage in the VCL application:
+
+![](./docs/resources/tcommand-vcl.png)
+
 ## VCL TCommand factory
 
 Methods of the class `TCommandVclFactory`:
@@ -55,12 +65,20 @@ type
   private
     FMemo: TMemo;
     FEdit: TEdit;
+  protected
+    procedure Guard; override;
   public
     procedure Execute; override;
   published
     property Memo: TMemo read FMemo write FMemo;
     property Edit: TEdit read FEdit write FEdit;
   end;
+
+procedure TButon2Command.Guard; override;
+begin
+  Assert(Memo<>nil);
+  Assert(Edit<>nil);
+end;
 
 procedure TButon2Command.Execute;
 begin
