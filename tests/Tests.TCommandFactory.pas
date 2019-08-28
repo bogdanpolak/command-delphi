@@ -54,13 +54,14 @@ type
     FStrings2: TStringList;
     FSampleComponent: TComponent;
     FOwnerComponent: TComponent;
+  private
   public
     [Setup]
     procedure Setup;
     [TearDown]
     procedure TearDown;
   published
-    // procedure Test_BlaBla;
+    procedure InjectDependencies;
   end;
 
 implementation
@@ -314,6 +315,15 @@ begin
   FreeAndNil(FOwnerComponent);
 end;
 
+procedure TFactoryWithMoreInjectionsTest.InjectDependencies;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      TCommandVclFactory.ExecuteCommand<TCommandMore>([FStrings1, FStrings2,
+        FSampleComponent]);
+    end);
+end;
 {$ENDREGION}
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
