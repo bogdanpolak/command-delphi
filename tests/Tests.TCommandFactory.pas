@@ -4,9 +4,10 @@ interface
 
 uses
   DUnitX.TestFramework,
-  System.Classes, System.SysUtils;
+  System.Classes, System.SysUtils,
+  Vcl.Pattern.Command;
 
-{$M+}
+{$TYPEINFO ON}  {Requred for old RTTI metadata form published section}
 
 type
   [TestFixture]
@@ -20,23 +21,47 @@ type
     procedure TearDown;
   published
     // -------------
-    procedure TestSample1;
+    procedure TestAdhocExecuteCommand;
   end;
 
+implementation
+
+// ------------------------------------------------------------------------
+// class TCommandA
+// ------------------------------------------------------------------------
+{$REGION 'class TCommandA'}
 type
-  TCommandA = class (TCommand)
+  TCommandA = class(TCommand)
   strict private
     FActive: boolean;
     FCount: integer;
   protected
     procedure Guard; override;
   public
+    class var IsExecuted: boolean;
     procedure Execute; override;
     property Active: boolean read FActive write FActive;
     property Count: integer read FCount write FCount;
   end;
 
-  TCommandStringList = class (TCommand)
+procedure TCommandA.Guard;
+begin
+end;
+
+procedure TCommandA.Execute;
+begin
+  Active := True;
+  IsExecuted := True;
+  Count := Count + 1;
+end;
+
+{$ENDREGION}
+// ------------------------------------------------------------------------
+// class TCommandStringList
+// ------------------------------------------------------------------------
+{$REGION 'class TCommandStringList'}
+type
+  TCommandStringList = class(TCommand)
   strict private
     FCount: integer;
     FLines: TStringList;
@@ -48,70 +73,53 @@ type
     property Lines: TStringList read FLines write FLines;
   end;
 
-
-implementation
-
-// ------------------------------------------------------------------------
-// class TCommandA
-// ------------------------------------------------------------------------
-{$REGION 'class TCommandA'}
-procedure TCommandA.Guard; 
+procedure TCommandStringList.Guard;
 begin
-end;
-
-procedure TCommandA.Execute;
-begin
-  Active := True;
-  Count := Count +1;
-end;
-
-{$ENDREGION}
-// ------------------------------------------------------------------------
-// class TCommandStringList
-// ------------------------------------------------------------------------
-{$REGION 'class TCommandStringList'}
-procedure TCommandStringList.Guard; 
-begin
-  Assert(Lines<>nil);
+  System.Assert(Lines <> nil);
 end;
 
 procedure TCommandStringList.Execute;
 begin
-  Count := Count +1;
-  Lines.Add (Format('%.3d',[Count]));
+  Count := Count + 1;
+  Lines.Add(Format('%.3d', [Count]));
 end;
 
 {$ENDREGION}
 // ------------------------------------------------------------------------
-// Setup and TearDown
+// TCommandFactoryTests: Setup and TearDown
 // ------------------------------------------------------------------------
-{$REGION 'Setup and tear down'}
+{$REGION 'TCommandFactoryTests: Setup and tear down'}
 
 procedure TCommandFactoryTests.Setup;
 begin
   FStrings := TStringList.Create();
+  TCommandA.IsExecuted := False;
 end;
 
 procedure TCommandFactoryTests.TearDown;
 begin
-  FreeAndNil (FStrings);
+  FreeAndNil(FStrings);
+  TCommandA.IsExecuted := False;
 end;
 
 {$ENDREGION}
 // ------------------------------------------------------------------------
-// Basic tests
+// TCommandFactoryTests: Basic tests
 // ------------------------------------------------------------------------
-{$REGION 'Basic tests'}
+{$REGION 'TCommandFactoryTests: Basic tests'}
 
-procedure TCommandFactoryTests.TestSample1;
+procedure TCommandFactoryTests.TestAdhocExecuteCommand;
 begin
-
+  TCommandVclFactory.ExecuteCommand<TCommandA>([]);
+  Assert.IsTrue(TCommandA.IsExecuted,'TCommandA not executed');
 end;
 
 {$ENDREGION}
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 
 initialization
 
-TDUnitX.RegisterTestFixture(TObervableTests);
+TDUnitX.RegisterTestFixture(TCommandFactoryTests);
 
 end.
