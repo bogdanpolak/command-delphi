@@ -1,3 +1,14 @@
+﻿{ * ------------------------------------------------------------------------
+  * ♥
+  * ♥ VCL Command component/class with a factory
+  * ♥
+  * Components:     TCommand, TCommandAction
+  * Classes:        TCommandVclFactory
+  * Project:        https://github.com/bogdanpolak/command-delphi
+  * Documentation:  on the github site
+  * ReleaseDate:    ↓ see Signature below ↓
+  * ReleaseVersion: ↓ see Signature below ↓
+  * ------------------------------------------------------------------------ }
 unit Vcl.Pattern.Command;
 
 interface
@@ -12,6 +23,12 @@ type
   end;
 
   TCommand = class(TComponent, ICommand)
+  const
+    // * --------------------------------------------------------------------
+    // * Signature
+    ReleaseDate = '2019.08.28';
+    ReleaseVersion = '0.2';
+    // * --------------------------------------------------------------------
   strict private
     // FReceiver: TReceiver;
   strict protected
