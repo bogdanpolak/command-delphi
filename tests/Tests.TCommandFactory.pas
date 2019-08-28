@@ -12,9 +12,8 @@ uses
 type
 
   [TestFixture]
-  TCommandFactoryTests = class(TObject)
+  TFactoryNoInjectionTest = class(TObject)
   strict private
-    FStrings: TStringList;
     FOwnerComponent: TComponent;
     FCommandA: TCommand;
   public
@@ -23,16 +22,25 @@ type
     [TearDown]
     procedure TearDown;
   published
-    // -------------
-    // Test TCommandA
     procedure TestAdhocExecuteCommand;
     procedure TestCreateCommandProperType;
     procedure TestCreateCommandAndDestroyOwner;
     procedure TestExecuteCommandAndCheckActive;
     procedure TestNotExecuteCommand_CounterZero;
     procedure TestCounter_ExecuteCommand2x;
-    // -------------
-    // Test Injection - TCommandStringList
+  end;
+
+  [TestFixture]
+  TFactoryWithOneInjectionTest = class(TObject)
+  strict private
+    FStrings: TStringList;
+    FOwnerComponent: TComponent;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+  published
     procedure TestInjection_AssertOneInjection;
     procedure TestInjection_ExecuteAndCheckLinesCount;
   end;
@@ -111,39 +119,31 @@ end;
 
 {$ENDREGION}
 // ------------------------------------------------------------------------
-// TCommandFactoryTests: Setup and TearDown
+// TFactoryNoInjectionTest: TCommandA
 // ------------------------------------------------------------------------
-{$REGION 'TCommandFactoryTests: Setup and tear down'}
+{$REGION 'TCommandFactoryTests: TCommandA - no injection'}
 
-procedure TCommandFactoryTests.Setup;
+procedure TFactoryNoInjectionTest.Setup;
 begin
   FOwnerComponent := TComponent.Create(nil); // used as Owner for TCommand-s
-  FStrings := TStringList.Create();
   FCommandA := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
   TCommandA.IsExecuted := False;
 end;
 
-procedure TCommandFactoryTests.TearDown;
+procedure TFactoryNoInjectionTest.TearDown;
 begin
   FOwnerComponent.Free;
   // FCommandA destroyed by Owner
-  FreeAndNil(FStrings);
   TCommandA.IsExecuted := False;
 end;
 
-{$ENDREGION}
-// ------------------------------------------------------------------------
-// TCommandFactoryTests: TCommandA - no injection
-// ------------------------------------------------------------------------
-{$REGION 'TCommandFactoryTests: TCommandA - no injection'}
-
-procedure TCommandFactoryTests.TestAdhocExecuteCommand;
+procedure TFactoryNoInjectionTest.TestAdhocExecuteCommand;
 begin
   TCommandVclFactory.ExecuteCommand<TCommandA>([]);
   Assert.IsTrue(TCommandA.IsExecuted, 'TCommandA not executed');
 end;
 
-procedure TCommandFactoryTests.TestCreateCommandProperType;
+procedure TFactoryNoInjectionTest.TestCreateCommandProperType;
 var
   cmd: TCommandA;
 begin
@@ -151,7 +151,7 @@ begin
   Assert.InheritsFrom(cmd.ClassType, TCommandA);
 end;
 
-procedure TCommandFactoryTests.TestCreateCommandAndDestroyOwner;
+procedure TFactoryNoInjectionTest.TestCreateCommandAndDestroyOwner;
 var
   AOwner: TComponent;
   cmd: TCommandA;
@@ -163,19 +163,19 @@ begin
   Assert.IsTrue(TCommandA.IsDestroyed);
 end;
 
-procedure TCommandFactoryTests.TestExecuteCommandAndCheckActive;
+procedure TFactoryNoInjectionTest.TestExecuteCommandAndCheckActive;
 begin
   FCommandA.Execute;
   Assert.IsTrue((FCommandA as TCommandA).Active,
     'TCommanndA.Active property expected True');
 end;
 
-procedure TCommandFactoryTests.TestNotExecuteCommand_CounterZero;
+procedure TFactoryNoInjectionTest.TestNotExecuteCommand_CounterZero;
 begin
   Assert.AreEqual(0, (FCommandA as TCommandA).Count);
 end;
 
-procedure TCommandFactoryTests.TestCounter_ExecuteCommand2x;
+procedure TFactoryNoInjectionTest.TestCounter_ExecuteCommand2x;
 begin
   FCommandA.Execute;
   FCommandA.Execute;
@@ -184,18 +184,29 @@ end;
 
 {$ENDREGION}
 // ------------------------------------------------------------------------
-// TCommandFactoryTests: TCommandStringList - check injection
+// TFactoryWithInjectionTest: TStringList one injection
 // ------------------------------------------------------------------------
 {$REGION 'TCommandFactoryTests: TCommandStringList - check injection'}
 
-// Test Injection - TCommandStringList
-procedure TCommandFactoryTests.TestInjection_AssertOneInjection;
+procedure TFactoryWithOneInjectionTest.Setup;
+begin
+  FOwnerComponent := TComponent.Create(nil); // used as Owner for TCommand-s
+  FStrings := TStringList.Create();
+end;
+
+procedure TFactoryWithOneInjectionTest.TearDown;
+begin
+  FOwnerComponent.Free;
+  FreeAndNil(FStrings);
+end;
+
+procedure TFactoryWithOneInjectionTest.TestInjection_AssertOneInjection;
 begin
   TCommandVclFactory.ExecuteCommand<TCommandStringList>([FStrings]);
   Assert.Pass; // Fine is there was any exception above - correct injection
 end;
 
-procedure TCommandFactoryTests.TestInjection_ExecuteAndCheckLinesCount;
+procedure TFactoryWithOneInjectionTest.TestInjection_ExecuteAndCheckLinesCount;
 var
   cmd: TCommandStringList;
 begin
@@ -213,6 +224,7 @@ end;
 
 initialization
 
-TDUnitX.RegisterTestFixture(TCommandFactoryTests);
+TDUnitX.RegisterTestFixture(TFactoryNoInjectionTest);
+TDUnitX.RegisterTestFixture(TFactoryWithOneInjectionTest);
 
 end.
