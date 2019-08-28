@@ -28,6 +28,7 @@ type
     procedure TestCreateCommandProperType;
     procedure TestCreateCommandAndDestroyOwner;
     procedure TestExecuteCommandAndCheckActive;
+    procedure TestNotExecuteCommand_CounterZero;
   end;
 
 implementation
@@ -159,6 +160,11 @@ begin
   FCommandA.Execute;
   Assert.IsTrue((FCommandA as TCommandA).Active,
     'TCommanndA.Active property expected True');
+end;
+
+procedure TCommandFactoryTests.TestNotExecuteCommand_CounterZero;
+begin
+  Assert.AreEqual(0,(FCommandA as TCommandA).Count);
 end;
 
 {$ENDREGION}
