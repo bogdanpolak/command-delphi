@@ -137,6 +137,47 @@ end;
 
 {$ENDREGION}
 // ------------------------------------------------------------------------
+// class TCommandMore
+// ------------------------------------------------------------------------
+{$REGION 'class TCommandMore'}
+
+type
+  TCommandMore = class(TCommand)
+  strict private
+    FCount: integer;
+    FEvenLines: TStringList;
+    FOddLines: TStringList;
+    FComponent: TComponent;
+  protected
+    procedure Guard; override;
+  public
+    procedure Execute; override;
+    property Count: integer read FCount write FCount;
+  published
+    property EvenLines: TStringList read FEvenLines write FEvenLines;
+    property Component: TComponent read FComponent write FComponent;
+    property OddLines: TStringList read FOddLines write FOddLines;
+  end;
+
+procedure TCommandMore.Guard;
+begin
+  System.Assert(EvenLines <> nil);
+  System.Assert(OddLines <> nil);
+  System.Assert(Component <> nil);
+end;
+
+procedure TCommandMore.Execute;
+begin
+  inherited;
+  Count := Count + 1;
+  if Odd(Count) then
+    OddLines.Add(Format('%.3d', [Count]))
+  else
+    EvenLines.Add(Format('%.3d - %s', [Count, Component.Name]));
+end;
+
+{$ENDREGION}
+// ------------------------------------------------------------------------
 // TFactoryNoInjectionTest: TCommandA
 // ------------------------------------------------------------------------
 {$REGION 'TCommandFactoryTests: TCommandA - no injection'}
