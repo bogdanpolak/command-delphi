@@ -14,6 +14,7 @@ type
   TCommandFactoryTests = class(TObject)
   strict private
     FStrings: TStringList;
+    FOwnerComponent: TComponent;
   public
     [Setup]
     procedure Setup;
@@ -22,6 +23,7 @@ type
   published
     // -------------
     procedure TestAdhocExecuteCommand;
+    procedure TestCreateCommandProperType;
   end;
 
 implementation
@@ -92,12 +94,14 @@ end;
 
 procedure TCommandFactoryTests.Setup;
 begin
+  FOwnerComponent := TComponent.Create(nil);  // used as Owner for TCommand-s
   FStrings := TStringList.Create();
   TCommandA.IsExecuted := False;
 end;
 
 procedure TCommandFactoryTests.TearDown;
 begin
+  FOwnerComponent.Free;
   FreeAndNil(FStrings);
   TCommandA.IsExecuted := False;
 end;
@@ -112,6 +116,14 @@ procedure TCommandFactoryTests.TestAdhocExecuteCommand;
 begin
   TCommandVclFactory.ExecuteCommand<TCommandA>([]);
   Assert.IsTrue(TCommandA.IsExecuted,'TCommandA not executed');
+end;
+
+procedure TCommandFactoryTests.TestCreateCommandProperType;
+var
+  cmd: TCommandA;
+begin
+  cmd := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent,[]);
+  Assert.InheritsFrom(cmd.ClassType,TCommandA);
 end;
 
 {$ENDREGION}
