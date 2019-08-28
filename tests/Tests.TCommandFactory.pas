@@ -298,6 +298,8 @@ begin
   FStrings1 := TStringList.Create;
   FStrings2 := TStringList.Create;
   FSampleComponent := TComponent.Create(nil);
+  FSampleComponent.Name := 'NothingBox';
+  // have to see Mark Gungor in action: https://www.youtube.com/watch?v=SWiBRL-bxiA
   FOwnerComponent := TComponent.Create(nil);
 end;
 
