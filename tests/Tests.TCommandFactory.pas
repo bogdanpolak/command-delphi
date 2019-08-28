@@ -45,6 +45,22 @@ type
     procedure TestInjection_ExecuteAndCheckLinesCount;
   end;
 
+  [TestFixture]
+  TFactoryWithMoreInjectionsTest = class(TObject)
+  strict private
+    FStrings1: TStringList;
+    FStrings2: TStringList;
+    FSampleComponent: TComponent;
+    FOwnerComponent: TComponent;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+  published
+    // procedure Test_BlaBla;
+  end;
+
 implementation
 
 // ------------------------------------------------------------------------
@@ -220,11 +236,35 @@ end;
 
 {$ENDREGION}
 // ------------------------------------------------------------------------
+// CommandFactory tests factory methods with more injection
+// * 2x TStringList, 1x TComponent
+// ------------------------------------------------------------------------
+{$REGION 'TFactoryWithMoreInjectionTest: check more injection'}
+
+procedure TFactoryWithMoreInjectionsTest.Setup;
+begin
+  FStrings1 := TStringList.Create;
+  FStrings2 := TStringList.Create;
+  FSampleComponent := TComponent.Create(nil);
+  FOwnerComponent := TComponent.Create(nil);
+end;
+
+procedure TFactoryWithMoreInjectionsTest.TearDown;
+begin
+  FreeAndNil(FStrings1);
+  FreeAndNil(FStrings2);
+  FreeAndNil(FSampleComponent);
+  FreeAndNil(FOwnerComponent);
+end;
+
+{$ENDREGION}
+// ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
 
 initialization
 
 TDUnitX.RegisterTestFixture(TFactoryNoInjectionTest);
 TDUnitX.RegisterTestFixture(TFactoryWithOneInjectionTest);
+TDUnitX.RegisterTestFixture(TFactoryWithMoreInjectionsTest);
 
 end.
