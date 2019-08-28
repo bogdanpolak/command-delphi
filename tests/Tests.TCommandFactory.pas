@@ -24,12 +24,14 @@ type
     procedure TearDown;
   published
     // -------------
+    // Test TCommandA
     procedure TestAdhocExecuteCommand;
     procedure TestCreateCommandProperType;
     procedure TestCreateCommandAndDestroyOwner;
     procedure TestExecuteCommandAndCheckActive;
     procedure TestNotExecuteCommand_CounterZero;
     procedure TestCounter_ExecuteCommand2x;
+    // -------------
   end;
 
 implementation
@@ -126,9 +128,9 @@ end;
 
 {$ENDREGION}
 // ------------------------------------------------------------------------
-// TCommandFactoryTests: Basic tests
+// TCommandFactoryTests: TCommandA - no injection
 // ------------------------------------------------------------------------
-{$REGION 'TCommandFactoryTests: Basic tests'}
+{$REGION 'TCommandFactoryTests: TCommandA - no injection'}
 
 procedure TCommandFactoryTests.TestAdhocExecuteCommand;
 begin
@@ -174,6 +176,12 @@ begin
   FCommandA.Execute;
   Assert.AreEqual(2,(FCommandA as TCommandA).Count);
 end;
+
+{$ENDREGION}
+// ------------------------------------------------------------------------
+// TCommandFactoryTests: TCommandStringList - check injection
+// ------------------------------------------------------------------------
+{$REGION 'TCommandFactoryTests: TCommandStringList - check injection'}
 
 {$ENDREGION}
 // ------------------------------------------------------------------------
