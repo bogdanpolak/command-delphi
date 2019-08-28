@@ -34,6 +34,7 @@ type
     // -------------
     // Test Injection - TCommandStringList
     procedure TestInjection_AssertOneInjection;
+    procedure TestInjection_ExecuteAndCheckLinesCount;
   end;
 
 implementation
@@ -192,6 +193,18 @@ procedure TCommandFactoryTests.TestInjection_AssertOneInjection;
 begin
   TCommandVclFactory.ExecuteCommand<TCommandStringList>([FStrings]);
   Assert.Pass; // Fine is there was any exception above - correct injection
+end;
+
+procedure TCommandFactoryTests.TestInjection_ExecuteAndCheckLinesCount;
+var
+  cmd: TCommandStringList;
+begin
+  cmd := TCommandVclFactory.CreateCommand<TCommandStringList>(FOwnerComponent,
+    [FStrings]);
+  cmd.Execute;
+  cmd.Execute;
+  cmd.Lines.Delete(0);
+  Assert.AreEqual(1, cmd.Lines.Count);
 end;
 
 {$ENDREGION}
