@@ -16,6 +16,7 @@ type
   strict private
     FStrings: TStringList;
     FOwnerComponent: TComponent;
+    FCommandA: TCommand;
   public
     [Setup]
     procedure Setup;
@@ -26,6 +27,7 @@ type
     procedure TestAdhocExecuteCommand;
     procedure TestCreateCommandProperType;
     procedure TestCreateCommandAndDestroyOwner;
+    procedure TestExecuteCommandAndCheckActive;
   end;
 
 implementation
@@ -108,12 +110,14 @@ procedure TCommandFactoryTests.Setup;
 begin
   FOwnerComponent := TComponent.Create(nil); // used as Owner for TCommand-s
   FStrings := TStringList.Create();
+  FCommandA := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
   TCommandA.IsExecuted := False;
 end;
 
 procedure TCommandFactoryTests.TearDown;
 begin
   FOwnerComponent.Free;
+  // FCommandA destroyed by Owner
   FreeAndNil(FStrings);
   TCommandA.IsExecuted := False;
 end;
@@ -148,6 +152,13 @@ begin
   cmd := TCommandVclFactory.CreateCommand<TCommandA>(AOwner, []);
   AOwner.Free;
   Assert.IsTrue(TCommandA.IsDestroyed);
+end;
+
+procedure TCommandFactoryTests.TestExecuteCommandAndCheckActive;
+begin
+  FCommandA.Execute;
+  Assert.IsTrue((FCommandA as TCommandA).Active,
+    'TCommanndA.Active property expected True');
 end;
 
 {$ENDREGION}
