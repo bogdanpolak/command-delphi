@@ -62,6 +62,7 @@ type
     procedure TearDown;
   published
     procedure InjectDependencies;
+    procedure VerifiyDependenciesAfterExecute;
   end;
 
 implementation
@@ -324,6 +325,16 @@ begin
         FSampleComponent]);
     end);
 end;
+
+procedure TFactoryWithMoreInjectionsTest.VerifiyDependenciesAfterExecute;
+begin
+  TCommandVclFactory.ExecuteCommand<TCommandMore>
+    ([FStrings1, FStrings2, FSampleComponent]);
+  Assert.AreEqual(1, FStrings1.Count);
+  Assert.AreEqual(0, FStrings2.Count);
+  Assert.AreEqual('ANothingBox', FSampleComponent.Name);
+end;
+
 {$ENDREGION}
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
