@@ -24,6 +24,7 @@ type
     // -------------
     procedure TestAdhocExecuteCommand;
     procedure TestCreateCommandProperType;
+    procedure TestCreateCommandAndDestroyOwner;
   end;
 
 implementation
@@ -41,13 +42,21 @@ type
     procedure Guard; override;
   public
     class var IsExecuted: boolean;
+    class var IsDestroyed: boolean;
     procedure Execute; override;
+    destructor Destroy; override;
     property Active: boolean read FActive write FActive;
     property Count: integer read FCount write FCount;
   end;
 
 procedure TCommandA.Guard;
 begin
+end;
+
+destructor TCommandA.Destroy;
+begin
+  IsDestroyed := True;
+  inherited;
 end;
 
 procedure TCommandA.Execute;
@@ -124,6 +133,18 @@ var
 begin
   cmd := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent,[]);
   Assert.InheritsFrom(cmd.ClassType,TCommandA);
+end;
+
+procedure TCommandFactoryTests.TestCreateCommandAndDestroyOwner;
+var
+  AOwner: TComponent;
+  cmd: TCommandA;
+begin
+  TCommandA.IsDestroyed := False;
+  AOwner := TComponent.Create(nil);
+  cmd := TCommandVclFactory.CreateCommand<TCommandA>(AOwner,[]);
+  AOwner.Free;
+  Assert.IsTrue(TCommandA.IsDestroyed);
 end;
 
 {$ENDREGION}
