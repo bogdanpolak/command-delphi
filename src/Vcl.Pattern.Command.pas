@@ -121,14 +121,14 @@ end;
 class procedure TCommandVclFactory.ExecuteCommand<T>(const Injections
   : array of const);
 var
-  command: T;
+  Command: T;
 begin
   try
-    command := T.Create(nil);
-    InjectProperties(command, Injections);
-    command.Execute;
+    Command := T.Create(nil);
+    InjectProperties(Command, Injections);
+    Command.Execute;
   finally
-    command.Free;
+    Command.Free;
   end;
 end;
 
