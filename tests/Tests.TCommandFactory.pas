@@ -7,9 +7,10 @@ uses
   System.Classes, System.SysUtils,
   Vcl.Pattern.Command;
 
-{$TYPEINFO ON}  {Requred for old RTTI metadata form published section}
+{$TYPEINFO ON}  { Requred for old RTTI metadata form published section }
 
 type
+
   [TestFixture]
   TCommandFactoryTests = class(TObject)
   strict private
@@ -33,6 +34,7 @@ implementation
 // class TCommandA
 // ------------------------------------------------------------------------
 {$REGION 'class TCommandA'}
+
 type
   TCommandA = class(TCommand)
   strict private
@@ -71,6 +73,7 @@ end;
 // class TCommandStringList
 // ------------------------------------------------------------------------
 {$REGION 'class TCommandStringList'}
+
 type
   TCommandStringList = class(TCommand)
   strict private
@@ -103,7 +106,7 @@ end;
 
 procedure TCommandFactoryTests.Setup;
 begin
-  FOwnerComponent := TComponent.Create(nil);  // used as Owner for TCommand-s
+  FOwnerComponent := TComponent.Create(nil); // used as Owner for TCommand-s
   FStrings := TStringList.Create();
   TCommandA.IsExecuted := False;
 end;
@@ -124,15 +127,15 @@ end;
 procedure TCommandFactoryTests.TestAdhocExecuteCommand;
 begin
   TCommandVclFactory.ExecuteCommand<TCommandA>([]);
-  Assert.IsTrue(TCommandA.IsExecuted,'TCommandA not executed');
+  Assert.IsTrue(TCommandA.IsExecuted, 'TCommandA not executed');
 end;
 
 procedure TCommandFactoryTests.TestCreateCommandProperType;
 var
   cmd: TCommandA;
 begin
-  cmd := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent,[]);
-  Assert.InheritsFrom(cmd.ClassType,TCommandA);
+  cmd := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
+  Assert.InheritsFrom(cmd.ClassType, TCommandA);
 end;
 
 procedure TCommandFactoryTests.TestCreateCommandAndDestroyOwner;
@@ -142,7 +145,7 @@ var
 begin
   TCommandA.IsDestroyed := False;
   AOwner := TComponent.Create(nil);
-  cmd := TCommandVclFactory.CreateCommand<TCommandA>(AOwner,[]);
+  cmd := TCommandVclFactory.CreateCommand<TCommandA>(AOwner, []);
   AOwner.Free;
   Assert.IsTrue(TCommandA.IsDestroyed);
 end;
