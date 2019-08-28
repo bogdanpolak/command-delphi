@@ -35,6 +35,7 @@ type
   strict private
     FStrings: TStringList;
     FOwnerComponent: TComponent;
+  private
   public
     [Setup]
     procedure Setup;
@@ -43,6 +44,7 @@ type
   published
     procedure TestInjection_AssertOneInjection;
     procedure TestInjection_ExecuteAndCheckLinesCount;
+    procedure NoRequiredInjectionException;
   end;
 
   [TestFixture]
@@ -232,6 +234,15 @@ begin
   cmd.Execute;
   cmd.Lines.Delete(0);
   Assert.AreEqual(1, cmd.Lines.Count);
+end;
+
+procedure TFactoryWithOneInjectionTest.NoRequiredInjectionException;
+begin
+  Assert.WillRaiseDescendant(
+    procedure
+    begin
+      TCommandVclFactory.ExecuteCommand<TCommandStringList>([]);
+    end, EAssertionFailed);
 end;
 
 {$ENDREGION}
