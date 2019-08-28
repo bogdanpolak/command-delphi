@@ -29,6 +29,7 @@ type
     procedure TestCreateCommandAndDestroyOwner;
     procedure TestExecuteCommandAndCheckActive;
     procedure TestNotExecuteCommand_CounterZero;
+    procedure TestCounter_ExecuteCommand2x;
   end;
 
 implementation
@@ -165,6 +166,13 @@ end;
 procedure TCommandFactoryTests.TestNotExecuteCommand_CounterZero;
 begin
   Assert.AreEqual(0,(FCommandA as TCommandA).Count);
+end;
+
+procedure TCommandFactoryTests.TestCounter_ExecuteCommand2x;
+begin
+  FCommandA.Execute;
+  FCommandA.Execute;
+  Assert.AreEqual(2,(FCommandA as TCommandA).Count);
 end;
 
 {$ENDREGION}
