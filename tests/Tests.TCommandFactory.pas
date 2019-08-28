@@ -171,9 +171,12 @@ begin
   inherited;
   Count := Count + 1;
   if Odd(Count) then
-    OddLines.Add(Format('%.3d', [Count]))
+  begin
+    OddLines.Add(Format('%.3d - %s', [Count, Component.Name]));
+    Component.Name := 'A' + Component.Name;
+  end
   else
-    EvenLines.Add(Format('%.3d - %s', [Count, Component.Name]));
+    EvenLines.Add(Format('%.3d', [Count]));
 end;
 
 {$ENDREGION}
