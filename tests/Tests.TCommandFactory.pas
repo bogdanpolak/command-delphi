@@ -32,6 +32,8 @@ type
     procedure TestNotExecuteCommand_CounterZero;
     procedure TestCounter_ExecuteCommand2x;
     // -------------
+    // Test Injection - TCommandStringList
+    procedure TestInjection_AssertOneInjection;
   end;
 
 implementation
@@ -90,6 +92,7 @@ type
   public
     procedure Execute; override;
     property Count: integer read FCount write FCount;
+  published
     property Lines: TStringList read FLines write FLines;
   end;
 
@@ -100,6 +103,7 @@ end;
 
 procedure TCommandStringList.Execute;
 begin
+  inherited;
   Count := Count + 1;
   Lines.Add(Format('%.3d', [Count]));
 end;
@@ -167,14 +171,14 @@ end;
 
 procedure TCommandFactoryTests.TestNotExecuteCommand_CounterZero;
 begin
-  Assert.AreEqual(0,(FCommandA as TCommandA).Count);
+  Assert.AreEqual(0, (FCommandA as TCommandA).Count);
 end;
 
 procedure TCommandFactoryTests.TestCounter_ExecuteCommand2x;
 begin
   FCommandA.Execute;
   FCommandA.Execute;
-  Assert.AreEqual(2,(FCommandA as TCommandA).Count);
+  Assert.AreEqual(2, (FCommandA as TCommandA).Count);
 end;
 
 {$ENDREGION}
@@ -182,6 +186,13 @@ end;
 // TCommandFactoryTests: TCommandStringList - check injection
 // ------------------------------------------------------------------------
 {$REGION 'TCommandFactoryTests: TCommandStringList - check injection'}
+
+// Test Injection - TCommandStringList
+procedure TCommandFactoryTests.TestInjection_AssertOneInjection;
+begin
+  TCommandVclFactory.ExecuteCommand<TCommandStringList>([FStrings]);
+  Assert.Pass; // Fine is there was any exception above - correct injection
+end;
 
 {$ENDREGION}
 // ------------------------------------------------------------------------
