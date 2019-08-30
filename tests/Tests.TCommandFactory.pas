@@ -12,9 +12,8 @@ uses
 type
 
   [TestFixture]
-  TCommandFactoryTests = class(TObject)
+  TFactoryNoInjectionTest = class(TObject)
   strict private
-    FStrings: TStringList;
     FOwnerComponent: TComponent;
     FCommandA: TCommand;
   public
@@ -23,18 +22,47 @@ type
     [TearDown]
     procedure TearDown;
   published
-    // -------------
-    // Test TCommandA
     procedure TestAdhocExecuteCommand;
     procedure TestCreateCommandProperType;
     procedure TestCreateCommandAndDestroyOwner;
     procedure TestExecuteCommandAndCheckActive;
     procedure TestNotExecuteCommand_CounterZero;
     procedure TestCounter_ExecuteCommand2x;
-    // -------------
-    // Test Injection - TCommandStringList
+  end;
+
+  [TestFixture]
+  TFactoryWithOneInjectionTest = class(TObject)
+  strict private
+    FStrings: TStringList;
+    FOwnerComponent: TComponent;
+  private
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+  published
     procedure TestInjection_AssertOneInjection;
     procedure TestInjection_ExecuteAndCheckLinesCount;
+    procedure NoRequiredInjectionException;
+  end;
+
+  [TestFixture]
+  TFactoryWithMoreInjectionsTest = class(TObject)
+  strict private
+    FStrings1: TStringList;
+    FStrings2: TStringList;
+    FSampleComponent: TComponent;
+    FOwnerComponent: TComponent;
+  private
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+  published
+    procedure InjectDependencies;
+    procedure VerifiyDependenciesAfterExecute;
   end;
 
 implementation
@@ -111,39 +139,75 @@ end;
 
 {$ENDREGION}
 // ------------------------------------------------------------------------
-// TCommandFactoryTests: Setup and TearDown
+// class TCommandMore
 // ------------------------------------------------------------------------
-{$REGION 'TCommandFactoryTests: Setup and tear down'}
+{$REGION 'class TCommandMore'}
 
-procedure TCommandFactoryTests.Setup;
+type
+  TCommandMore = class(TCommand)
+  strict private
+    FCount: integer;
+    FEvenLines: TStringList;
+    FOddLines: TStringList;
+    FComponent: TComponent;
+  protected
+    procedure Guard; override;
+  public
+    procedure Execute; override;
+    property Count: integer read FCount write FCount;
+  published
+    property OddLines: TStringList read FOddLines write FOddLines;
+    property Component: TComponent read FComponent write FComponent;
+    property EvenLines: TStringList read FEvenLines write FEvenLines;
+  end;
+
+procedure TCommandMore.Guard;
 begin
-  FOwnerComponent := TComponent.Create(nil); // used as Owner for TCommand-s
-  FStrings := TStringList.Create();
-  FCommandA := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
-  TCommandA.IsExecuted := False;
+  System.Assert(EvenLines <> nil);
+  System.Assert(OddLines <> nil);
+  System.Assert(Component <> nil);
 end;
 
-procedure TCommandFactoryTests.TearDown;
+procedure TCommandMore.Execute;
 begin
-  FOwnerComponent.Free;
-  // FCommandA destroyed by Owner
-  FreeAndNil(FStrings);
-  TCommandA.IsExecuted := False;
+  inherited;
+  Count := Count + 1;
+  if Odd(Count) then
+  begin
+    OddLines.Add(Format('%.3d - %s', [Count, Component.Name]));
+    Component.Name := 'A' + Component.Name;
+  end
+  else
+    EvenLines.Add(Format('%.3d', [Count]));
 end;
 
 {$ENDREGION}
 // ------------------------------------------------------------------------
-// TCommandFactoryTests: TCommandA - no injection
+// TFactoryNoInjectionTest: TCommandA
 // ------------------------------------------------------------------------
 {$REGION 'TCommandFactoryTests: TCommandA - no injection'}
 
-procedure TCommandFactoryTests.TestAdhocExecuteCommand;
+procedure TFactoryNoInjectionTest.Setup;
+begin
+  FOwnerComponent := TComponent.Create(nil); // used as Owner for TCommand-s
+  FCommandA := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
+  TCommandA.IsExecuted := False;
+end;
+
+procedure TFactoryNoInjectionTest.TearDown;
+begin
+  FOwnerComponent.Free;
+  // FCommandA destroyed by Owner
+  TCommandA.IsExecuted := False;
+end;
+
+procedure TFactoryNoInjectionTest.TestAdhocExecuteCommand;
 begin
   TCommandVclFactory.ExecuteCommand<TCommandA>([]);
   Assert.IsTrue(TCommandA.IsExecuted, 'TCommandA not executed');
 end;
 
-procedure TCommandFactoryTests.TestCreateCommandProperType;
+procedure TFactoryNoInjectionTest.TestCreateCommandProperType;
 var
   cmd: TCommandA;
 begin
@@ -151,7 +215,7 @@ begin
   Assert.InheritsFrom(cmd.ClassType, TCommandA);
 end;
 
-procedure TCommandFactoryTests.TestCreateCommandAndDestroyOwner;
+procedure TFactoryNoInjectionTest.TestCreateCommandAndDestroyOwner;
 var
   AOwner: TComponent;
   cmd: TCommandA;
@@ -163,19 +227,19 @@ begin
   Assert.IsTrue(TCommandA.IsDestroyed);
 end;
 
-procedure TCommandFactoryTests.TestExecuteCommandAndCheckActive;
+procedure TFactoryNoInjectionTest.TestExecuteCommandAndCheckActive;
 begin
   FCommandA.Execute;
   Assert.IsTrue((FCommandA as TCommandA).Active,
     'TCommanndA.Active property expected True');
 end;
 
-procedure TCommandFactoryTests.TestNotExecuteCommand_CounterZero;
+procedure TFactoryNoInjectionTest.TestNotExecuteCommand_CounterZero;
 begin
   Assert.AreEqual(0, (FCommandA as TCommandA).Count);
 end;
 
-procedure TCommandFactoryTests.TestCounter_ExecuteCommand2x;
+procedure TFactoryNoInjectionTest.TestCounter_ExecuteCommand2x;
 begin
   FCommandA.Execute;
   FCommandA.Execute;
@@ -184,18 +248,29 @@ end;
 
 {$ENDREGION}
 // ------------------------------------------------------------------------
-// TCommandFactoryTests: TCommandStringList - check injection
+// TFactoryWithInjectionTest: TStringList one injection
 // ------------------------------------------------------------------------
 {$REGION 'TCommandFactoryTests: TCommandStringList - check injection'}
 
-// Test Injection - TCommandStringList
-procedure TCommandFactoryTests.TestInjection_AssertOneInjection;
+procedure TFactoryWithOneInjectionTest.Setup;
+begin
+  FOwnerComponent := TComponent.Create(nil); // used as Owner for TCommand-s
+  FStrings := TStringList.Create();
+end;
+
+procedure TFactoryWithOneInjectionTest.TearDown;
+begin
+  FOwnerComponent.Free;
+  FreeAndNil(FStrings);
+end;
+
+procedure TFactoryWithOneInjectionTest.TestInjection_AssertOneInjection;
 begin
   TCommandVclFactory.ExecuteCommand<TCommandStringList>([FStrings]);
   Assert.Pass; // Fine is there was any exception above - correct injection
 end;
 
-procedure TCommandFactoryTests.TestInjection_ExecuteAndCheckLinesCount;
+procedure TFactoryWithOneInjectionTest.TestInjection_ExecuteAndCheckLinesCount;
 var
   cmd: TCommandStringList;
 begin
@@ -207,12 +282,67 @@ begin
   Assert.AreEqual(1, cmd.Lines.Count);
 end;
 
+procedure TFactoryWithOneInjectionTest.NoRequiredInjectionException;
+begin
+  Assert.WillRaiseDescendant(
+    procedure
+    begin
+      TCommandVclFactory.ExecuteCommand<TCommandStringList>([]);
+    end, EAssertionFailed);
+end;
+
+{$ENDREGION}
+// ------------------------------------------------------------------------
+// CommandFactory tests factory methods with more injection
+// * 2x TStringList, 1x TComponent
+// ------------------------------------------------------------------------
+{$REGION 'TFactoryWithMoreInjectionTest: check more injection'}
+
+procedure TFactoryWithMoreInjectionsTest.Setup;
+begin
+  FStrings1 := TStringList.Create;
+  FStrings2 := TStringList.Create;
+  FSampleComponent := TComponent.Create(nil);
+  FSampleComponent.Name := 'NothingBox';
+  // have to see Mark Gungor in action: https://www.youtube.com/watch?v=SWiBRL-bxiA
+  FOwnerComponent := TComponent.Create(nil);
+end;
+
+procedure TFactoryWithMoreInjectionsTest.TearDown;
+begin
+  FreeAndNil(FStrings1);
+  FreeAndNil(FStrings2);
+  FreeAndNil(FSampleComponent);
+  FreeAndNil(FOwnerComponent);
+end;
+
+procedure TFactoryWithMoreInjectionsTest.InjectDependencies;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      TCommandVclFactory.ExecuteCommand<TCommandMore>([FStrings1, FStrings2,
+        FSampleComponent]);
+    end);
+end;
+
+procedure TFactoryWithMoreInjectionsTest.VerifiyDependenciesAfterExecute;
+begin
+  TCommandVclFactory.ExecuteCommand<TCommandMore>
+    ([FStrings1, FStrings2, FSampleComponent]);
+  Assert.AreEqual(1, FStrings1.Count);
+  Assert.AreEqual(0, FStrings2.Count);
+  Assert.AreEqual('ANothingBox', FSampleComponent.Name);
+end;
+
 {$ENDREGION}
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
 
 initialization
 
-TDUnitX.RegisterTestFixture(TCommandFactoryTests);
+TDUnitX.RegisterTestFixture(TFactoryNoInjectionTest);
+TDUnitX.RegisterTestFixture(TFactoryWithOneInjectionTest);
+TDUnitX.RegisterTestFixture(TFactoryWithMoreInjectionsTest);
 
 end.
