@@ -35,6 +35,7 @@ type
   strict private
     FStrings: TStringList;
     FOwnerComponent: TComponent;
+  private
   public
     [Setup]
     procedure Setup;
@@ -43,6 +44,7 @@ type
   published
     procedure TestInjection_AssertOneInjection;
     procedure TestInjection_ExecuteAndCheckLinesCount;
+    procedure NoRequiredInjectionException;
   end;
 
   [TestFixture]
@@ -52,13 +54,15 @@ type
     FStrings2: TStringList;
     FSampleComponent: TComponent;
     FOwnerComponent: TComponent;
+  private
   public
     [Setup]
     procedure Setup;
     [TearDown]
     procedure TearDown;
   published
-    // procedure Test_BlaBla;
+    procedure InjectDependencies;
+    procedure VerifiyDependenciesAfterExecute;
   end;
 
 implementation
@@ -131,6 +135,50 @@ begin
   inherited;
   Count := Count + 1;
   Lines.Add(Format('%.3d', [Count]));
+end;
+
+{$ENDREGION}
+// ------------------------------------------------------------------------
+// class TCommandMore
+// ------------------------------------------------------------------------
+{$REGION 'class TCommandMore'}
+
+type
+  TCommandMore = class(TCommand)
+  strict private
+    FCount: integer;
+    FEvenLines: TStringList;
+    FOddLines: TStringList;
+    FComponent: TComponent;
+  protected
+    procedure Guard; override;
+  public
+    procedure Execute; override;
+    property Count: integer read FCount write FCount;
+  published
+    property OddLines: TStringList read FOddLines write FOddLines;
+    property Component: TComponent read FComponent write FComponent;
+    property EvenLines: TStringList read FEvenLines write FEvenLines;
+  end;
+
+procedure TCommandMore.Guard;
+begin
+  System.Assert(EvenLines <> nil);
+  System.Assert(OddLines <> nil);
+  System.Assert(Component <> nil);
+end;
+
+procedure TCommandMore.Execute;
+begin
+  inherited;
+  Count := Count + 1;
+  if Odd(Count) then
+  begin
+    OddLines.Add(Format('%.3d - %s', [Count, Component.Name]));
+    Component.Name := 'A' + Component.Name;
+  end
+  else
+    EvenLines.Add(Format('%.3d', [Count]));
 end;
 
 {$ENDREGION}
@@ -234,6 +282,15 @@ begin
   Assert.AreEqual(1, cmd.Lines.Count);
 end;
 
+procedure TFactoryWithOneInjectionTest.NoRequiredInjectionException;
+begin
+  Assert.WillRaiseDescendant(
+    procedure
+    begin
+      TCommandVclFactory.ExecuteCommand<TCommandStringList>([]);
+    end, EAssertionFailed);
+end;
+
 {$ENDREGION}
 // ------------------------------------------------------------------------
 // CommandFactory tests factory methods with more injection
@@ -246,6 +303,8 @@ begin
   FStrings1 := TStringList.Create;
   FStrings2 := TStringList.Create;
   FSampleComponent := TComponent.Create(nil);
+  FSampleComponent.Name := 'NothingBox';
+  // have to see Mark Gungor in action: https://www.youtube.com/watch?v=SWiBRL-bxiA
   FOwnerComponent := TComponent.Create(nil);
 end;
 
@@ -255,6 +314,25 @@ begin
   FreeAndNil(FStrings2);
   FreeAndNil(FSampleComponent);
   FreeAndNil(FOwnerComponent);
+end;
+
+procedure TFactoryWithMoreInjectionsTest.InjectDependencies;
+begin
+  Assert.WillNotRaise(
+    procedure
+    begin
+      TCommandVclFactory.ExecuteCommand<TCommandMore>([FStrings1, FStrings2,
+        FSampleComponent]);
+    end);
+end;
+
+procedure TFactoryWithMoreInjectionsTest.VerifiyDependenciesAfterExecute;
+begin
+  TCommandVclFactory.ExecuteCommand<TCommandMore>
+    ([FStrings1, FStrings2, FSampleComponent]);
+  Assert.AreEqual(1, FStrings1.Count);
+  Assert.AreEqual(0, FStrings2.Count);
+  Assert.AreEqual('ANothingBox', FSampleComponent.Name);
 end;
 
 {$ENDREGION}
