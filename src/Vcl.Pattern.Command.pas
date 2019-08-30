@@ -40,6 +40,18 @@ type
     // property Receiver: TReceiver read FReceiver set FReceiver;
   end;
 
+  TClassPropertyList = class
+  private
+    FPropList: PPropList;
+    FCount: Integer;
+  public
+    constructor Create (c: TComponent);
+    destructor Destroy; override;
+    function Count: integer;
+    function GetPropName(AIndex: Integer): string;
+    function GetPropType(AIndex: Integer): PTypeInfo;
+  end;
+
   TCommandVclFactory = class(TComponent)
   private
     class procedure InjectProperties(ACommand: TCommand;
@@ -93,29 +105,29 @@ end;
 class procedure TCommandVclFactory.InjectProperties(ACommand: TCommand;
   const Injections: array of const);
 var
-  PropList: PPropList;
-  PropCount: Integer;
   i: Integer;
   j: Integer;
+  PropertyList: TClassPropertyList;
+  PropertyType: PTypeInfo;
 begin
   // Inject dependencies to the command.
   // Limitations of this version:
   // * only TObject and descendants injections is supported
   // * properties must have different types (ClassName)
+  // --------------------------------
+  PropertyList := TClassPropertyList.Create(ACommand);
   try
-    PropCount := System.TypInfo.GetPropList(ACommand, PropList);
-    for i := 0 to PropCount - 1 do
+    for i := 0 to PropertyList.Count - 1 do
     begin
-      if PropList^[i].PropType^.Kind = tkClass then
+      PropertyType := PropertyList.GetPropType(i);
+      if  PropertyType.Kind = tkClass then
       begin
-        // Do injection
         for j := 0 to High(Injections) do
           if Injections[j].VType = vtObject then
           begin
-            // PropList^[i].PropType^.Name - ClassName of the property
             if Injections[j].VObject.ClassName = String
-              (PropList^[i].PropType^.Name) then
-              SetObjectProp(ACommand, String(PropList^[i].Name),
+              (PropertyType.Name) then
+              SetObjectProp(ACommand, PropertyList.GetPropName(i),
                 Injections[j].VObject);
           end
           else
@@ -124,7 +136,7 @@ begin
       end;
     end;
   finally
-    FreeMem(PropList);
+    PropertyList.Free;
   end;
 end;
 
@@ -165,5 +177,34 @@ begin
 end;
 
 // ------------------------------------------------------------------------
+
+{ TClassPropertyList }
+
+constructor TClassPropertyList.Create(c: TComponent);
+begin
+  FCount := System.TypInfo.GetPropList(c, FPropList);
+end;
+
+destructor TClassPropertyList.Destroy;
+begin
+  FreeMem(FPropList);
+  inherited;
+end;
+
+function TClassPropertyList.Count: integer;
+begin
+  Result := FCount;
+end;
+
+function TClassPropertyList.GetPropName(AIndex: Integer): string;
+begin
+  Result := String(FPropList^[AIndex].Name);
+end;
+
+function TClassPropertyList.GetPropType(AIndex: Integer): PTypeInfo;
+begin
+  System.Assert(AIndex<FCount);
+  Result := FPropList^[AIndex].PropType^;
+end;
 
 end.
