@@ -156,9 +156,9 @@ type
     procedure Execute; override;
     property Count: integer read FCount write FCount;
   published
-    property EvenLines: TStringList read FEvenLines write FEvenLines;
-    property Component: TComponent read FComponent write FComponent;
     property OddLines: TStringList read FOddLines write FOddLines;
+    property Component: TComponent read FComponent write FComponent;
+    property EvenLines: TStringList read FEvenLines write FEvenLines;
   end;
 
 procedure TCommandMore.Guard;
