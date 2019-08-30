@@ -40,16 +40,21 @@ type
     // property Receiver: TReceiver read FReceiver set FReceiver;
   end;
 
+  TPropertyInfo = record
+    Kind: TTypeKind;
+    PropertyName: string;
+    ClassName: string;
+  end;
+
   TClassPropertyList = class
   private
     FPropList: PPropList;
     FCount: Integer;
   public
-    constructor Create (c: TComponent);
+    constructor Create(c: TComponent);
     destructor Destroy; override;
-    function Count: integer;
-    function GetPropName(AIndex: Integer): string;
-    function GetPropType(AIndex: Integer): PTypeInfo;
+    function Count: Integer;
+    function GetInfo(AIndex: Integer): TPropertyInfo;
   end;
 
   TCommandVclFactory = class(TComponent)
@@ -108,7 +113,8 @@ var
   i: Integer;
   j: Integer;
   PropertyList: TClassPropertyList;
-  PropertyType: PTypeInfo;
+  propInfo: TPropertyInfo;
+  UsedInjection: TArray<boolean>;
 begin
   // Inject dependencies to the command.
   // Limitations of this version:
@@ -116,23 +122,30 @@ begin
   // * properties must have different types (ClassName)
   // --------------------------------
   PropertyList := TClassPropertyList.Create(ACommand);
+  SetLength(UsedInjection, Length(Injections));
   try
     for i := 0 to PropertyList.Count - 1 do
     begin
-      PropertyType := PropertyList.GetPropType(i);
-      if  PropertyType.Kind = tkClass then
+      propInfo := PropertyList.GetInfo(i);
+      if propInfo.Kind = tkClass then
       begin
         for j := 0 to High(Injections) do
-          if Injections[j].VType = vtObject then
+          if not(UsedInjection[j]) then
           begin
-            if Injections[j].VObject.ClassName = String
-              (PropertyType.Name) then
-              SetObjectProp(ACommand, PropertyList.GetPropName(i),
-                Injections[j].VObject);
-          end
-          else
-            Assert(False,
-              'Not supported yet! Only objects can be injected to a command');
+            if (Injections[j].VType = vtObject) then
+            begin
+              if Injections[j].VObject.ClassName = propInfo.ClassName then
+              begin
+                SetObjectProp(ACommand, propInfo.PropertyName,
+                  Injections[j].VObject);
+                UsedInjection[j] := True;
+                Break;
+              end;
+            end
+            else
+              Assert(False,
+                'Not supported yet! Only objects can be injected to a command');
+          end;
       end;
     end;
   finally
@@ -191,20 +204,17 @@ begin
   inherited;
 end;
 
-function TClassPropertyList.Count: integer;
+function TClassPropertyList.Count: Integer;
 begin
   Result := FCount;
 end;
 
-function TClassPropertyList.GetPropName(AIndex: Integer): string;
+function TClassPropertyList.GetInfo(AIndex: Integer): TPropertyInfo;
 begin
-  Result := String(FPropList^[AIndex].Name);
-end;
-
-function TClassPropertyList.GetPropType(AIndex: Integer): PTypeInfo;
-begin
-  System.Assert(AIndex<FCount);
-  Result := FPropList^[AIndex].PropType^;
+  System.Assert(AIndex < FCount);
+  Result.Kind := FPropList^[AIndex].PropType^.Kind;
+  Result.PropertyName := string(FPropList^[AIndex].Name);
+  Result.ClassName := string(FPropList^[AIndex].PropType^.Name);
 end;
 
 end.
