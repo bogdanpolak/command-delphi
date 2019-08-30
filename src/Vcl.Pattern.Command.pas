@@ -119,7 +119,8 @@ begin
   // Inject dependencies to the command.
   // Limitations of this version:
   // * only TObject and descendants injections is supported
-  // * properties must have different types (ClassName)
+  // * important is properties order in the command class and
+  // ..  in the Injections array (should be the same)
   // --------------------------------
   PropertyList := TClassPropertyList.Create(ACommand);
   SetLength(UsedInjection, Length(Injections));
