@@ -218,11 +218,10 @@ end;
 procedure TFactoryNoInjectionTest.TestCreateCommandAndDestroyOwner;
 var
   AOwner: TComponent;
-  cmd: TCommandA;
 begin
   TCommandA.IsDestroyed := False;
   AOwner := TComponent.Create(nil);
-  cmd := TCommandVclFactory.CreateCommand<TCommandA>(AOwner, []);
+  TCommandVclFactory.CreateCommand<TCommandA>(AOwner, []);
   AOwner.Free;
   Assert.IsTrue(TCommandA.IsDestroyed);
 end;
