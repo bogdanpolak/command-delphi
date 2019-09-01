@@ -79,6 +79,9 @@ type
     property Command: TCommand read FCommand write FCommand;
   end;
 
+type
+  TCommandClass = class of TCommand;
+
 implementation
 
 // ------------------------------------------------------------------------
@@ -156,18 +159,29 @@ end;
 
 class function TCommandVclFactory.CreateCommand<T>(AOwner: TComponent;
   const Injections: array of const): T;
+var
+  AClass: TCommandClass;
 begin
-  Result := T.Create(AOwner);
+  // -----------------------------------------
+  AClass := T;
+  Result := T(AClass.Create(AOwner));
+  // 10.3 Rio: just one line: Result := T.Create(AOwner);
+  // -----------------------------------------
   InjectProperties(Result, Injections);
 end;
 
 class procedure TCommandVclFactory.ExecuteCommand<T>(const Injections
   : array of const);
 var
+  AClass: TCommandClass;
   Command: T;
 begin
   try
-    Command := T.Create(nil);
+    // -----------------------------------------
+    AClass := T;
+    Command := T(AClass.Create(nil));
+    // 10.3 Rio: Command := T.Create(nil);
+    // -----------------------------------------
     InjectProperties(Command, Injections);
     Command.Execute;
   finally
@@ -179,11 +193,16 @@ class function TCommandVclFactory.CreateCommandAction<T>(AOwner: TComponent;
   const ACaption: string; const Injections: array of const): TAction;
 var
   act: TCommandAction;
+  AClass: TCommandClass;
 begin
   act := TCommandAction.Create(AOwner);
   with act do
   begin
-    Command := T.Create(act);
+    // -----------------------------------------
+    AClass := (T);
+    Command := T(AClass.Create(act));
+    // 10.3 Rio: Command := T.Create(act);
+    // -----------------------------------------
     Caption := ACaption;
   end;
   InjectProperties(act.Command, Injections);
