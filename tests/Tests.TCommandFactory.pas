@@ -366,7 +366,7 @@ end;
 
 procedure TCommandFactoryOneInjection.Test_ExceptionInvalidInjection;
 var
-  i10: Integer;
+  i10: integer;
 begin
   i10 := 10;
   Assert.WillRaise(
@@ -379,7 +379,6 @@ end;
 {$ENDREGION}
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
-
 
 initialization
 
