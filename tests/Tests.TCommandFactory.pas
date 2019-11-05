@@ -45,6 +45,7 @@ type
     procedure Test_Injection_AssertOneInjection;
     procedure Test_Injection_ExecuteAndCheckLinesCount;
     procedure Test_ExceptionNoRequiredInjection;
+    procedure Test_ExceptionInvalidInjection;
   end;
 
   [TestFixture]
@@ -361,6 +362,18 @@ begin
   Assert.AreEqual(1, FStrings1.Count);
   Assert.AreEqual(0, FStrings2.Count);
   Assert.AreEqual('ANothingBox', FSampleComponent.Name);
+end;
+
+procedure TCommandFactoryOneInjection.Test_ExceptionInvalidInjection;
+var
+  i10: Integer;
+begin
+  i10 := 10;
+  Assert.WillRaise(
+    procedure
+    begin
+      TCommandVclFactory.ExecuteCommand<TCommandInvalidInjection>([i10]);
+    end);
 end;
 
 {$ENDREGION}
