@@ -22,6 +22,8 @@ type
     procedure Execute();
   end;
 
+{$M+}
+
   TCommand = class(TComponent, ICommand)
   const
     // * --------------------------------------------------------------------
@@ -39,6 +41,7 @@ type
     // call receiver method(s) or just do the job (merged command)
     // property Receiver: TReceiver read FReceiver set FReceiver;
   end;
+{$M-}
 
   TPropertyInfo = record
     Kind: TTypeKind;
@@ -84,8 +87,13 @@ type
 
 implementation
 
-// ------------------------------------------------------------------------
-{ TCommand }
+const
+  ERRMSG_NotSupportedInjection = 'Not supported injection type!' +
+    ' This property %s: %s in not supported in command pattern.' +
+    ' Move this propoerty into [public] section';
+
+  // ------------------------------------------------------------------------
+  { TCommand }
 
 procedure TCommand.Execute;
 begin
@@ -110,6 +118,11 @@ end;
 // ------------------------------------------------------------------------
 { TActionFactory }
 
+function TypeKindToStr(value: TTypeKind): string;
+begin
+  Result := System.TypInfo.GetEnumName(TypeInfo(TTypeKind), integer(value));
+end;
+
 class procedure TCommandVclFactory.InjectProperties(ACommand: TCommand;
   const Injections: array of const);
 var
@@ -131,7 +144,20 @@ begin
     for i := 0 to PropertyList.Count - 1 do
     begin
       propInfo := PropertyList.GetInfo(i);
-      if propInfo.Kind = tkClass then
+      // propInfo.Kind:
+      // tkInteger, tkChar, tkEnumeration, tkFloat, tkString, tkSet,
+      // tkWChar, tkLString, tkWString, tkVariant, tkArray, tkRecord,
+      // tkInterface, tkInt64, tkDynArray, tkUString
+      if (propInfo.Kind = tkUString) and (propInfo.PropertyName = 'Name') then
+        // ignore
+      else if (propInfo.Kind = tkInteger) and (propInfo.PropertyName = 'Tag')
+      then
+        // ignore
+      {else if propInfo.Kind = tkFloat then
+      begin
+
+      end}
+      else if propInfo.Kind = tkClass then
       begin
         for j := 0 to High(Injections) do
           if not(UsedInjection[j]) then
@@ -145,12 +171,12 @@ begin
                 UsedInjection[j] := True;
                 Break;
               end;
-            end
-            else
-              Assert(False,
-                'Not supported yet! Only objects can be injected to a command');
+            end;
           end;
-      end;
+      end
+      else
+        Assert(False, Format(ERRMSG_NotSupportedInjection,
+          [propInfo.PropertyName, TypeKindToStr(propInfo.Kind)]));
     end;
   finally
     PropertyList.Free;
