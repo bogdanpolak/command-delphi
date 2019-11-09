@@ -11,8 +11,9 @@ uses
   DUnitX.Loggers.Console,
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
-  Tests.TCommandFactory in 'Tests.TCommandFactory.pas',
-  Vcl.Pattern.Command in '..\src\Vcl.Pattern.Command.pas';
+  Vcl.Pattern.Command in '..\src\Vcl.Pattern.Command.pas',
+  Tests.TPropertyList in 'Tests.TPropertyList.pas',
+  Tests.TCommandFactory in 'Tests.TCommandFactory.pas';
 
 var
   runner : ITestRunner;
