@@ -1,14 +1,14 @@
-﻿{ * ------------------------------------------------------------------------
-  * ♥
-  * ♥ VCL Command component/class with a factory
-  * ♥
-  * Components:     TCommand, TCommandAction
-  * Classes:        TCommandVclFactory
-  * Project:        https://github.com/bogdanpolak/command-delphi
-  * Documentation:  on the github site
-  * ReleaseDate:    ↓ see Signature below ↓
-  * ReleaseVersion: ↓ see Signature below ↓
-  * ------------------------------------------------------------------------ }
+﻿{* ------------------------------------------------------------------------
+ * ♥
+ * ♥ VCL Command component/class with a factory
+ * ♥
+ * Components:     TCommand, TCommandAction
+ * Classes:        TCommandVclFactory
+ * Project:        https://github.com/bogdanpolak/command-delphi
+ * Documentation:  on the github site
+ * ReleaseDate:    ↓ see Signature below ↓
+ * ReleaseVersion: ↓ see Signature below ↓
+ * ------------------------------------------------------------------------}
 unit Vcl.Pattern.Command;
 
 interface
@@ -117,7 +117,7 @@ end;
 
 function TypeKindToStr(value: TTypeKind): string;
 begin
-  Result := System.TypInfo.GetEnumName(TypeInfo(TTypeKind), integer(value));
+  Result := System.TypInfo.GetEnumName(TypeInfo(TTypeKind), Integer(value));
 end;
 
 class procedure TCommandVclFactory.InjectProperties(ACommand: TCommand;
