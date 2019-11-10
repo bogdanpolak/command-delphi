@@ -21,7 +21,7 @@ type
     procedure Setup;
     [TearDown]
     procedure TearDown;
-  // published
+  published
     procedure Test_AdhocExecuteCommand;
     procedure Test_CreateCommandProperType;
     procedure Test_CreateCommandAndDestroyOwner;
@@ -41,7 +41,7 @@ type
     procedure Setup;
     [TearDown]
     procedure TearDown;
-  // published
+  published
     procedure Test_Injection_AssertOneInjection;
     procedure Test_Injection_ExecuteAndCheckLinesCount;
     procedure Test_ExceptionNoRequiredInjection;
@@ -61,7 +61,7 @@ type
     procedure Setup;
     [TearDown]
     procedure TearDown;
-  // published
+  published
     procedure Test_InjectDependenciesNoExceptions;
     procedure Test_VerifiyDependenciesAfterExecute;
   end;

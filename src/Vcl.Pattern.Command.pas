@@ -144,16 +144,7 @@ begin
     // tkInteger, tkChar, tkEnumeration, tkFloat, tkString, tkSet,
     // tkWChar, tkLString, tkWString, tkVariant, tkArray, tkRecord,
     // tkInterface, tkInt64, tkDynArray, tkUString
-    if (propInfo.Kind = tkUString) and (propInfo.PropertyName = 'Name') then
-      // ignore
-    else if (propInfo.Kind = tkInteger) and (propInfo.PropertyName = 'Tag')
-    then
-      // ignore
-      {else if propInfo.Kind = tkFloat then
-       begin
-
-       end}
-    else if propInfo.Kind = tkClass then
+    if propInfo.Kind = tkClass then
     begin
       for j := 0 to High(Injections) do
         if not(UsedInjection[j]) then
