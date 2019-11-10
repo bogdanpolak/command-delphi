@@ -235,21 +235,28 @@ end;
 class function TComponentMetadata.GetPublishedPropetries(aComponent: TComponent)
   : TPropertyArray;
 var
+  aStandardComponent: TComponent;
   FPropList: PPropList;
+  FStandardPropList: PPropList;
+  aStandardCount: Integer;
   aCount: Integer;
   i: Integer;
 begin
   aCount := System.TypInfo.GetPropList(aComponent, FPropList);
+  aStandardComponent := TComponent.Create(nil);
+  aStandardCount := System.TypInfo.GetPropList(aStandardComponent, FStandardPropList);
   try
-    SetLength(Result, aCount);
-    for i := 0 to aCount - 1 do
+    SetLength(Result, aCount-aStandardCount);
+    for i := 0 to aCount-aStandardCount - 1 do
     begin
-      Result[i].Kind := FPropList^[i].PropType^.Kind;
-      Result[i].PropertyName := string(FPropList^[i].Name);
-      Result[i].ClassName := string(FPropList^[i].PropType^.Name);
+      Result[i].Kind := FPropList^[aStandardCount+i].PropType^.Kind;
+      Result[i].PropertyName := string(FPropList^[aStandardCount+i].Name);
+      Result[i].ClassName := string(FPropList^[aStandardCount+i].PropType^.Name);
     end;
   finally
     FreeMem(FPropList);
+    aStandardComponent.Free;
+    FreeMem(FStandardPropList);
   end;
 end;
 
