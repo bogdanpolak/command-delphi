@@ -10,10 +10,11 @@ uses
 {$TYPEINFO ON}  { Requred for old RTTI metadata form published section }
 
 type
+
   [TestFixture]
   TComponentPropertiesSUT = class(TObject)
   strict private
-    fComponentProperties: TClassPropertyList;
+    fMetadataArray: TPropertyArray;
     fOwnerComponent: TComponent;
   public
     [Setup]
@@ -69,28 +70,30 @@ end;
 
 procedure TComponentPropertiesSUT.Setup;
 begin
-  FOwnerComponent := TComponent.Create(nil); // used as Owner
+  fOwnerComponent := TComponent.Create(nil); // used as Owner
 end;
 
 procedure TComponentPropertiesSUT.TearDown;
 begin
-  FOwnerComponent.Free;
+  fOwnerComponent.Free;
 end;
 
 procedure TComponentPropertiesSUT.SimpleComponent;
 var
   fComponentPlain: TComponent;
 begin
-  fComponentPlain := TComponent.Create(FOwnerComponent);
-  try
-    fComponentProperties := TClassPropertyList.Create(fComponentPlain);
-    Assert.AreEqual(2, fComponentProperties.Count);
-    Assert.AreEqual('Name', fComponentProperties.GetInfo(0).PropertyName);
-    Assert.AreEqual('TComponentName', fComponentProperties.GetInfo(0).ClassName);
-    Assert.AreEqual('Tag', fComponentProperties.GetInfo(1).PropertyName);
-    Assert.AreEqual('NativeInt', fComponentProperties.GetInfo(1).ClassName);
-  finally
-    fComponentProperties.Free;
+  fComponentPlain := TComponent.Create(fOwnerComponent);
+  fMetadataArray := TComponentMetadata.GetPublishedPropetries(fComponentPlain);
+  Assert.AreEqual(2, Length(fMetadataArray));
+  with fMetadataArray[0] do
+  begin
+    Assert.AreEqual('Name', PropertyName);
+    Assert.AreEqual('TComponentName', ClassName);
+  end;
+  with fMetadataArray[1] do
+  begin
+    Assert.AreEqual('Tag', PropertyName);
+    Assert.AreEqual('NativeInt', ClassName);
   end;
 end;
 
@@ -98,14 +101,13 @@ procedure TComponentPropertiesSUT.OnePropertyComponent;
 var
   fComponentWithOneProps: TComponentOneProps;
 begin
-  fComponentWithOneProps := TComponentOneProps.Create(FOwnerComponent);
-  try
-    fComponentProperties := TClassPropertyList.Create(fComponentWithOneProps);
-    Assert.AreEqual(3, fComponentProperties.Count);
-    Assert.AreEqual('List', fComponentProperties.GetInfo(2).PropertyName);
-    Assert.AreEqual('TList', fComponentProperties.GetInfo(2).ClassName);
-  finally
-    fComponentProperties.Free;
+  fComponentWithOneProps:= TComponentOneProps.Create(fOwnerComponent);
+  fMetadataArray := TComponentMetadata.GetPublishedPropetries(fComponentWithOneProps);
+  Assert.AreEqual(3, Length(fMetadataArray));
+  with fMetadataArray[2] do
+  begin
+    Assert.AreEqual('List', PropertyName);
+    Assert.AreEqual('TList', ClassName);
   end;
 end;
 
@@ -113,56 +115,53 @@ procedure TComponentPropertiesSUT.ManyPropertiesComponent;
 var
   fComponentManyProps: TComponentManyProps;
 begin
-  fComponentManyProps := TComponentManyProps.Create(FOwnerComponent);
-  try
-    fComponentProperties := TClassPropertyList.Create(fComponentManyProps);
-    Assert.AreEqual(9, fComponentProperties.Count);
-    with fComponentProperties.GetInfo(2) do
-    begin
-      Assert.AreEqual('StrList', PropertyName);
-      Assert.AreEqual('TStringList', ClassName);
-      Assert.AreEqual('tkClass', Kind.ToString);
-    end;
-    with fComponentProperties.GetInfo(3) do
-    begin
-      Assert.AreEqual('IsDone', PropertyName);
-      Assert.AreEqual('Boolean', ClassName);
-      Assert.AreEqual('tkEnumeration', Kind.ToString);
-    end;
-    with fComponentProperties.GetInfo(4) do
-    begin
-      Assert.AreEqual('Collection', PropertyName);
-      Assert.AreEqual('TCollection', ClassName);
-      Assert.AreEqual('tkClass', Kind.ToString);
-    end;
-    with fComponentProperties.GetInfo(5) do
-    begin
-      Assert.AreEqual('ValueInt', PropertyName);
-      Assert.AreEqual('Integer', ClassName);
-      Assert.AreEqual('tkInteger', Kind.ToString);
-    end;
-    with fComponentProperties.GetInfo(6) do
-    begin
-      Assert.AreEqual('AnyDate', PropertyName);
-      Assert.AreEqual('TDateTime', ClassName);
-      Assert.AreEqual('tkFloat', Kind.ToString);
-    end;
-    with fComponentProperties.GetInfo(7) do
-    begin
-      Assert.AreEqual('MemStream', PropertyName);
-      Assert.AreEqual('TMemoryStream', ClassName);
-      Assert.AreEqual('tkClass', Kind.ToString);
-    end;
-    with fComponentProperties.GetInfo(8) do
-    begin
-      Assert.AreEqual('Text', PropertyName);
-      Assert.AreEqual('String', ClassName);
-      Assert.AreEqual('tkUString', Kind.ToString);
-    end;
-  finally
-    fComponentProperties.Free;
+  fComponentManyProps:= TComponentManyProps.Create(fOwnerComponent);
+  fMetadataArray := TComponentMetadata.GetPublishedPropetries(fComponentManyProps);
+  Assert.AreEqual(9, Length(fMetadataArray));
+  with fMetadataArray[2] do
+  begin
+    Assert.AreEqual('StrList', PropertyName);
+    Assert.AreEqual('TStringList', ClassName);
+    Assert.AreEqual('tkClass', Kind.ToString);
+  end;
+  with fMetadataArray[3] do
+  begin
+    Assert.AreEqual('IsDone', PropertyName);
+    Assert.AreEqual('Boolean', ClassName);
+    Assert.AreEqual('tkEnumeration', Kind.ToString);
+  end;
+  with fMetadataArray[4] do
+  begin
+    Assert.AreEqual('Collection', PropertyName);
+    Assert.AreEqual('TCollection', ClassName);
+    Assert.AreEqual('tkClass', Kind.ToString);
+  end;
+  with fMetadataArray[5] do
+  begin
+    Assert.AreEqual('ValueInt', PropertyName);
+    Assert.AreEqual('Integer', ClassName);
+    Assert.AreEqual('tkInteger', Kind.ToString);
+  end;
+  with fMetadataArray[6] do
+  begin
+    Assert.AreEqual('AnyDate', PropertyName);
+    Assert.AreEqual('TDateTime', ClassName);
+    Assert.AreEqual('tkFloat', Kind.ToString);
+  end;
+  with fMetadataArray[7] do
+  begin
+    Assert.AreEqual('MemStream', PropertyName);
+    Assert.AreEqual('TMemoryStream', ClassName);
+    Assert.AreEqual('tkClass', Kind.ToString);
+  end;
+  with fMetadataArray[8] do
+  begin
+    Assert.AreEqual('Text', PropertyName);
+    Assert.AreEqual('String', ClassName);
+    Assert.AreEqual('tkUString', Kind.ToString);
   end;
 end;
 
 {$ENDREGION}
+
 end.
