@@ -14,8 +14,10 @@ type
   [TestFixture]
   TComponentPropertiesSUT = class(TObject)
   strict private
-    fMetadataArray: TPropertyArray;
-    fOwnerComponent: TComponent;
+    fMetadataArray_TComponent: TPropertyArray;
+    fMetadataArray_ComponentTListComponent: TPropertyArray;
+    fMetadataArray_ComponentWithManyProps: TPropertyArray;
+  private
   public
     [Setup]
     procedure Setup;
@@ -24,7 +26,14 @@ type
   published
     procedure SimpleComponent;
     procedure OnePropertyComponent;
-    procedure ManyPropertiesComponent;
+    procedure ManyProperties_Count;
+    procedure ManyProperties_Param1;
+    procedure ManyProperties_Param2;
+    procedure ManyProperties_Param3;
+    procedure ManyProperties_Param4;
+    procedure ManyProperties_Param5;
+    procedure ManyProperties_Param6;
+    procedure ManyProperties_Param7;
   end;
 
 implementation
@@ -69,92 +78,121 @@ end;
 {$REGION 'TComponentPropertiesSUT: '}
 
 procedure TComponentPropertiesSUT.Setup;
+var
+  fOwner: TComponent;
+  fComponentOneProp: TComponentOneProps;
+  fComponentManyProps: TComponentManyProps;
 begin
-  fOwnerComponent := TComponent.Create(nil); // used as Owner
+  fOwner := TComponent.Create(nil);
+  try
+    fMetadataArray_TComponent :=
+      TComponentMetadata.GetPublishedPropetries(fOwner);
+    fComponentOneProp := TComponentOneProps.Create(fOwner);
+    fMetadataArray_ComponentTListComponent :=
+      TComponentMetadata.GetPublishedPropetries(fComponentOneProp);
+    fComponentManyProps := TComponentManyProps.Create(fOwner);
+    fMetadataArray_ComponentWithManyProps :=
+      TComponentMetadata.GetPublishedPropetries(fComponentManyProps);
+  finally
+    fOwner.Free;
+  end;
 end;
 
 procedure TComponentPropertiesSUT.TearDown;
 begin
-  fOwnerComponent.Free;
+  // x
 end;
 
 procedure TComponentPropertiesSUT.SimpleComponent;
-var
-  fComponentPlain: TComponent;
 begin
-  fComponentPlain := TComponent.Create(fOwnerComponent);
-  fMetadataArray := TComponentMetadata.GetPublishedPropetries(fComponentPlain);
-  Assert.AreEqual(2, Length(fMetadataArray));
-  with fMetadataArray[0] do
-  begin
-    Assert.AreEqual('Name', PropertyName);
-    Assert.AreEqual('TComponentName', ClassName);
-  end;
-  with fMetadataArray[1] do
-  begin
-    Assert.AreEqual('Tag', PropertyName);
-    Assert.AreEqual('NativeInt', ClassName);
-  end;
+  Assert.AreEqual(0, Length(fMetadataArray_TComponent));
 end;
 
 procedure TComponentPropertiesSUT.OnePropertyComponent;
-var
-  fComponentWithOneProps: TComponentOneProps;
 begin
-  fComponentWithOneProps:= TComponentOneProps.Create(fOwnerComponent);
-  fMetadataArray := TComponentMetadata.GetPublishedPropetries(fComponentWithOneProps);
-  Assert.AreEqual(3, Length(fMetadataArray));
-  with fMetadataArray[2] do
+  Assert.AreEqual(1, Length(fMetadataArray_ComponentTListComponent));
+  with fMetadataArray_ComponentTListComponent[0] do
   begin
     Assert.AreEqual('List', PropertyName);
     Assert.AreEqual('TList', ClassName);
   end;
 end;
 
-procedure TComponentPropertiesSUT.ManyPropertiesComponent;
-var
-  fComponentManyProps: TComponentManyProps;
+procedure TComponentPropertiesSUT.ManyProperties_Count;
 begin
-  fComponentManyProps:= TComponentManyProps.Create(fOwnerComponent);
-  fMetadataArray := TComponentMetadata.GetPublishedPropetries(fComponentManyProps);
-  Assert.AreEqual(9, Length(fMetadataArray));
-  with fMetadataArray[2] do
+  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
+end;
+
+procedure TComponentPropertiesSUT.ManyProperties_Param1;
+begin
+  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
+  with fMetadataArray_ComponentWithManyProps[0] do
   begin
     Assert.AreEqual('StrList', PropertyName);
     Assert.AreEqual('TStringList', ClassName);
     Assert.AreEqual('tkClass', Kind.ToString);
   end;
-  with fMetadataArray[3] do
+end;
+
+procedure TComponentPropertiesSUT.ManyProperties_Param2;
+begin
+  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
+  with fMetadataArray_ComponentWithManyProps[1] do
   begin
     Assert.AreEqual('IsDone', PropertyName);
     Assert.AreEqual('Boolean', ClassName);
     Assert.AreEqual('tkEnumeration', Kind.ToString);
   end;
-  with fMetadataArray[4] do
+end;
+
+procedure TComponentPropertiesSUT.ManyProperties_Param3;
+begin
+  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
+  with fMetadataArray_ComponentWithManyProps[2] do
   begin
     Assert.AreEqual('Collection', PropertyName);
     Assert.AreEqual('TCollection', ClassName);
     Assert.AreEqual('tkClass', Kind.ToString);
   end;
-  with fMetadataArray[5] do
+end;
+
+procedure TComponentPropertiesSUT.ManyProperties_Param4;
+begin
+  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
+  with fMetadataArray_ComponentWithManyProps[3] do
   begin
     Assert.AreEqual('ValueInt', PropertyName);
     Assert.AreEqual('Integer', ClassName);
     Assert.AreEqual('tkInteger', Kind.ToString);
   end;
-  with fMetadataArray[6] do
+end;
+
+procedure TComponentPropertiesSUT.ManyProperties_Param5;
+begin
+  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
+  with fMetadataArray_ComponentWithManyProps[4] do
   begin
     Assert.AreEqual('AnyDate', PropertyName);
     Assert.AreEqual('TDateTime', ClassName);
     Assert.AreEqual('tkFloat', Kind.ToString);
   end;
-  with fMetadataArray[7] do
+end;
+
+procedure TComponentPropertiesSUT.ManyProperties_Param6;
+begin
+  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
+  with fMetadataArray_ComponentWithManyProps[5] do
   begin
     Assert.AreEqual('MemStream', PropertyName);
     Assert.AreEqual('TMemoryStream', ClassName);
     Assert.AreEqual('tkClass', Kind.ToString);
   end;
-  with fMetadataArray[8] do
+end;
+
+procedure TComponentPropertiesSUT.ManyProperties_Param7;
+begin
+  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
+  with fMetadataArray_ComponentWithManyProps[6] do
   begin
     Assert.AreEqual('Text', PropertyName);
     Assert.AreEqual('String', ClassName);
