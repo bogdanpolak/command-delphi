@@ -1,14 +1,14 @@
-﻿{ * ------------------------------------------------------------------------
-  * ♥
-  * ♥ VCL Command component/class with a factory
-  * ♥
-  * Components:     TCommand, TCommandAction
-  * Classes:        TCommandVclFactory
-  * Project:        https://github.com/bogdanpolak/command-delphi
-  * Documentation:  on the github site
-  * ReleaseDate:    ↓ see Signature below ↓
-  * ReleaseVersion: ↓ see Signature below ↓
-  * ------------------------------------------------------------------------ }
+﻿{* ------------------------------------------------------------------------
+ * ♥
+ * ♥ VCL Command component/class with a factory
+ * ♥
+ * Components:     TCommand, TCommandAction
+ * Classes:        TCommandVclFactory
+ * Project:        https://github.com/bogdanpolak/command-delphi
+ * Documentation:  on the github site
+ * ReleaseDate:    ↓ see Signature below ↓
+ * ReleaseVersion: ↓ see Signature below ↓
+ * ------------------------------------------------------------------------}
 unit Vcl.Pattern.Command;
 
 interface
@@ -49,15 +49,12 @@ type
     ClassName: string;
   end;
 
-  TClassPropertyList = class
-  private
-    FPropList: PPropList;
-    FCount: Integer;
+  TPropertyArray = array of TPropertyInfo;
+
+  TComponentMetadata = class
   public
-    constructor Create(c: TComponent);
-    destructor Destroy; override;
-    function Count: Integer;
-    function GetInfo(AIndex: Integer): TPropertyInfo;
+    class function GetPublishedPropetries(aComponent: TComponent)
+      : TPropertyArray;
   end;
 
   TCommandVclFactory = class(TComponent)
@@ -120,7 +117,7 @@ end;
 
 function TypeKindToStr(value: TTypeKind): string;
 begin
-  Result := System.TypInfo.GetEnumName(TypeInfo(TTypeKind), integer(value));
+  Result := System.TypInfo.GetEnumName(TypeInfo(TTypeKind), Integer(value));
 end;
 
 class procedure TCommandVclFactory.InjectProperties(ACommand: TCommand;
@@ -128,7 +125,7 @@ class procedure TCommandVclFactory.InjectProperties(ACommand: TCommand;
 var
   i: Integer;
   j: Integer;
-  PropertyList: TClassPropertyList;
+  PropertyList: TPropertyArray;
   propInfo: TPropertyInfo;
   UsedInjection: TArray<boolean>;
 begin
@@ -138,48 +135,44 @@ begin
   // * important is properties order in the command class and
   // ..  in the Injections array (should be the same)
   // --------------------------------
-  PropertyList := TClassPropertyList.Create(ACommand);
+  PropertyList := TComponentMetadata.GetPublishedPropetries(ACommand);
   SetLength(UsedInjection, Length(Injections));
-  try
-    for i := 0 to PropertyList.Count - 1 do
-    begin
-      propInfo := PropertyList.GetInfo(i);
-      // propInfo.Kind:
-      // tkInteger, tkChar, tkEnumeration, tkFloat, tkString, tkSet,
-      // tkWChar, tkLString, tkWString, tkVariant, tkArray, tkRecord,
-      // tkInterface, tkInt64, tkDynArray, tkUString
-      if (propInfo.Kind = tkUString) and (propInfo.PropertyName = 'Name') then
-        // ignore
-      else if (propInfo.Kind = tkInteger) and (propInfo.PropertyName = 'Tag')
-      then
-        // ignore
+  for i := 0 to High(PropertyList) do
+  begin
+    propInfo := PropertyList[i];
+    // propInfo.Kind:
+    // tkInteger, tkChar, tkEnumeration, tkFloat, tkString, tkSet,
+    // tkWChar, tkLString, tkWString, tkVariant, tkArray, tkRecord,
+    // tkInterface, tkInt64, tkDynArray, tkUString
+    if (propInfo.Kind = tkUString) and (propInfo.PropertyName = 'Name') then
+      // ignore
+    else if (propInfo.Kind = tkInteger) and (propInfo.PropertyName = 'Tag')
+    then
+      // ignore
       {else if propInfo.Kind = tkFloat then
-      begin
+       begin
 
-      end}
-      else if propInfo.Kind = tkClass then
-      begin
-        for j := 0 to High(Injections) do
-          if not(UsedInjection[j]) then
+       end}
+    else if propInfo.Kind = tkClass then
+    begin
+      for j := 0 to High(Injections) do
+        if not(UsedInjection[j]) then
+        begin
+          if (Injections[j].VType = vtObject) then
           begin
-            if (Injections[j].VType = vtObject) then
+            if Injections[j].VObject.ClassName = propInfo.ClassName then
             begin
-              if Injections[j].VObject.ClassName = propInfo.ClassName then
-              begin
-                SetObjectProp(ACommand, propInfo.PropertyName,
-                  Injections[j].VObject);
-                UsedInjection[j] := True;
-                Break;
-              end;
+              SetObjectProp(ACommand, propInfo.PropertyName,
+                Injections[j].VObject);
+              UsedInjection[j] := True;
+              Break;
             end;
           end;
-      end
-      else
-        Assert(False, Format(ERRMSG_NotSupportedInjection,
-          [propInfo.PropertyName, TypeKindToStr(propInfo.Kind)]));
-    end;
-  finally
-    PropertyList.Free;
+        end;
+    end
+    else
+      Assert(False, Format(ERRMSG_NotSupportedInjection,
+        [propInfo.PropertyName, TypeKindToStr(propInfo.Kind)]));
   end;
 end;
 
@@ -239,28 +232,25 @@ end;
 
 { TClassPropertyList }
 
-constructor TClassPropertyList.Create(c: TComponent);
+class function TComponentMetadata.GetPublishedPropetries(aComponent: TComponent)
+  : TPropertyArray;
+var
+  FPropList: PPropList;
+  aCount: Integer;
+  i: Integer;
 begin
-  FCount := System.TypInfo.GetPropList(c, FPropList);
-end;
-
-destructor TClassPropertyList.Destroy;
-begin
-  FreeMem(FPropList);
-  inherited;
-end;
-
-function TClassPropertyList.Count: Integer;
-begin
-  Result := FCount;
-end;
-
-function TClassPropertyList.GetInfo(AIndex: Integer): TPropertyInfo;
-begin
-  System.Assert(AIndex < FCount);
-  Result.Kind := FPropList^[AIndex].PropType^.Kind;
-  Result.PropertyName := string(FPropList^[AIndex].Name);
-  Result.ClassName := string(FPropList^[AIndex].PropType^.Name);
+  aCount := System.TypInfo.GetPropList(aComponent, FPropList);
+  try
+    SetLength(Result, aCount);
+    for i := 0 to aCount - 1 do
+    begin
+      Result[i].Kind := FPropList^[i].PropType^.Kind;
+      Result[i].PropertyName := string(FPropList^[i].Name);
+      Result[i].ClassName := string(FPropList^[i].PropType^.Name);
+    end;
+  finally
+    FreeMem(FPropList);
+  end;
 end;
 
 end.
