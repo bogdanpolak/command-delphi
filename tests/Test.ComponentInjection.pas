@@ -12,19 +12,15 @@ type
 
   [TestFixture]
   TCommandFactoryOneInjection = class(TObject)
-  strict private
+  private
     FStrings: TStringList;
     FOwnerComponent: TComponent;
-  private
   public
     [Setup]
     procedure Setup;
     [TearDown]
     procedure TearDown;
   published
-    procedure Test_Injection_AssertOneInjection;
-    procedure Test_Injection_ExecuteAndCheckLinesCount;
-    procedure Test_ExceptionNoRequiredInjection;
     procedure Test_ExceptionInvalidInjection;
   end;
 
@@ -48,38 +44,6 @@ type
 
 implementation
 
-// ------------------------------------------------------------------------
-// class TCommandStringList
-// ------------------------------------------------------------------------
-{$REGION 'class TCommandStringList'}
-
-type
-  TCommandStringList = class(TCommand)
-  strict private
-    FCount: integer;
-    FLines: TStringList;
-  protected
-    procedure Guard; override;
-  public
-    procedure Execute; override;
-    property Count: integer read FCount write FCount;
-  published
-    property Lines: TStringList read FLines write FLines;
-  end;
-
-procedure TCommandStringList.Guard;
-begin
-  System.Assert(Lines <> nil);
-end;
-
-procedure TCommandStringList.Execute;
-begin
-  inherited;
-  Count := Count + 1;
-  Lines.Add(Format('%.3d', [Count]));
-end;
-
-{$ENDREGION}
 // ------------------------------------------------------------------------
 // class TCommandTwoStrLists
 // ------------------------------------------------------------------------
@@ -156,7 +120,14 @@ end;
 // ------------------------------------------------------------------------
 // TFactoryWithInjectionTest: TStringList one injection
 // ------------------------------------------------------------------------
-{$REGION 'TCommandFactoryTests: TCommandStringList - check injection'}
+
+type
+  TStringsComponent = class (TComponent)
+  private
+    FStrings: TStrings;
+  published
+    property Strings: TStrings read FStrings write FStrings;
+  end;
 
 procedure TCommandFactoryOneInjection.Setup;
 begin
@@ -170,34 +141,20 @@ begin
   FreeAndNil(FStrings);
 end;
 
-procedure TCommandFactoryOneInjection.Test_Injection_AssertOneInjection;
-begin
-  TCommandVclFactory.ExecuteCommand<TCommandStringList>([FStrings]);
-  Assert.Pass; // Fine is there was any exception above - correct injection
-end;
-
-procedure TCommandFactoryOneInjection.Test_Injection_ExecuteAndCheckLinesCount;
+procedure TCommandFactoryOneInjection.Test_ExceptionInvalidInjection;
 var
-  cmd: TCommandStringList;
+  StringsComponent: TStringsComponent;
+  i10: integer;
 begin
-  cmd := TCommandVclFactory.CreateCommand<TCommandStringList>(FOwnerComponent,
-    [FStrings]);
-  cmd.Execute;
-  cmd.Execute;
-  cmd.Lines.Delete(0);
-  Assert.AreEqual(1, cmd.Lines.Count);
-end;
-
-procedure TCommandFactoryOneInjection.Test_ExceptionNoRequiredInjection;
-begin
-  Assert.WillRaiseDescendant(
+  StringsComponent := TStringsComponent.Create(FOwnerComponent);
+  i10 := 10;
+  Assert.WillRaise(
     procedure
     begin
-      TCommandVclFactory.ExecuteCommand<TCommandStringList>([]);
-    end, EAssertionFailed);
+      TComponentInjector.InjectProperties(StringsComponent, [i10]);
+    end);
 end;
 
-{$ENDREGION}
 // ------------------------------------------------------------------------
 // CommandFactory tests factory methods with more injection
 // * 2x TStringList, 1x TComponent
@@ -239,18 +196,6 @@ begin
   Assert.AreEqual(1, FStrings1.Count);
   Assert.AreEqual(0, FStrings2.Count);
   Assert.AreEqual('ANothingBox', FSampleComponent.Name);
-end;
-
-procedure TCommandFactoryOneInjection.Test_ExceptionInvalidInjection;
-var
-  i10: integer;
-begin
-  i10 := 10;
-  Assert.WillRaise(
-    procedure
-    begin
-      TCommandVclFactory.ExecuteCommand<TCommandInvalidInjection>([i10]);
-    end);
 end;
 
 {$ENDREGION}

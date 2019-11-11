@@ -9,6 +9,7 @@ uses
   Vcl.Pattern.Command;
 
 {$M+}
+
 type
 
   [TestFixture]
@@ -27,6 +28,21 @@ type
     procedure Test_ExecuteCommandAndCheckActive;
     procedure Test_NotExecuteCommand_CounterZero;
     procedure Test_ExecuteCommand2x;
+  end;
+
+  TestCommndFactory_StrigListCommand = class(TObject)
+  private
+    FOwnerComponent: TComponent;
+    FStrings: TStringList;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+  published
+    procedure NoGuardAssert_WithProperInjection;
+    procedure ChangeStringList_AfterExecute;
+    procedure GuardException_NoInjection;
   end;
 
 implementation
@@ -135,6 +151,77 @@ begin
   Assert.AreEqual(2, CommandA.Count);
 end;
 
+
+// ------------------------------------------------------------------------
+// TestCommndFactory_StrigListCommand
+// ------------------------------------------------------------------------
+
+type
+  TCommandStringList = class(TCommand)
+  strict private
+    FCount: integer;
+    FLines: TStringList;
+  protected
+    procedure Guard; override;
+  public
+    procedure Execute; override;
+    property Count: integer read FCount write FCount;
+  published
+    property Lines: TStringList read FLines write FLines;
+  end;
+
+procedure TCommandStringList.Guard;
+begin
+  System.Assert(Lines <> nil);
+end;
+
+procedure TCommandStringList.Execute;
+begin
+  inherited;
+  Count := Count + 1;
+  Lines.Add(Format('%.3d', [Count]));
+end;
+
+procedure TestCommndFactory_StrigListCommand.Setup;
+begin
+  FOwnerComponent := TComponent.Create(nil);
+  FStrings := TStringList.Create;
+end;
+
+procedure TestCommndFactory_StrigListCommand.TearDown;
+begin
+  FStrings.Free;
+  FOwnerComponent.Free;
+end;
+
+procedure TestCommndFactory_StrigListCommand.NoGuardAssert_WithProperInjection;
+begin
+  TCommandVclFactory.ExecuteCommand<TCommandStringList>([FStrings]);
+  // Fine if there was any exception above
+  Assert.Pass;
+end;
+
+procedure TestCommndFactory_StrigListCommand.ChangeStringList_AfterExecute;
+var
+  CommandStrings: TCommandStringList;
+begin
+  CommandStrings := TCommandVclFactory.CreateCommand<TCommandStringList>
+    (FOwnerComponent, [FStrings]);
+  CommandStrings.Execute;
+  CommandStrings.Execute;
+  FStrings.Delete(0);
+  Assert.AreEqual(1, FStrings.Count);
+  Assert.AreEqual(1, CommandStrings.Lines.Count);
+end;
+
+procedure TestCommndFactory_StrigListCommand.GuardException_NoInjection;
+begin
+  Assert.WillRaiseDescendant(
+    procedure
+    begin
+      TCommandVclFactory.ExecuteCommand<TCommandStringList>([]);
+    end, EAssertionFailed);
+end;
 
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
