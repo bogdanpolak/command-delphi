@@ -22,8 +22,6 @@ type
     procedure Execute();
   end;
 
-{$M+}
-
   TCommand = class(TComponent, ICommand)
   const
     // * --------------------------------------------------------------------
@@ -41,7 +39,6 @@ type
     // call receiver method(s) or just do the job (merged command)
     // property Receiver: TReceiver read FReceiver set FReceiver;
   end;
-{$M-}
 
   TPropertyInfo = record
     Kind: TTypeKind;
@@ -55,6 +52,11 @@ type
   public
     class function GetPublishedPropetries(aComponent: TComponent)
       : TPropertyArray;
+  end;
+
+  TComponentInjector = class
+    class procedure InjectProperties(aComponent: TComponent;
+      const Injections: array of const);
   end;
 
   TCommandVclFactory = class(TComponent)
@@ -113,14 +115,15 @@ begin
 end;
 
 // ------------------------------------------------------------------------
-{ TActionFactory }
+// TComponentInjector
+// ------------------------------------------------------------------------
 
 function TypeKindToStr(value: TTypeKind): string;
 begin
   Result := System.TypInfo.GetEnumName(TypeInfo(TTypeKind), Integer(value));
 end;
 
-class procedure TCommandVclFactory.InjectProperties(ACommand: TCommand;
+class procedure TComponentInjector.InjectProperties(aComponent: TComponent;
   const Injections: array of const);
 var
   i: Integer;
@@ -135,7 +138,7 @@ begin
   // * important is properties order in the command class and
   // ..  in the Injections array (should be the same)
   // --------------------------------
-  PropertyList := TComponentMetadata.GetPublishedPropetries(ACommand);
+  PropertyList := TComponentMetadata.GetPublishedPropetries(aComponent);
   SetLength(UsedInjection, Length(Injections));
   for i := 0 to High(PropertyList) do
   begin
@@ -153,7 +156,7 @@ begin
           begin
             if Injections[j].VObject.ClassName = propInfo.ClassName then
             begin
-              SetObjectProp(ACommand, propInfo.PropertyName,
+              SetObjectProp(aComponent, propInfo.PropertyName,
                 Injections[j].VObject);
               UsedInjection[j] := True;
               Break;
@@ -162,9 +165,19 @@ begin
         end;
     end
     else
-      Assert(False, Format(ERRMSG_NotSupportedInjection,
-        [propInfo.PropertyName, TypeKindToStr(propInfo.Kind)]));
+      Assert(False, Format(ERRMSG_NotSupportedInjection, [propInfo.PropertyName,
+        TypeKindToStr(propInfo.Kind)]));
   end;
+end;
+
+// ------------------------------------------------------------------------
+// TCommandVclFactory
+// ------------------------------------------------------------------------
+
+class procedure TCommandVclFactory.InjectProperties(ACommand: TCommand;
+  const Injections: array of const);
+begin
+  TComponentInjector.InjectProperties(ACommand, Injections);
 end;
 
 class function TCommandVclFactory.CreateCommand<T>(AOwner: TComponent;
@@ -235,14 +248,16 @@ var
 begin
   aCount := System.TypInfo.GetPropList(aComponent, FPropList);
   aStandardComponent := TComponent.Create(nil);
-  aStandardCount := System.TypInfo.GetPropList(aStandardComponent, FStandardPropList);
+  aStandardCount := System.TypInfo.GetPropList(aStandardComponent,
+    FStandardPropList);
   try
-    SetLength(Result, aCount-aStandardCount);
-    for i := 0 to aCount-aStandardCount - 1 do
+    SetLength(Result, aCount - aStandardCount);
+    for i := 0 to aCount - aStandardCount - 1 do
     begin
-      Result[i].Kind := FPropList^[aStandardCount+i].PropType^.Kind;
-      Result[i].PropertyName := string(FPropList^[aStandardCount+i].Name);
-      Result[i].ClassName := string(FPropList^[aStandardCount+i].PropType^.Name);
+      Result[i].Kind := FPropList^[aStandardCount + i].PropType^.Kind;
+      Result[i].PropertyName := string(FPropList^[aStandardCount + i].Name);
+      Result[i].ClassName :=
+        string(FPropList^[aStandardCount + i].PropType^.Name);
     end;
   finally
     FreeMem(FPropList);
