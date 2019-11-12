@@ -8,11 +8,13 @@ uses
   Vcl.Pattern.Command;
 
 {$M+}
+
 type
 
   [TestFixture]
-  TCommandFactoryOneInjection = class(TObject)
+  TestComponentIjection_OneInjection = class(TObject)
   private
+    FInteger101: integer;
     FStrings: TStringList;
     FOwnerComponent: TComponent;
   public
@@ -21,190 +23,158 @@ type
     [TearDown]
     procedure TearDown;
   published
-    procedure Test_ExceptionInvalidInjection;
+    procedure InvalidInjection_Exception;
+    procedure UnsupportedProperty_Exception;
   end;
 
   [TestFixture]
-  TCommandFactoryMoreInjections = class(TObject)
-  strict private
+  TestComponentInjection_MoreInjections = class(TObject)
+  private
     FStrings1: TStringList;
     FStrings2: TStringList;
     FSampleComponent: TComponent;
     FOwnerComponent: TComponent;
-  private
   public
     [Setup]
     procedure Setup;
     [TearDown]
     procedure TearDown;
   published
-    procedure Test_InjectDependenciesNoExceptions;
-    procedure Test_VerifiyDependenciesAfterExecute;
+    procedure InjectAll;
+    procedure Inject_TwoStringLists;
   end;
 
 implementation
 
 // ------------------------------------------------------------------------
-// class TCommandTwoStrLists
-// ------------------------------------------------------------------------
-{$REGION 'class TCommandTwoStrLists'}
-
-type
-  TCommandTwoStrLists = class(TCommand)
-  strict private
-    FCount: integer;
-    FEvenLines: TStringList;
-    FOddLines: TStringList;
-    FComponent: TComponent;
-  protected
-    procedure Guard; override;
-  public
-    procedure Execute; override;
-    property Count: integer read FCount write FCount;
-  published
-    property OddLines: TStringList read FOddLines write FOddLines;
-    property Component: TComponent read FComponent write FComponent;
-    property EvenLines: TStringList read FEvenLines write FEvenLines;
-  end;
-
-procedure TCommandTwoStrLists.Guard;
-begin
-  System.Assert(EvenLines <> nil);
-  System.Assert(OddLines <> nil);
-  System.Assert(Component <> nil);
-end;
-
-procedure TCommandTwoStrLists.Execute;
-begin
-  inherited;
-  Count := Count + 1;
-  if Odd(Count) then
-  begin
-    OddLines.Add(Format('%.3d - %s', [Count, Component.Name]));
-    Component.Name := 'A' + Component.Name;
-  end
-  else
-    EvenLines.Add(Format('%.3d', [Count]));
-end;
-
-{$ENDREGION}
-// ------------------------------------------------------------------------
-// class TCommandInvalidInjection
-// ------------------------------------------------------------------------
-{$REGION 'class TCommandInvalidInjection'}
-
-type
-  TCommandInvalidInjection = class(TCommand)
-  strict private
-    FCount: integer;
-  protected
-    procedure Guard; override;
-  public
-    procedure Execute; override;
-  published
-    property Count: integer read FCount write FCount;
-  end;
-
-procedure TCommandInvalidInjection.Guard;
-begin
-  System.Assert(Count > 0);
-end;
-
-procedure TCommandInvalidInjection.Execute;
-begin
-  inherited;
-  Count := Count + 1;
-end;
-
-{$ENDREGION}
-// ------------------------------------------------------------------------
-// TFactoryWithInjectionTest: TStringList one injection
+// Test_OneInjection - test injection for components with one published property
 // ------------------------------------------------------------------------
 
 type
-  TStringsComponent = class (TComponent)
+  TStringsComponent = class(TComponent)
   private
     FStrings: TStrings;
   published
     property Strings: TStrings read FStrings write FStrings;
   end;
 
-procedure TCommandFactoryOneInjection.Setup;
+procedure TestComponentIjection_OneInjection.Setup;
 begin
   FOwnerComponent := TComponent.Create(nil); // used as Owner for TCommand-s
   FStrings := TStringList.Create();
+  FInteger101 := 101;
 end;
 
-procedure TCommandFactoryOneInjection.TearDown;
+procedure TestComponentIjection_OneInjection.TearDown;
 begin
   FOwnerComponent.Free;
   FreeAndNil(FStrings);
 end;
 
-procedure TCommandFactoryOneInjection.Test_ExceptionInvalidInjection;
+procedure TestComponentIjection_OneInjection.InvalidInjection_Exception;
 var
   StringsComponent: TStringsComponent;
-  i10: integer;
 begin
   StringsComponent := TStringsComponent.Create(FOwnerComponent);
-  i10 := 10;
   Assert.WillRaise(
     procedure
     begin
-      TComponentInjector.InjectProperties(StringsComponent, [i10]);
+      TComponentInjector.InjectProperties(StringsComponent, [FInteger101]);
     end);
 end;
 
+type
+  TIntegerComponent = class(TComponent)
+  private
+    FNumber: integer;
+  published
+    property Number: integer read FNumber write FNumber;
+  end;
+
+procedure TestComponentIjection_OneInjection.UnsupportedProperty_Exception;
+var
+  IntegerComponent: TIntegerComponent;
+begin
+  IntegerComponent := TIntegerComponent.Create(FOwnerComponent);
+  Assert.WillRaise(
+    procedure
+    begin
+      TComponentInjector.InjectProperties(IntegerComponent, [FInteger101]);
+    end);
+end;
+
+
 // ------------------------------------------------------------------------
-// CommandFactory tests factory methods with more injection
+// Test_MoreInjections - tests component with many injected properties
 // * 2x TStringList, 1x TComponent
 // ------------------------------------------------------------------------
-{$REGION 'TFactoryWithMoreInjectionTest: check more injection'}
 
-procedure TCommandFactoryMoreInjections.Setup;
+type
+  TManyPropComponent = class(TComponent)
+  strict private
+    FCount: integer;
+    FEvenLines: TStringList;
+    FOddLines: TStringList;
+    FComponent: TComponent;
+    FStream: TStream;
+  public
+    property Count: integer read FCount write FCount;
+    property Stream: TStream read FStream write FStream;
+  published
+    property OddLines: TStringList read FOddLines write FOddLines;
+    property Component: TComponent read FComponent write FComponent;
+    property EvenLines: TStringList read FEvenLines write FEvenLines;
+  end;
+
+procedure TestComponentInjection_MoreInjections.Setup;
 begin
   FStrings1 := TStringList.Create;
   FStrings2 := TStringList.Create;
-  FSampleComponent := TComponent.Create(nil);
-  FSampleComponent.Name := 'NothingBox';
-  // have to see Mark Gungor in action: https://www.youtube.com/watch?v=SWiBRL-bxiA
   FOwnerComponent := TComponent.Create(nil);
 end;
 
-procedure TCommandFactoryMoreInjections.TearDown;
+procedure TestComponentInjection_MoreInjections.TearDown;
 begin
   FreeAndNil(FStrings1);
   FreeAndNil(FStrings2);
-  FreeAndNil(FSampleComponent);
   FreeAndNil(FOwnerComponent);
 end;
 
-procedure TCommandFactoryMoreInjections.Test_InjectDependenciesNoExceptions;
+procedure TestComponentInjection_MoreInjections.InjectAll;
+var
+  ManyPropComponent: TManyPropComponent;
 begin
-  Assert.WillNotRaise(
-    procedure
-    begin
-      TCommandVclFactory.ExecuteCommand<TCommandTwoStrLists>([FStrings1,
-        FStrings2, FSampleComponent]);
-    end);
+  // Arrange:
+  ManyPropComponent := TManyPropComponent.Create(FOwnerComponent);
+  // Act:
+  TComponentInjector.InjectProperties(ManyPropComponent,
+    [FStrings1, FStrings2, FOwnerComponent]);
+  // Assert
+  Assert.AreSame(FStrings1, ManyPropComponent.OddLines);
+  Assert.AreSame(FStrings2, ManyPropComponent.EvenLines);
+  Assert.AreSame(FOwnerComponent, ManyPropComponent.Component);
 end;
 
-procedure TCommandFactoryMoreInjections.Test_VerifiyDependenciesAfterExecute;
+procedure TestComponentInjection_MoreInjections.Inject_TwoStringLists;
+var
+  ManyPropComponent: TManyPropComponent;
 begin
-  TCommandVclFactory.ExecuteCommand<TCommandTwoStrLists>
-    ([FStrings1, FStrings2, FSampleComponent]);
-  Assert.AreEqual(1, FStrings1.Count);
-  Assert.AreEqual(0, FStrings2.Count);
-  Assert.AreEqual('ANothingBox', FSampleComponent.Name);
+  // --
+  ManyPropComponent := TManyPropComponent.Create(FOwnerComponent);
+  // --
+  TComponentInjector.InjectProperties(ManyPropComponent,
+    [FStrings1, FStrings2]);
+  // --
+  Assert.AreSame(FStrings1, ManyPropComponent.OddLines);
+  Assert.AreSame(FStrings2, ManyPropComponent.EvenLines);
 end;
 
-{$ENDREGION}
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
 
 initialization
 
-TDUnitX.RegisterTestFixture(TCommandFactoryOneInjection);
-TDUnitX.RegisterTestFixture(TCommandFactoryMoreInjections);
+TDUnitX.RegisterTestFixture(TestComponentIjection_OneInjection);
+TDUnitX.RegisterTestFixture(TestComponentInjection_MoreInjections);
 
 end.
