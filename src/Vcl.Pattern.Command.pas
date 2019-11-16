@@ -57,6 +57,8 @@ type
   TComponentInjector = class
     class procedure InjectProperties(aComponent: TComponent;
       const Injections: array of const);
+  private
+    class procedure AssertParameters(const Injections: array of const); static;
   end;
 
   TCommandVclFactory = class(TComponent)
@@ -128,27 +130,58 @@ end;
 function VTypeToStr(value: byte): string;
 begin
   case value of
-    0: Result := 'vtInteger';
-    1: Result := 'vtBoolean';
-    2: Result := 'vtChar';
-    3: Result := 'vtExtended';
-    4: Result := 'vtString';
-    5: Result := 'vtPointer';
-    6: Result := 'vtPChar';
-    7: Result := 'vtObject';
-    8: Result := 'vtClass';
-    9: Result := 'vtWideChar';
-    10: Result := 'vtPWideChar';
-    11: Result := 'vtAnsiString';
-    12: Result := 'vtCurrency';
-    13: Result := 'vtVariant';
-    14: Result := 'vtInterface';
-    15: Result := 'vtWideString';
-    16: Result := 'vtInt64';
-    17: Result := 'vtUnicodeString';
+{$REGION 'case VType values 0 .. 17, vtInteger = 0, vtBoolean = 1, ...'}
+    0:
+      Result := 'vtInteger';
+    1:
+      Result := 'vtBoolean';
+    2:
+      Result := 'vtChar';
+    3:
+      Result := 'vtExtended';
+    4:
+      Result := 'vtString';
+    5:
+      Result := 'vtPointer';
+    6:
+      Result := 'vtPChar';
+    7:
+      Result := 'vtObject';
+    8:
+      Result := 'vtClass';
+    9:
+      Result := 'vtWideChar';
+    10:
+      Result := 'vtPWideChar';
+    11:
+      Result := 'vtAnsiString';
+    12:
+      Result := 'vtCurrency';
+    13:
+      Result := 'vtVariant';
+    14:
+      Result := 'vtInterface';
+    15:
+      Result := 'vtWideString';
+    16:
+      Result := 'vtInt64';
+    17:
+      Result := 'vtUnicodeString';
+{$ENDREGION}
   end;
 end;
 
+class procedure TComponentInjector.AssertParameters(const Injections
+  : array of const);
+var
+  j: Integer;
+begin
+  for j := 0 to High(Injections) do
+    if not(Injections[j].VType in [vtObject, vtInteger, vtBoolean, vtExtended])
+    then
+      Assert(False, Format(ERRMSG_NotSupportedParameter,
+        [j, VTypeToStr(Injections[j].VType)]));
+end;
 
 class procedure TComponentInjector.InjectProperties(aComponent: TComponent;
   const Injections: array of const);
@@ -165,6 +198,7 @@ begin
   // * important is properties order in the command class and
   // ..  in the Injections array (should be the same)
   // --------------------------------
+  AssertParameters(Injections);
   PropertyList := TComponentMetadata.GetPublishedPropetries(aComponent);
   SetLength(UsedInjection, Length(Injections));
   for i := 0 to High(PropertyList) do
@@ -189,9 +223,35 @@ begin
               Break;
             end;
           end
-          else
-            Assert(False, Format(ERRMSG_NotSupportedParameter,
-              [j, VTypeToStr(Injections[j].VType)]));
+        end;
+    end
+    else if (propInfo.Kind = tkInteger) or (propInfo.Kind = tkEnumeration) or
+      (propInfo.Kind = tkFloat) then
+    begin
+      for j := 0 to High(Injections) do
+        if not(UsedInjection[j]) then
+        begin
+          if (propInfo.Kind = tkInteger) and (Injections[j].VType = vtInteger) then
+          begin
+            SetOrdProp(aComponent, propInfo.PropertyName,
+              Injections[j].VInteger);
+            UsedInjection[j] := True;
+            Break;
+          end
+          else if (propInfo.Kind = tkEnumeration) and (Injections[j].VType = vtBoolean) then
+          begin
+            SetOrdProp(aComponent, propInfo.PropertyName,
+              Injections[j].VInteger);
+            UsedInjection[j] := True;
+            Break;
+          end
+          else if (propInfo.Kind = tkFloat) and (Injections[j].VType = vtExtended) then
+          begin
+            SetFloatProp(aComponent, propInfo.PropertyName,
+              Injections[j].VExtended^);
+            UsedInjection[j] := True;
+            Break;
+          end;
         end;
     end
     else

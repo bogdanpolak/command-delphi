@@ -12,7 +12,7 @@ uses
 type
 
   [TestFixture]
-  TestComponentIjection_OneInjection = class(TObject)
+  TestSingleInjection = class(TObject)
   private
     FInteger101: integer;
     FStrings: TStringList;
@@ -23,7 +23,11 @@ type
     [TearDown]
     procedure TearDown;
   published
-    procedure InvalidInjection_Exception;
+    procedure ParameterStringList;
+    procedure ParameterInteger;
+    procedure ParameterBoolean;
+    procedure ParameterDouble;
+    procedure ParameterDateTime;
     procedure UnsupportedProperty_Exception;
   end;
 
@@ -52,57 +56,116 @@ implementation
 
 type
   TStringsComponent = class(TComponent)
-  private
-    FStrings: TStrings;
+  strict private
+    FStrings: TStringList;
   published
-    property Strings: TStrings read FStrings write FStrings;
+    property Strings: TStringList read FStrings write FStrings;
   end;
 
-procedure TestComponentIjection_OneInjection.Setup;
+  TIntegerComponent = class(TComponent)
+  strict private
+    FNumber: integer;
+  published
+    property Number: integer read FNumber write FNumber;
+  end;
+
+  TSimpleComponent = class(TComponent)
+  strict private
+    FNumber: integer;
+    FIsTrue: boolean;
+    FFloatNumber: Double;
+    FStartDate: TDateTime;
+  published
+    property Number: integer read FNumber write FNumber;
+    property IsTrue: boolean read FIsTrue write FIsTrue;
+    property FloatNumber: Double read FFloatNumber write FFloatNumber;
+    property StartDate: TDateTime read FStartDate write FStartDate;
+  end;
+
+procedure TestSingleInjection.Setup;
 begin
   FOwnerComponent := TComponent.Create(nil); // used as Owner for TCommand-s
   FStrings := TStringList.Create();
   FInteger101 := 101;
 end;
 
-procedure TestComponentIjection_OneInjection.TearDown;
+procedure TestSingleInjection.TearDown;
 begin
   FOwnerComponent.Free;
   FreeAndNil(FStrings);
 end;
 
-procedure TestComponentIjection_OneInjection.InvalidInjection_Exception;
+procedure TestSingleInjection.ParameterStringList;
 var
+  StringsComponent: TStringsComponent;
+begin
+  StringsComponent := TStringsComponent.Create(FOwnerComponent);
+  TComponentInjector.InjectProperties(StringsComponent, [FStrings]);
+  Assert.AreSame(FStrings, StringsComponent.Strings);
+end;
+
+procedure TestSingleInjection.ParameterInteger;
+var
+  IntegerComponent: TIntegerComponent;
+begin
+  IntegerComponent := TIntegerComponent.Create(FOwnerComponent);
+  TComponentInjector.InjectProperties(IntegerComponent, [FInteger101]);
+  Assert.AreEqual(FInteger101, IntegerComponent.Number);
+end;
+
+procedure TestSingleInjection.ParameterBoolean;
+var
+  SimpleComponent: TSimpleComponent;
+  b: boolean;
+begin
+  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
+  b := True;
+  TComponentInjector.InjectProperties(SimpleComponent, [b]);
+  Assert.AreEqual(b, SimpleComponent.IsTrue);
+end;
+
+procedure TestSingleInjection.ParameterDouble;
+var
+  SimpleComponent: TSimpleComponent;
+  val: Double;
+begin
+  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
+  val := Pi;
+  TComponentInjector.InjectProperties(SimpleComponent, [val]);
+  Assert.AreEqual(val, SimpleComponent.FloatNumber);
+end;
+
+procedure TestSingleInjection.ParameterDateTime;
+var
+  SimpleComponent: TSimpleComponent;
+  FloatVal: Single;
+  Date: TDateTime;
+begin
+  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
+  FloatVal := 2.1;
+  Date := EncodeDate(2019, 02, 01) + EncodeTime(18, 50, 0, 0);
+  TComponentInjector.InjectProperties(SimpleComponent, [FloatVal, Date]);
+  Assert.AreEqual(Double(FloatVal), SimpleComponent.FloatNumber);
+  Assert.AreEqual(Date, SimpleComponent.StartDate);
+end;
+
+procedure TestSingleInjection.UnsupportedProperty_Exception;
+type
+  TMyRec = record
+    a: integer;
+    b: boolean;
+  end;
+var
+  aRec1: TMyRec;
   StringsComponent: TStringsComponent;
 begin
   StringsComponent := TStringsComponent.Create(FOwnerComponent);
   Assert.WillRaise(
     procedure
     begin
-      TComponentInjector.InjectProperties(StringsComponent, [FInteger101]);
+      TComponentInjector.InjectProperties(StringsComponent, [@aRec1]);
     end);
 end;
-
-type
-  TIntegerComponent = class(TComponent)
-  private
-    FNumber: integer;
-  published
-    property Number: integer read FNumber write FNumber;
-  end;
-
-procedure TestComponentIjection_OneInjection.UnsupportedProperty_Exception;
-var
-  IntegerComponent: TIntegerComponent;
-begin
-  IntegerComponent := TIntegerComponent.Create(FOwnerComponent);
-  Assert.WillRaise(
-    procedure
-    begin
-      TComponentInjector.InjectProperties(IntegerComponent, [FInteger101]);
-    end);
-end;
-
 
 // ------------------------------------------------------------------------
 // Test_MoreInjections - tests component with many injected properties
@@ -174,7 +237,7 @@ end;
 
 initialization
 
-TDUnitX.RegisterTestFixture(TestComponentIjection_OneInjection);
+TDUnitX.RegisterTestFixture(TestSingleInjection);
 TDUnitX.RegisterTestFixture(TestComponentInjection_MoreInjections);
 
 end.
