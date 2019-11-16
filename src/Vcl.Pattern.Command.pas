@@ -90,6 +90,8 @@ const
   ERRMSG_NotSupportedInjection = 'Not supported injection type!' +
     ' This property %s: %s in not supported in command pattern.' +
     ' Move this propoerty into [public] section';
+  ERRMSG_NotSupportedParameter = 'Not supported parameter type to inject!' +
+    'Parameter index (zaro-based): %d. Paramter type: %s';
 
   // ------------------------------------------------------------------------
   { TCommand }
@@ -122,6 +124,31 @@ function TypeKindToStr(value: TTypeKind): string;
 begin
   Result := System.TypInfo.GetEnumName(TypeInfo(TTypeKind), Integer(value));
 end;
+
+function VTypeToStr(value: byte): string;
+begin
+  case value of
+    0: Result := 'vtInteger';
+    1: Result := 'vtBoolean';
+    2: Result := 'vtChar';
+    3: Result := 'vtExtended';
+    4: Result := 'vtString';
+    5: Result := 'vtPointer';
+    6: Result := 'vtPChar';
+    7: Result := 'vtObject';
+    8: Result := 'vtClass';
+    9: Result := 'vtWideChar';
+    10: Result := 'vtPWideChar';
+    11: Result := 'vtAnsiString';
+    12: Result := 'vtCurrency';
+    13: Result := 'vtVariant';
+    14: Result := 'vtInterface';
+    15: Result := 'vtWideString';
+    16: Result := 'vtInt64';
+    17: Result := 'vtUnicodeString';
+  end;
+end;
+
 
 class procedure TComponentInjector.InjectProperties(aComponent: TComponent;
   const Injections: array of const);
@@ -161,7 +188,10 @@ begin
               UsedInjection[j] := True;
               Break;
             end;
-          end;
+          end
+          else
+            Assert(False, Format(ERRMSG_NotSupportedParameter,
+              [j, VTypeToStr(Injections[j].VType)]));
         end;
     end
     else
