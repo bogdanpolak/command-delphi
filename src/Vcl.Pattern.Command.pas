@@ -26,8 +26,8 @@ type
   const
     // * --------------------------------------------------------------------
     // * Signature
-    ReleaseDate = '2019.11.05';
-    ReleaseVersion = '0.3.2';
+    ReleaseDate = '2019.11.16';
+    ReleaseVersion = '0.4';
     // * --------------------------------------------------------------------
   strict private
     // FReceiver: TReceiver;
