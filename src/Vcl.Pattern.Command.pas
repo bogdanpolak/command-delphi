@@ -128,24 +128,44 @@ end;
 function VTypeToStr(value: byte): string;
 begin
   case value of
-    0: Result := 'vtInteger';
-    1: Result := 'vtBoolean';
-    2: Result := 'vtChar';
-    3: Result := 'vtExtended';
-    4: Result := 'vtString';
-    5: Result := 'vtPointer';
-    6: Result := 'vtPChar';
-    7: Result := 'vtObject';
-    8: Result := 'vtClass';
-    9: Result := 'vtWideChar';
-    10: Result := 'vtPWideChar';
-    11: Result := 'vtAnsiString';
-    12: Result := 'vtCurrency';
-    13: Result := 'vtVariant';
-    14: Result := 'vtInterface';
-    15: Result := 'vtWideString';
-    16: Result := 'vtInt64';
-    17: Result := 'vtUnicodeString';
+{$REGION 'case VType values 0 .. 17, vtInteger = 0, vtBoolean = 1, ...'}
+    0:
+      Result := 'vtInteger';
+    1:
+      Result := 'vtBoolean';
+    2:
+      Result := 'vtChar';
+    3:
+      Result := 'vtExtended';
+    4:
+      Result := 'vtString';
+    5:
+      Result := 'vtPointer';
+    6:
+      Result := 'vtPChar';
+    7:
+      Result := 'vtObject';
+    8:
+      Result := 'vtClass';
+    9:
+      Result := 'vtWideChar';
+    10:
+      Result := 'vtPWideChar';
+    11:
+      Result := 'vtAnsiString';
+    12:
+      Result := 'vtCurrency';
+    13:
+      Result := 'vtVariant';
+    14:
+      Result := 'vtInterface';
+    15:
+      Result := 'vtWideString';
+    16:
+      Result := 'vtInt64';
+    17:
+      Result := 'vtUnicodeString';
+{$ENDREGION}
   end;
 end;
 
