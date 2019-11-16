@@ -6,6 +6,7 @@ uses
   DUnitX.TestFramework,
   System.Classes,
   System.SysUtils,
+  System.Generics.Collections,
   Vcl.Pattern.Command;
 
 {$M+}
@@ -30,6 +31,7 @@ type
     procedure Test_ExecuteCommand2x;
   end;
 
+  [TestFixture]
   TestCommndFactory_StrigListCommand = class(TObject)
   private
     FOwnerComponent: TComponent;
@@ -45,6 +47,23 @@ type
     procedure GuardException_NoInjection;
   end;
 
+  [TestFixture]
+  TestCommndFactory_AdvancedCommand = class(TObject)
+  private
+    FComponent: TComponent;
+    FStringO: TStringList;
+    FStringE: TStringList;
+    FMemStream: TMemoryStream;
+    FList: TList<Integer>;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+  published
+    procedure Execute;
+  end;
+
 implementation
 
 // ------------------------------------------------------------------------
@@ -55,7 +74,7 @@ type
   TCommandA = class(TCommand)
   strict private
     FActive: boolean;
-    FCount: integer;
+    FCount: Integer;
   protected
     procedure Guard; override;
   public
@@ -64,7 +83,7 @@ type
     procedure Execute; override;
     destructor Destroy; override;
     property Active: boolean read FActive write FActive;
-    property Count: integer read FCount write FCount;
+    property Count: Integer read FCount write FCount;
   end;
 
 {$REGION 'implementation of the Basic command = TCommandA'}
@@ -159,13 +178,13 @@ end;
 type
   TCommandStringList = class(TCommand)
   strict private
-    FCount: integer;
+    FCount: Integer;
     FLines: TStringList;
   protected
     procedure Guard; override;
   public
     procedure Execute; override;
-    property Count: integer read FCount write FCount;
+    property Count: Integer read FCount write FCount;
   published
     property Lines: TStringList read FLines write FLines;
   end;
@@ -224,10 +243,110 @@ begin
 end;
 
 // ------------------------------------------------------------------------
+// TestCommndFactory_StrigListCommand
+// ------------------------------------------------------------------------
+
+type
+  TAdvancedCommand = class(TCommand)
+  private
+    FCount: Integer;
+    FEvenLines: TStringList;
+    FOddLines: TStringList;
+    FComponent: TComponent;
+    FStream: TMemoryStream;
+    FListInt: TList<Integer>;
+    procedure WriteIntegerToStream(aValue: Integer);
+  protected
+    procedure Guard; override;
+  public
+    procedure Execute; override;
+    property Count: Integer read FCount write FCount;
+  published
+    property Stream: TMemoryStream read FStream write FStream;
+    property OddLines: TStringList read FOddLines write FOddLines;
+    property Component: TComponent read FComponent write FComponent;
+    property EvenLines: TStringList read FEvenLines write FEvenLines;
+    property ListInt: TList<Integer> read FListInt write FListInt;
+  end;
+
+{$REGION 'implementation TAdvancedCommand'}
+
+procedure TAdvancedCommand.Guard;
+begin
+  System.Assert(Stream <> nil);
+  System.Assert(OddLines <> nil);
+  System.Assert(Component <> nil);
+  System.Assert(EvenLines <> nil);
+  System.Assert(ListInt <> nil);
+end;
+
+procedure TAdvancedCommand.WriteIntegerToStream(aValue: Integer);
+begin
+  Stream.Write(aValue, SizeOf(aValue));
+end;
+
+procedure TAdvancedCommand.Execute;
+var
+  i: Integer;
+begin
+  inherited;
+  OddLines.Clear;
+  EvenLines.Clear;
+  WriteIntegerToStream(ListInt.Count);
+  for i := 0 to ListInt.Count - 1 do
+  begin
+    WriteIntegerToStream(ListInt[i]);
+    if odd(i) then
+      OddLines.Add('Number: ' + ListInt[i].ToString)
+    else
+      EvenLines.Add(ListInt[i].ToString);
+  end;
+  with Component do
+  begin
+    Name := 'A' + Component.Name;
+    Tag := ListInt.Count;
+  end;
+  Count := ListInt.Count;
+end;
+
+{$ENDREGION}
+
+procedure TestCommndFactory_AdvancedCommand.Setup;
+begin
+  FComponent := TComponent.Create(nil);
+  FStringO := TStringList.Create;
+  FStringE := TStringList.Create;
+  FMemStream := TMemoryStream.Create;
+  FList := TList<Integer>.Create;
+  FList.AddRange([10,13,20,17,100,101,105]);
+end;
+
+procedure TestCommndFactory_AdvancedCommand.TearDown;
+begin
+  FStringO.Free;
+  FStringE.Free;
+  FMemStream.Free;
+  FList.Free;
+  FComponent.Free;
+end;
+
+procedure TestCommndFactory_AdvancedCommand.Execute;
+var
+  MyStream: TStream;
+begin
+  MyStream := (FMemStream as TStream);
+  TCommandVclFactory.ExecuteCommand<TAdvancedCommand>
+    ([FComponent, FStringO, FStringE, MyStream, FList]);
+  Assert.AreEqual(3,FStringO.Count);
+  Assert.AreEqual('Number: 13',FStringO[0]);
+  Assert.AreEqual(4,FStringE.Count);
+  Assert.AreEqual('10',FStringE[0]);
+  Assert.AreEqual(32,integer(FMemStream.Size));
+end;
+
+// ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
 
 initialization
-
-TDUnitX.RegisterTestFixture(TestCommndFactory_BasicCommand);
 
 end.
