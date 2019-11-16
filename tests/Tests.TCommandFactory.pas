@@ -4,18 +4,19 @@ interface
 
 uses
   DUnitX.TestFramework,
-  System.Classes, System.SysUtils,
+  System.Classes,
+  System.SysUtils,
+  System.Generics.Collections,
   Vcl.Pattern.Command;
 
-{$TYPEINFO ON}  { Requred for old RTTI metadata form published section }
+{$M+}
 
 type
 
   [TestFixture]
-  TCommndFactoryNoInjection = class(TObject)
+  TestCommndFactory_BasicCommand = class(TObject)
   strict private
     FOwnerComponent: TComponent;
-    FCommandA: TCommand;
   public
     [Setup]
     procedure Setup;
@@ -31,53 +32,49 @@ type
   end;
 
   [TestFixture]
-  TCommandFactoryOneInjection = class(TObject)
-  strict private
-    FStrings: TStringList;
-    FOwnerComponent: TComponent;
+  TestCommndFactory_StrigListCommand = class(TObject)
   private
+    FOwnerComponent: TComponent;
+    FStrings: TStringList;
   public
     [Setup]
     procedure Setup;
     [TearDown]
     procedure TearDown;
   published
-    procedure Test_Injection_AssertOneInjection;
-    procedure Test_Injection_ExecuteAndCheckLinesCount;
-    procedure Test_ExceptionNoRequiredInjection;
-    procedure Test_ExceptionInvalidInjection;
+    procedure NoGuardAssert_WithProperInjection;
+    procedure ChangeStringList_AfterExecute;
+    procedure GuardException_NoInjection;
   end;
 
   [TestFixture]
-  TCommandFactoryMoreInjections = class(TObject)
-  strict private
-    FStrings1: TStringList;
-    FStrings2: TStringList;
-    FSampleComponent: TComponent;
-    FOwnerComponent: TComponent;
+  TestCommndFactory_AdvancedCommand = class(TObject)
   private
+    FComponent: TComponent;
+    FStringO: TStringList;
+    FStringE: TStringList;
+    FMemStream: TMemoryStream;
+    FList: TList<Integer>;
   public
     [Setup]
     procedure Setup;
     [TearDown]
     procedure TearDown;
   published
-    procedure Test_InjectDependenciesNoExceptions;
-    procedure Test_VerifiyDependenciesAfterExecute;
+    procedure Execute;
   end;
 
 implementation
 
 // ------------------------------------------------------------------------
-// class TCommandA
+// TestCommndFactory_BasicCommand: TCommandA
 // ------------------------------------------------------------------------
-{$REGION 'class TCommandA'}
 
 type
   TCommandA = class(TCommand)
   strict private
     FActive: boolean;
-    FCount: integer;
+    FCount: Integer;
   protected
     procedure Guard; override;
   public
@@ -86,8 +83,10 @@ type
     procedure Execute; override;
     destructor Destroy; override;
     property Active: boolean read FActive write FActive;
-    property Count: integer read FCount write FCount;
+    property Count: Integer read FCount write FCount;
   end;
+
+{$REGION 'implementation of the Basic command = TCommandA'}
 
 procedure TCommandA.Guard;
 begin
@@ -107,21 +106,85 @@ begin
 end;
 
 {$ENDREGION}
+
+procedure TestCommndFactory_BasicCommand.Setup;
+begin
+  FOwnerComponent := TComponent.Create(nil);
+  TCommandA.IsExecuted := False;
+  TCommandA.IsDestroyed := False;
+end;
+
+procedure TestCommndFactory_BasicCommand.TearDown;
+begin
+  FOwnerComponent.Free;
+end;
+
+procedure TestCommndFactory_BasicCommand.Test_AdhocExecuteCommand;
+begin
+  TCommandVclFactory.ExecuteCommand<TCommandA>([]);
+  Assert.IsTrue(TCommandA.IsExecuted, 'TCommandA not executed');
+end;
+
+procedure TestCommndFactory_BasicCommand.Test_CreateCommandProperType;
+var
+  cmd: TCommandA;
+begin
+  cmd := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
+  Assert.InheritsFrom(cmd.ClassType, TCommandA);
+end;
+
+procedure TestCommndFactory_BasicCommand.Test_CreateCommandAndDestroyOwner;
+var
+  AOwner: TComponent;
+begin
+  AOwner := TComponent.Create(nil);
+  TCommandVclFactory.CreateCommand<TCommandA>(AOwner, []);
+  AOwner.Free;
+  Assert.IsTrue(TCommandA.IsDestroyed);
+end;
+
+procedure TestCommndFactory_BasicCommand.Test_ExecuteCommandAndCheckActive;
+var
+  CommandA: TCommandA;
+begin
+  CommandA := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
+  CommandA.Execute;
+  Assert.IsTrue(CommandA.Active, 'TCommanndA.Active property expected True');
+end;
+
+procedure TestCommndFactory_BasicCommand.Test_NotExecuteCommand_CounterZero;
+var
+  CommandA: TCommandA;
+begin
+  CommandA := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
+  Assert.AreEqual(0, CommandA.Count);
+end;
+
+procedure TestCommndFactory_BasicCommand.Test_ExecuteCommand2x;
+var
+  CommandA: TCommandA;
+begin
+  CommandA := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
+  CommandA.Execute;
+  CommandA.Execute;
+  Assert.AreEqual(2, CommandA.Count);
+end;
+
+
 // ------------------------------------------------------------------------
-// class TCommandStringList
+// TestCommndFactory_StrigListCommand
 // ------------------------------------------------------------------------
-{$REGION 'class TCommandStringList'}
 
 type
   TCommandStringList = class(TCommand)
   strict private
-    FCount: integer;
+    FCount: Integer;
     FLines: TStringList;
   protected
     procedure Guard; override;
   public
     procedure Execute; override;
-    property Count: integer read FCount write FCount;
+    property Count: Integer read FCount write FCount;
   published
     property Lines: TStringList read FLines write FLines;
   end;
@@ -138,180 +201,39 @@ begin
   Lines.Add(Format('%.3d', [Count]));
 end;
 
-{$ENDREGION}
-// ------------------------------------------------------------------------
-// class TCommandMore
-// ------------------------------------------------------------------------
-{$REGION 'class TCommandMore'}
-
-type
-  TCommandMore = class(TCommand)
-  strict private
-    FCount: integer;
-    FEvenLines: TStringList;
-    FOddLines: TStringList;
-    FComponent: TComponent;
-  protected
-    procedure Guard; override;
-  public
-    procedure Execute; override;
-    property Count: integer read FCount write FCount;
-  published
-    property OddLines: TStringList read FOddLines write FOddLines;
-    property Component: TComponent read FComponent write FComponent;
-    property EvenLines: TStringList read FEvenLines write FEvenLines;
-  end;
-
-procedure TCommandMore.Guard;
+procedure TestCommndFactory_StrigListCommand.Setup;
 begin
-  System.Assert(EvenLines <> nil);
-  System.Assert(OddLines <> nil);
-  System.Assert(Component <> nil);
+  FOwnerComponent := TComponent.Create(nil);
+  FStrings := TStringList.Create;
 end;
 
-procedure TCommandMore.Execute;
+procedure TestCommndFactory_StrigListCommand.TearDown;
 begin
-  inherited;
-  Count := Count + 1;
-  if Odd(Count) then
-  begin
-    OddLines.Add(Format('%.3d - %s', [Count, Component.Name]));
-    Component.Name := 'A' + Component.Name;
-  end
-  else
-    EvenLines.Add(Format('%.3d', [Count]));
-end;
-
-{$ENDREGION}
-// ------------------------------------------------------------------------
-// class TCommandInvalidInjection
-// ------------------------------------------------------------------------
-{$REGION 'class TCommandMore'}
-
-type
-  TCommandInvalidInjection = class(TCommand)
-  strict private
-    FCount: integer;
-  protected
-    procedure Guard; override;
-  public
-    procedure Execute; override;
-  published
-    property Count: integer read FCount write FCount;
-  end;
-
-procedure TCommandInvalidInjection.Guard;
-begin
-  System.Assert(Count > 0);
-end;
-
-procedure TCommandInvalidInjection.Execute;
-begin
-  inherited;
-  Count := Count + 1;
-end;
-
-{$ENDREGION}
-// ------------------------------------------------------------------------
-// TFactoryNoInjectionTest: TCommandA
-// ------------------------------------------------------------------------
-{$REGION 'TCommandFactoryTests: TCommandA - no injection'}
-
-procedure TCommndFactoryNoInjection.Setup;
-begin
-  FOwnerComponent := TComponent.Create(nil); // used as Owner for TCommand-s
-  FCommandA := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
-  TCommandA.IsExecuted := False;
-end;
-
-procedure TCommndFactoryNoInjection.TearDown;
-begin
+  FStrings.Free;
   FOwnerComponent.Free;
-  // FCommandA destroyed by Owner
-  TCommandA.IsExecuted := False;
 end;
 
-procedure TCommndFactoryNoInjection.Test_AdhocExecuteCommand;
-begin
-  TCommandVclFactory.ExecuteCommand<TCommandA>([]);
-  Assert.IsTrue(TCommandA.IsExecuted, 'TCommandA not executed');
-end;
-
-procedure TCommndFactoryNoInjection.Test_CreateCommandProperType;
-var
-  cmd: TCommandA;
-begin
-  cmd := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
-  Assert.InheritsFrom(cmd.ClassType, TCommandA);
-end;
-
-procedure TCommndFactoryNoInjection.Test_CreateCommandAndDestroyOwner;
-var
-  AOwner: TComponent;
-begin
-  TCommandA.IsDestroyed := False;
-  AOwner := TComponent.Create(nil);
-  TCommandVclFactory.CreateCommand<TCommandA>(AOwner, []);
-  AOwner.Free;
-  Assert.IsTrue(TCommandA.IsDestroyed);
-end;
-
-procedure TCommndFactoryNoInjection.Test_ExecuteCommandAndCheckActive;
-begin
-  FCommandA.Execute;
-  Assert.IsTrue((FCommandA as TCommandA).Active,
-    'TCommanndA.Active property expected True');
-end;
-
-procedure TCommndFactoryNoInjection.Test_NotExecuteCommand_CounterZero;
-begin
-  Assert.AreEqual(0, (FCommandA as TCommandA).Count);
-end;
-
-procedure TCommndFactoryNoInjection.Test_ExecuteCommand2x;
-begin
-  FCommandA.Execute;
-  FCommandA.Execute;
-  Assert.AreEqual(2, (FCommandA as TCommandA).Count);
-end;
-
-{$ENDREGION}
-// ------------------------------------------------------------------------
-// TFactoryWithInjectionTest: TStringList one injection
-// ------------------------------------------------------------------------
-{$REGION 'TCommandFactoryTests: TCommandStringList - check injection'}
-
-procedure TCommandFactoryOneInjection.Setup;
-begin
-  FOwnerComponent := TComponent.Create(nil); // used as Owner for TCommand-s
-  FStrings := TStringList.Create();
-end;
-
-procedure TCommandFactoryOneInjection.TearDown;
-begin
-  FOwnerComponent.Free;
-  FreeAndNil(FStrings);
-end;
-
-procedure TCommandFactoryOneInjection.Test_Injection_AssertOneInjection;
+procedure TestCommndFactory_StrigListCommand.NoGuardAssert_WithProperInjection;
 begin
   TCommandVclFactory.ExecuteCommand<TCommandStringList>([FStrings]);
-  Assert.Pass; // Fine is there was any exception above - correct injection
+  // Fine if there was any exception above
+  Assert.Pass;
 end;
 
-procedure TCommandFactoryOneInjection.Test_Injection_ExecuteAndCheckLinesCount;
+procedure TestCommndFactory_StrigListCommand.ChangeStringList_AfterExecute;
 var
-  cmd: TCommandStringList;
+  CommandStrings: TCommandStringList;
 begin
-  cmd := TCommandVclFactory.CreateCommand<TCommandStringList>(FOwnerComponent,
-    [FStrings]);
-  cmd.Execute;
-  cmd.Execute;
-  cmd.Lines.Delete(0);
-  Assert.AreEqual(1, cmd.Lines.Count);
+  CommandStrings := TCommandVclFactory.CreateCommand<TCommandStringList>
+    (FOwnerComponent, [FStrings]);
+  CommandStrings.Execute;
+  CommandStrings.Execute;
+  FStrings.Delete(0);
+  Assert.AreEqual(1, FStrings.Count);
+  Assert.AreEqual(1, CommandStrings.Lines.Count);
 end;
 
-procedure TCommandFactoryOneInjection.Test_ExceptionNoRequiredInjection;
+procedure TestCommndFactory_StrigListCommand.GuardException_NoInjection;
 begin
   Assert.WillRaiseDescendant(
     procedure
@@ -320,70 +242,111 @@ begin
     end, EAssertionFailed);
 end;
 
-{$ENDREGION}
 // ------------------------------------------------------------------------
-// CommandFactory tests factory methods with more injection
-// * 2x TStringList, 1x TComponent
+// TestCommndFactory_StrigListCommand
 // ------------------------------------------------------------------------
-{$REGION 'TFactoryWithMoreInjectionTest: check more injection'}
 
-procedure TCommandFactoryMoreInjections.Setup;
+type
+  TAdvancedCommand = class(TCommand)
+  private
+    FCount: Integer;
+    FEvenLines: TStringList;
+    FOddLines: TStringList;
+    FComponent: TComponent;
+    FStream: TMemoryStream;
+    FListInt: TList<Integer>;
+    procedure WriteIntegerToStream(aValue: Integer);
+  protected
+    procedure Guard; override;
+  public
+    procedure Execute; override;
+    property Count: Integer read FCount write FCount;
+  published
+    property Stream: TMemoryStream read FStream write FStream;
+    property OddLines: TStringList read FOddLines write FOddLines;
+    property Component: TComponent read FComponent write FComponent;
+    property EvenLines: TStringList read FEvenLines write FEvenLines;
+    property ListInt: TList<Integer> read FListInt write FListInt;
+  end;
+
+{$REGION 'implementation TAdvancedCommand'}
+
+procedure TAdvancedCommand.Guard;
 begin
-  FStrings1 := TStringList.Create;
-  FStrings2 := TStringList.Create;
-  FSampleComponent := TComponent.Create(nil);
-  FSampleComponent.Name := 'NothingBox';
-  // have to see Mark Gungor in action: https://www.youtube.com/watch?v=SWiBRL-bxiA
-  FOwnerComponent := TComponent.Create(nil);
+  System.Assert(Stream <> nil);
+  System.Assert(OddLines <> nil);
+  System.Assert(Component <> nil);
+  System.Assert(EvenLines <> nil);
+  System.Assert(ListInt <> nil);
 end;
 
-procedure TCommandFactoryMoreInjections.TearDown;
+procedure TAdvancedCommand.WriteIntegerToStream(aValue: Integer);
 begin
-  FreeAndNil(FStrings1);
-  FreeAndNil(FStrings2);
-  FreeAndNil(FSampleComponent);
-  FreeAndNil(FOwnerComponent);
+  Stream.Write(aValue, SizeOf(aValue));
 end;
 
-procedure TCommandFactoryMoreInjections.Test_InjectDependenciesNoExceptions;
-begin
-  Assert.WillNotRaise(
-    procedure
-    begin
-      TCommandVclFactory.ExecuteCommand<TCommandMore>([FStrings1, FStrings2,
-        FSampleComponent]);
-    end);
-end;
-
-procedure TCommandFactoryMoreInjections.Test_VerifiyDependenciesAfterExecute;
-begin
-  TCommandVclFactory.ExecuteCommand<TCommandMore>
-    ([FStrings1, FStrings2, FSampleComponent]);
-  Assert.AreEqual(1, FStrings1.Count);
-  Assert.AreEqual(0, FStrings2.Count);
-  Assert.AreEqual('ANothingBox', FSampleComponent.Name);
-end;
-
-procedure TCommandFactoryOneInjection.Test_ExceptionInvalidInjection;
+procedure TAdvancedCommand.Execute;
 var
-  i10: integer;
+  i: Integer;
 begin
-  i10 := 10;
-  Assert.WillRaise(
-    procedure
-    begin
-      TCommandVclFactory.ExecuteCommand<TCommandInvalidInjection>([i10]);
-    end);
+  inherited;
+  OddLines.Clear;
+  EvenLines.Clear;
+  WriteIntegerToStream(ListInt.Count);
+  for i := 0 to ListInt.Count - 1 do
+  begin
+    WriteIntegerToStream(ListInt[i]);
+    if odd(i) then
+      OddLines.Add('Number: ' + ListInt[i].ToString)
+    else
+      EvenLines.Add(ListInt[i].ToString);
+  end;
+  with Component do
+  begin
+    Name := 'A' + Component.Name;
+    Tag := ListInt.Count;
+  end;
+  Count := ListInt.Count;
 end;
 
 {$ENDREGION}
+
+procedure TestCommndFactory_AdvancedCommand.Setup;
+begin
+  FComponent := TComponent.Create(nil);
+  FStringO := TStringList.Create;
+  FStringE := TStringList.Create;
+  FMemStream := TMemoryStream.Create;
+  FList := TList<Integer>.Create;
+  FList.AddRange([10,13,20,17,100,101,105]);
+end;
+
+procedure TestCommndFactory_AdvancedCommand.TearDown;
+begin
+  FStringO.Free;
+  FStringE.Free;
+  FMemStream.Free;
+  FList.Free;
+  FComponent.Free;
+end;
+
+procedure TestCommndFactory_AdvancedCommand.Execute;
+var
+  MyStream: TStream;
+begin
+  MyStream := (FMemStream as TStream);
+  TCommandVclFactory.ExecuteCommand<TAdvancedCommand>
+    ([FComponent, FStringO, FStringE, MyStream, FList]);
+  Assert.AreEqual(3,FStringO.Count);
+  Assert.AreEqual('Number: 13',FStringO[0]);
+  Assert.AreEqual(4,FStringE.Count);
+  Assert.AreEqual('10',FStringE[0]);
+  Assert.AreEqual(32,integer(FMemStream.Size));
+end;
+
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
 
 initialization
-
-TDUnitX.RegisterTestFixture(TCommndFactoryNoInjection);
-TDUnitX.RegisterTestFixture(TCommandFactoryOneInjection);
-TDUnitX.RegisterTestFixture(TCommandFactoryMoreInjections);
 
 end.

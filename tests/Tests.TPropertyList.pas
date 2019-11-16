@@ -21,8 +21,6 @@ type
   public
     [Setup]
     procedure Setup;
-    [TearDown]
-    procedure TearDown;
   published
     procedure SimpleComponent;
     procedure OnePropertyComponent;
@@ -37,6 +35,10 @@ type
   end;
 
 implementation
+
+// ----------------------------------------------------------------------
+// Tested samples (components)
+// ----------------------------------------------------------------------
 
 type
   TComponentOneProps = class(TComponent)
@@ -75,7 +77,9 @@ begin
   Result := GetEnumName(TypeInfo(TTypeKind), integer(Self));
 end;
 
-{$REGION 'TComponentPropertiesSUT: '}
+// ----------------------------------------------------------------------
+// Setup / TearDown
+// ----------------------------------------------------------------------
 
 procedure TComponentPropertiesSUT.Setup;
 var
@@ -98,10 +102,10 @@ begin
   end;
 end;
 
-procedure TComponentPropertiesSUT.TearDown;
-begin
-  // x
-end;
+
+// ----------------------------------------------------------------------
+// Tests
+// ----------------------------------------------------------------------
 
 procedure TComponentPropertiesSUT.SimpleComponent;
 begin
@@ -199,7 +203,5 @@ begin
     Assert.AreEqual('tkUString', Kind.ToString);
   end;
 end;
-
-{$ENDREGION}
 
 end.

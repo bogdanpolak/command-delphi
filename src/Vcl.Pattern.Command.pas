@@ -22,8 +22,6 @@ type
     procedure Execute();
   end;
 
-{$M+}
-
   TCommand = class(TComponent, ICommand)
   const
     // * --------------------------------------------------------------------
@@ -41,7 +39,6 @@ type
     // call receiver method(s) or just do the job (merged command)
     // property Receiver: TReceiver read FReceiver set FReceiver;
   end;
-{$M-}
 
   TPropertyInfo = record
     Kind: TTypeKind;
@@ -55,6 +52,11 @@ type
   public
     class function GetPublishedPropetries(aComponent: TComponent)
       : TPropertyArray;
+  end;
+
+  TComponentInjector = class
+    class procedure InjectProperties(aComponent: TComponent;
+      const Injections: array of const);
   end;
 
   TCommandVclFactory = class(TComponent)
@@ -88,6 +90,8 @@ const
   ERRMSG_NotSupportedInjection = 'Not supported injection type!' +
     ' This property %s: %s in not supported in command pattern.' +
     ' Move this propoerty into [public] section';
+  ERRMSG_NotSupportedParameter = 'Not supported parameter type to inject!' +
+    'Parameter index (zaro-based): %d. Paramter type: %s';
 
   // ------------------------------------------------------------------------
   { TCommand }
@@ -113,14 +117,40 @@ begin
 end;
 
 // ------------------------------------------------------------------------
-{ TActionFactory }
+// TComponentInjector
+// ------------------------------------------------------------------------
 
 function TypeKindToStr(value: TTypeKind): string;
 begin
   Result := System.TypInfo.GetEnumName(TypeInfo(TTypeKind), Integer(value));
 end;
 
-class procedure TCommandVclFactory.InjectProperties(ACommand: TCommand;
+function VTypeToStr(value: byte): string;
+begin
+  case value of
+    0: Result := 'vtInteger';
+    1: Result := 'vtBoolean';
+    2: Result := 'vtChar';
+    3: Result := 'vtExtended';
+    4: Result := 'vtString';
+    5: Result := 'vtPointer';
+    6: Result := 'vtPChar';
+    7: Result := 'vtObject';
+    8: Result := 'vtClass';
+    9: Result := 'vtWideChar';
+    10: Result := 'vtPWideChar';
+    11: Result := 'vtAnsiString';
+    12: Result := 'vtCurrency';
+    13: Result := 'vtVariant';
+    14: Result := 'vtInterface';
+    15: Result := 'vtWideString';
+    16: Result := 'vtInt64';
+    17: Result := 'vtUnicodeString';
+  end;
+end;
+
+
+class procedure TComponentInjector.InjectProperties(aComponent: TComponent;
   const Injections: array of const);
 var
   i: Integer;
@@ -135,7 +165,7 @@ begin
   // * important is properties order in the command class and
   // ..  in the Injections array (should be the same)
   // --------------------------------
-  PropertyList := TComponentMetadata.GetPublishedPropetries(ACommand);
+  PropertyList := TComponentMetadata.GetPublishedPropetries(aComponent);
   SetLength(UsedInjection, Length(Injections));
   for i := 0 to High(PropertyList) do
   begin
@@ -153,18 +183,31 @@ begin
           begin
             if Injections[j].VObject.ClassName = propInfo.ClassName then
             begin
-              SetObjectProp(ACommand, propInfo.PropertyName,
+              SetObjectProp(aComponent, propInfo.PropertyName,
                 Injections[j].VObject);
               UsedInjection[j] := True;
               Break;
             end;
-          end;
+          end
+          else
+            Assert(False, Format(ERRMSG_NotSupportedParameter,
+              [j, VTypeToStr(Injections[j].VType)]));
         end;
     end
     else
-      Assert(False, Format(ERRMSG_NotSupportedInjection,
-        [propInfo.PropertyName, TypeKindToStr(propInfo.Kind)]));
+      Assert(False, Format(ERRMSG_NotSupportedInjection, [propInfo.PropertyName,
+        TypeKindToStr(propInfo.Kind)]));
   end;
+end;
+
+// ------------------------------------------------------------------------
+// TCommandVclFactory
+// ------------------------------------------------------------------------
+
+class procedure TCommandVclFactory.InjectProperties(ACommand: TCommand;
+  const Injections: array of const);
+begin
+  TComponentInjector.InjectProperties(ACommand, Injections);
 end;
 
 class function TCommandVclFactory.CreateCommand<T>(AOwner: TComponent;
@@ -235,14 +278,16 @@ var
 begin
   aCount := System.TypInfo.GetPropList(aComponent, FPropList);
   aStandardComponent := TComponent.Create(nil);
-  aStandardCount := System.TypInfo.GetPropList(aStandardComponent, FStandardPropList);
+  aStandardCount := System.TypInfo.GetPropList(aStandardComponent,
+    FStandardPropList);
   try
-    SetLength(Result, aCount-aStandardCount);
-    for i := 0 to aCount-aStandardCount - 1 do
+    SetLength(Result, aCount - aStandardCount);
+    for i := 0 to aCount - aStandardCount - 1 do
     begin
-      Result[i].Kind := FPropList^[aStandardCount+i].PropType^.Kind;
-      Result[i].PropertyName := string(FPropList^[aStandardCount+i].Name);
-      Result[i].ClassName := string(FPropList^[aStandardCount+i].PropType^.Name);
+      Result[i].Kind := FPropList^[aStandardCount + i].PropType^.Kind;
+      Result[i].PropertyName := string(FPropList^[aStandardCount + i].Name);
+      Result[i].ClassName :=
+        string(FPropList^[aStandardCount + i].PropType^.Name);
     end;
   finally
     FreeMem(FPropList);
