@@ -28,6 +28,10 @@ type
     procedure ParameterBoolean;
     procedure ParameterDouble;
     procedure ParameterDateTime;
+    procedure ParameterWord;
+    procedure ParameterValueBoolean;
+    procedure ParameterValueFloat;
+    procedure ParameterValueInt;
     procedure UnsupportedProperty_Exception;
   end;
 
@@ -147,6 +151,47 @@ begin
   TComponentInjector.InjectProperties(SimpleComponent, [FloatVal, Date]);
   Assert.AreEqual(Double(FloatVal), SimpleComponent.FloatNumber);
   Assert.AreEqual(Date, SimpleComponent.StartDate);
+end;
+
+procedure TestSingleInjection.ParameterWord;
+var
+  SimpleComponent: TSimpleComponent;
+  Value: word;
+begin
+  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
+  Value := 999;
+  TComponentInjector.InjectProperties(SimpleComponent, [Value]);
+  Assert.AreEqual(999, SimpleComponent.Number);
+end;
+
+procedure TestSingleInjection.ParameterValueInt;
+var
+  SimpleComponent: TSimpleComponent;
+  Value: word;
+begin
+  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
+  TComponentInjector.InjectProperties(SimpleComponent, [55]);
+  Assert.AreEqual(55, SimpleComponent.Number);
+end;
+
+procedure TestSingleInjection.ParameterValueBoolean;
+var
+  SimpleComponent: TSimpleComponent;
+  Value: word;
+begin
+  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
+  TComponentInjector.InjectProperties(SimpleComponent, [True]);
+  Assert.AreEqual(True, SimpleComponent.IsTrue);
+end;
+
+procedure TestSingleInjection.ParameterValueFloat;
+var
+  SimpleComponent: TSimpleComponent;
+  Value: word;
+begin
+  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
+  TComponentInjector.InjectProperties(SimpleComponent, [99.99]);
+  Assert.AreEqual(99.99, Extended(SimpleComponent.FloatNumber));
 end;
 
 procedure TestSingleInjection.UnsupportedProperty_Exception;
