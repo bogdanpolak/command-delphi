@@ -224,13 +224,12 @@ begin
           tkClass:
             SetObjectProp(aComponent, propInfo.PropertyName,
               Injections[j].VObject);
-          tkInteger,
-          tkEnumeration:
-              SetOrdProp(aComponent, propInfo.PropertyName,
-                Injections[j].VInteger);
+          tkInteger, tkEnumeration:
+            SetOrdProp(aComponent, propInfo.PropertyName,
+              Injections[j].VInteger);
           tkFloat:
-              SetFloatProp(aComponent, propInfo.PropertyName,
-                Injections[j].VExtended^);
+            SetFloatProp(aComponent, propInfo.PropertyName,
+              Injections[j].VExtended^);
         end;
         Break;
       end;
