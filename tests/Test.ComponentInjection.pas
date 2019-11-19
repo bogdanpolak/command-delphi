@@ -24,6 +24,8 @@ type
     procedure TearDown;
   published
     procedure ParameterStringList;
+    procedure ParameterStringList_ToStringsProperty;
+    procedure ParameterStringList_ToObjectProperty;
     procedure ParameterInteger;
     procedure ParameterBoolean;
     procedure ParameterDouble;
@@ -60,9 +62,13 @@ implementation
 type
   TStringsComponent = class(TComponent)
   strict private
-    FStrings: TStringList;
+    FStringList: TStringList;
+    FStrings: TStrings;
+    FSameObject: TObject;
   published
-    property Strings: TStringList read FStrings write FStrings;
+    property StringList: TStringList read FStringList write FStringList;
+    property Strings: TStrings read FStrings write FStrings;
+    property SameObject: TObject read FSameObject write FSameObject;
   end;
 
   TIntegerComponent = class(TComponent)
@@ -104,7 +110,43 @@ var
 begin
   StringsComponent := TStringsComponent.Create(FOwnerComponent);
   TComponentInjector.InjectProperties(StringsComponent, [FStrings]);
-  Assert.AreSame(FStrings, StringsComponent.Strings);
+  Assert.IsNotNull(StringsComponent.StringList);
+  Assert.AreSame(FStrings, StringsComponent.StringList);
+end;
+
+procedure TestSingleInjection.ParameterStringList_ToStringsProperty;
+var
+  StringsComponent: TStringsComponent;
+  FStrings2: TStringList;
+begin
+  StringsComponent := TStringsComponent.Create(FOwnerComponent);
+  FStrings2 := TStringList.Create;
+  try
+    TComponentInjector.InjectProperties(StringsComponent, [FStrings,FStrings2]);
+    Assert.IsNotNull(StringsComponent.Strings);
+    Assert.AreSame(FStrings2, StringsComponent.Strings);
+  finally
+    FStrings2.Free;
+  end;
+end;
+
+procedure TestSingleInjection.ParameterStringList_ToObjectProperty;
+var
+  StringsComponent: TStringsComponent;
+  FStrings2: TStringList;
+  FStrings3: TStringList;
+begin
+  StringsComponent := TStringsComponent.Create(FOwnerComponent);
+  FStrings2 := TStringList.Create;
+  FStrings3 := TStringList.Create;
+  try
+    TComponentInjector.InjectProperties(StringsComponent, [FStrings,FStrings2,FStrings3]);
+    Assert.IsNotNull(StringsComponent.SameObject);
+    Assert.AreSame(FStrings3, StringsComponent.SameObject);
+  finally
+    FStrings2.Free;
+    FStrings3.Free;
+  end;
 end;
 
 procedure TestSingleInjection.ParameterInteger;
