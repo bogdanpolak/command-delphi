@@ -40,7 +40,6 @@ type
   private
     FStrings1: TStringList;
     FStrings2: TStringList;
-    FSampleComponent: TComponent;
     FOwnerComponent: TComponent;
   public
     [Setup]
@@ -167,7 +166,6 @@ end;
 procedure TestSingleInjection.ParameterValueInt;
 var
   SimpleComponent: TSimpleComponent;
-  Value: word;
 begin
   SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
   TComponentInjector.InjectProperties(SimpleComponent, [55]);
@@ -177,7 +175,6 @@ end;
 procedure TestSingleInjection.ParameterValueBoolean;
 var
   SimpleComponent: TSimpleComponent;
-  Value: word;
 begin
   SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
   TComponentInjector.InjectProperties(SimpleComponent, [True]);
@@ -187,7 +184,6 @@ end;
 procedure TestSingleInjection.ParameterValueFloat;
 var
   SimpleComponent: TSimpleComponent;
-  Value: word;
 begin
   SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
   TComponentInjector.InjectProperties(SimpleComponent, [99.99]);
