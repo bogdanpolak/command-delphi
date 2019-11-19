@@ -124,9 +124,18 @@ end;
 
 function TPropertyInfo.isAvaliableForInjection(const aInjection
   : TVarRec): boolean;
+var
+  classType: TClass;
 begin
   if (Self.Kind = tkClass) and (aInjection.VType = vtObject) then
-    Result := (aInjection.VObject.ClassName = Self.ClassName)
+  begin
+    Result := (aInjection.VObject.ClassName = Self.ClassName);
+    classType := aInjection.VObject.ClassType;
+    while not(Result) and (classType.ClassParent<>nil) do begin
+      Result := (classType.ClassParent.ClassName = Self.ClassName);
+      classType := classType.ClassParent;
+    end;
+  end
   else
     Result := (Self.Kind = tkInteger) and (aInjection.VType = vtInteger) or
       (Self.Kind = tkEnumeration) and (aInjection.VType = vtBoolean) or
