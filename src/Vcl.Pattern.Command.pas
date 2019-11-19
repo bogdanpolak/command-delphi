@@ -44,6 +44,7 @@ type
     Kind: TTypeKind;
     PropertyName: string;
     ClassName: string;
+    function isAvaliableForInjection(const aInjection: TVarRec): boolean;
   end;
 
   TPropertyArray = array of TPropertyInfo;
@@ -89,9 +90,6 @@ type
 implementation
 
 const
-  ERRMSG_NotSupportedInjection = 'Not supported injection type!' +
-    ' This property %s: %s in not supported in command pattern.' +
-    ' Move this propoerty into [public] section';
   ERRMSG_NotSupportedParameter = 'Not supported parameter type to inject!' +
     'Parameter index (zaro-based): %d. Paramter type: %s';
 
@@ -121,6 +119,28 @@ end;
 // ------------------------------------------------------------------------
 // TComponentInjector
 // ------------------------------------------------------------------------
+
+{ TPropertyInfo }
+
+function TPropertyInfo.isAvaliableForInjection(const aInjection
+  : TVarRec): boolean;
+var
+  classType: TClass;
+begin
+  if (Self.Kind = tkClass) and (aInjection.VType = vtObject) then
+  begin
+    Result := (aInjection.VObject.ClassName = Self.ClassName);
+    classType := aInjection.VObject.ClassType;
+    while not(Result) and (classType.ClassParent<>nil) do begin
+      Result := (classType.ClassParent.ClassName = Self.ClassName);
+      classType := classType.ClassParent;
+    end;
+  end
+  else
+    Result := (Self.Kind = tkInteger) and (aInjection.VType = vtInteger) or
+      (Self.Kind = tkEnumeration) and (aInjection.VType = vtBoolean) or
+      (Self.Kind = tkFloat) and (aInjection.VType = vtExtended);
+end;
 
 function TypeKindToStr(value: TTypeKind): string;
 begin
@@ -183,6 +203,11 @@ begin
         [j, VTypeToStr(Injections[j].VType)]));
 end;
 
+// - - - - - - - - - - - - - - - - - - - - - - - - -
+// TPropertyInfo.Kind: tkInteger, tkChar, tkEnumeration, tkFloat, tkString,
+// tkSet, tkWChar, tkLString, tkWString, tkVariant, tkArray, tkRecord,
+// tkInterface, tkInt64, tkDynArray, tkUString
+// - - - - - - - - - - - - - - - - - - - - - - - - -
 class procedure TComponentInjector.InjectProperties(aComponent: TComponent;
   const Injections: array of const);
 var
@@ -192,71 +217,32 @@ var
   propInfo: TPropertyInfo;
   UsedInjection: TArray<boolean>;
 begin
-  // Inject dependencies to the command.
-  // Limitations of this version:
-  // * only TObject and descendants injections is supported
-  // * important is properties order in the command class and
-  // ..  in the Injections array (should be the same)
-  // --------------------------------
   AssertParameters(Injections);
   PropertyList := TComponentMetadata.GetPublishedPropetries(aComponent);
   SetLength(UsedInjection, Length(Injections));
   for i := 0 to High(PropertyList) do
   begin
     propInfo := PropertyList[i];
-    // propInfo.Kind:
-    // tkInteger, tkChar, tkEnumeration, tkFloat, tkString, tkSet,
-    // tkWChar, tkLString, tkWString, tkVariant, tkArray, tkRecord,
-    // tkInterface, tkInt64, tkDynArray, tkUString
-    if propInfo.Kind = tkClass then
+    for j := 0 to High(Injections) do
     begin
-      for j := 0 to High(Injections) do
-        if not(UsedInjection[j]) then
-        begin
-          if (Injections[j].VType = vtObject) then
-          begin
-            if Injections[j].VObject.ClassName = propInfo.ClassName then
-            begin
-              SetObjectProp(aComponent, propInfo.PropertyName,
-                Injections[j].VObject);
-              UsedInjection[j] := True;
-              Break;
-            end;
-          end
-        end;
-    end
-    else if (propInfo.Kind = tkInteger) or (propInfo.Kind = tkEnumeration) or
-      (propInfo.Kind = tkFloat) then
-    begin
-      for j := 0 to High(Injections) do
-        if not(UsedInjection[j]) then
-        begin
-          if (propInfo.Kind = tkInteger) and (Injections[j].VType = vtInteger) then
-          begin
+      if not(UsedInjection[j]) and propInfo.isAvaliableForInjection
+        (Injections[j]) then
+      begin
+        UsedInjection[j] := True;
+        case propInfo.Kind of
+          tkClass:
+            SetObjectProp(aComponent, propInfo.PropertyName,
+              Injections[j].VObject);
+          tkInteger, tkEnumeration:
             SetOrdProp(aComponent, propInfo.PropertyName,
               Injections[j].VInteger);
-            UsedInjection[j] := True;
-            Break;
-          end
-          else if (propInfo.Kind = tkEnumeration) and (Injections[j].VType = vtBoolean) then
-          begin
-            SetOrdProp(aComponent, propInfo.PropertyName,
-              Injections[j].VInteger);
-            UsedInjection[j] := True;
-            Break;
-          end
-          else if (propInfo.Kind = tkFloat) and (Injections[j].VType = vtExtended) then
-          begin
+          tkFloat:
             SetFloatProp(aComponent, propInfo.PropertyName,
               Injections[j].VExtended^);
-            UsedInjection[j] := True;
-            Break;
-          end;
         end;
+        Break;
+      end;
     end
-    else
-      Assert(False, Format(ERRMSG_NotSupportedInjection, [propInfo.PropertyName,
-        TypeKindToStr(propInfo.Kind)]));
   end;
 end;
 
