@@ -51,8 +51,8 @@ type
   TestCommndFactory_AdvancedCommand = class(TObject)
   private
     FComponent: TComponent;
-    FStringO: TStringList;
-    FStringE: TStringList;
+    FStringPrime: TStringList;
+    FStringNonPrime: TStringList;
     FMemStream: TMemoryStream;
     FList: TList<Integer>;
   public
@@ -61,7 +61,10 @@ type
     [TearDown]
     procedure TearDown;
   published
-    procedure Execute;
+    procedure Execute_TestPrimes;
+    procedure Execute_TestNonPrimes;
+    procedure Execute_TestStream;
+    procedure Execute_ProcessOnlyPrimes;
   end;
 
 implementation
@@ -250,22 +253,27 @@ type
   TAdvancedCommand = class(TCommand)
   private
     FCount: Integer;
-    FEvenLines: TStringList;
-    FOddLines: TStringList;
+    FNonPrimeLines: TStrings;
+    FPrimeLines: TStrings;
     FComponent: TComponent;
-    FStream: TMemoryStream;
+    FStream: TStream;
     FListInt: TList<Integer>;
+    FProcessNonPrimeNumbers: boolean;
     procedure WriteIntegerToStream(aValue: Integer);
+    class function isPrime (num: integer): boolean;
   protected
     procedure Guard; override;
   public
+    constructor Create(AOwner: TComponent); override;
     procedure Execute; override;
     property Count: Integer read FCount write FCount;
   published
-    property Stream: TMemoryStream read FStream write FStream;
-    property OddLines: TStringList read FOddLines write FOddLines;
+    property Stream: TStream read FStream write FStream;
+    property PrimeLines: TStrings read FPrimeLines write FPrimeLines;
     property Component: TComponent read FComponent write FComponent;
-    property EvenLines: TStringList read FEvenLines write FEvenLines;
+    property ProcessNonPrimeNumbers: boolean read FProcessNonPrimeNumbers
+      write FProcessNonPrimeNumbers;
+    property NonPrimeLines: TStrings read FNonPrimeLines write FNonPrimeLines;
     property ListInt: TList<Integer> read FListInt write FListInt;
   end;
 
@@ -274,15 +282,34 @@ type
 procedure TAdvancedCommand.Guard;
 begin
   System.Assert(Stream <> nil);
-  System.Assert(OddLines <> nil);
+  System.Assert(PrimeLines <> nil);
   System.Assert(Component <> nil);
-  System.Assert(EvenLines <> nil);
+  System.Assert(NonPrimeLines <> nil);
   System.Assert(ListInt <> nil);
 end;
+
+class function TAdvancedCommand.isPrime(num: integer): boolean;
+var
+  M: Integer;
+begin
+  if num <= 1 then
+    exit(false);
+  for M := 2 to (num div 2) do
+    if num mod M = 0 then
+      exit(false);
+  exit(true);
+end;
+
 
 procedure TAdvancedCommand.WriteIntegerToStream(aValue: Integer);
 begin
   Stream.Write(aValue, SizeOf(aValue));
+end;
+
+constructor TAdvancedCommand.Create(AOwner: TComponent);
+begin
+  inherited;
+  ProcessNonPrimeNumbers := True;
 end;
 
 procedure TAdvancedCommand.Execute;
@@ -290,16 +317,16 @@ var
   i: Integer;
 begin
   inherited;
-  OddLines.Clear;
-  EvenLines.Clear;
+  PrimeLines.Clear;
+  NonPrimeLines.Clear;
   WriteIntegerToStream(ListInt.Count);
   for i := 0 to ListInt.Count - 1 do
   begin
     WriteIntegerToStream(ListInt[i]);
-    if odd(i) then
-      OddLines.Add('Number: ' + ListInt[i].ToString)
-    else
-      EvenLines.Add(ListInt[i].ToString);
+    if isPrime(ListInt[i]) then
+      PrimeLines.Add(Format('%d is prime',[ListInt[i]]))
+    else if ProcessNonPrimeNumbers then
+      NonPrimeLines.Add(ListInt[i].ToString);
   end;
   with Component do
   begin
@@ -314,34 +341,75 @@ end;
 procedure TestCommndFactory_AdvancedCommand.Setup;
 begin
   FComponent := TComponent.Create(nil);
-  FStringO := TStringList.Create;
-  FStringE := TStringList.Create;
+  FStringPrime := TStringList.Create;
+  FStringNonPrime := TStringList.Create;
   FMemStream := TMemoryStream.Create;
   FList := TList<Integer>.Create;
-  FList.AddRange([10,13,20,17,100,101,105]);
 end;
 
 procedure TestCommndFactory_AdvancedCommand.TearDown;
 begin
-  FStringO.Free;
-  FStringE.Free;
+  FStringPrime.Free;
+  FStringNonPrime.Free;
   FMemStream.Free;
   FList.Free;
   FComponent.Free;
 end;
 
-procedure TestCommndFactory_AdvancedCommand.Execute;
-var
-  MyStream: TStream;
+procedure TestCommndFactory_AdvancedCommand.Execute_TestPrimes;
 begin
-  MyStream := (FMemStream as TStream);
+  with FList do
+  begin
+    Clear;
+    AddRange([10, 13, 20, 17, 100, 101, 105]);
+  end;
   TCommandVclFactory.ExecuteCommand<TAdvancedCommand>
-    ([FComponent, FStringO, FStringE, MyStream, FList]);
-  Assert.AreEqual(3,FStringO.Count);
-  Assert.AreEqual('Number: 13',FStringO[0]);
-  Assert.AreEqual(4,FStringE.Count);
-  Assert.AreEqual('10',FStringE[0]);
-  Assert.AreEqual(32,integer(FMemStream.Size));
+    ([FComponent, FStringPrime, FStringNonPrime, FMemStream, FList]);
+  Assert.AreEqual(3, FStringPrime.Count);
+  Assert.AreEqual('13 is prime', FStringPrime[0]);
+  Assert.AreEqual('17 is prime', FStringPrime[1]);
+  Assert.AreEqual('101 is prime', FStringPrime[2]);
+end;
+
+procedure TestCommndFactory_AdvancedCommand.Execute_TestNonPrimes;
+begin
+  with FList do
+  begin
+    Clear;
+    AddRange([10, 13, 20, 17, 100, 101, 105]);
+  end;
+  TCommandVclFactory.ExecuteCommand<TAdvancedCommand>
+    ([FComponent, FStringPrime, FStringNonPrime, FMemStream, FList]);
+  Assert.AreEqual(4, FStringNonPrime.Count);
+  Assert.AreEqual('10', FStringNonPrime[0]);
+  Assert.AreEqual('20', FStringNonPrime[1]);
+  Assert.AreEqual('100', FStringNonPrime[2]);
+  Assert.AreEqual('105', FStringNonPrime[3]);
+end;
+
+procedure TestCommndFactory_AdvancedCommand.Execute_TestStream;
+begin
+  with FList do
+  begin
+    Clear;
+    AddRange([10, 13, 20, 17, 100, 101, 105]);
+  end;
+  TCommandVclFactory.ExecuteCommand<TAdvancedCommand>
+    ([FComponent, FStringPrime, FStringNonPrime, FMemStream, FList]);
+  Assert.AreEqual(32, Integer(FMemStream.Size));
+end;
+
+procedure TestCommndFactory_AdvancedCommand.Execute_ProcessOnlyPrimes;
+begin
+  with FList do
+  begin
+    Clear;
+    AddRange([10, 13, 20, 17, 100, 101, 105]);
+  end;
+  TCommandVclFactory.ExecuteCommand<TAdvancedCommand>
+    ([FComponent, FStringPrime, FStringNonPrime, FMemStream, FList,False]);
+  Assert.AreEqual(3, FStringPrime.Count);
+  Assert.AreEqual(0, FStringNonPrime.Count);
 end;
 
 // ------------------------------------------------------------------------
