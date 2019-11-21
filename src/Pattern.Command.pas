@@ -26,11 +26,14 @@ type
     ReleaseDate = '2019.11.16';
     ReleaseVersion = '0.4';
     // * --------------------------------------------------------------------
-  strict protected
+  protected
     // procedure Guard; - assert injections of all required properties
     procedure Guard; virtual; abstract;
     procedure Execute; virtual; abstract;
   public
+    class procedure AdhocExecute<T: TCommand>(const Injections
+      : array of const); static;
+    function Inject(const Injections: array of const): TCommand;
     procedure ExecuteCommand;
   end;
 
@@ -56,17 +59,6 @@ type
     class procedure AssertParameters(const Injections: array of const); static;
   end;
 
-  TCommandVclFactory = class(TComponent)
-  private
-    class procedure InjectProperties(ACommand: TCommand;
-      const Injections: array of const);
-  public
-    class function CreateCommand<T: TCommand>(AOwner: TComponent;
-      const Injections: array of const): T;
-    class procedure ExecuteCommand<T: TCommand>(const Injections
-      : array of const);
-  end;
-
 type
   TCommandClass = class of TCommand;
 
@@ -89,6 +81,31 @@ begin
   Guard;
   Execute;
 end;
+
+function TCommand.Inject(const Injections: array of const): TCommand;
+begin
+  TComponentInjector.InjectProperties(Self, Injections);
+  Result := Self;
+end;
+
+class procedure TCommand.AdhocExecute<T>(const Injections: array of const);
+var
+  AClass: TCommandClass;
+  Command: T;
+begin
+  try
+    // -----------------------------------------
+    AClass := T;
+    Command := T(AClass.Create(nil));
+    // 10.3 Rio: Command := T.Create(nil);
+    // -----------------------------------------
+    TComponentInjector.InjectProperties(Command, Injections);
+    Command.ExecuteCommand;
+  finally
+    Command.Free;
+  end;
+end;
+
 
 // ------------------------------------------------------------------------
 // TComponentInjector
@@ -221,50 +238,9 @@ begin
   end;
 end;
 
-// ------------------------------------------------------------------------
-// TCommandVclFactory
-// ------------------------------------------------------------------------
-
-class procedure TCommandVclFactory.InjectProperties(ACommand: TCommand;
-  const Injections: array of const);
-begin
-  TComponentInjector.InjectProperties(ACommand, Injections);
-end;
-
-class function TCommandVclFactory.CreateCommand<T>(AOwner: TComponent;
-  const Injections: array of const): T;
-var
-  AClass: TCommandClass;
-begin
-  // -----------------------------------------
-  AClass := T;
-  Result := T(AClass.Create(AOwner));
-  // 10.3 Rio: just one line: Result := T.Create(AOwner);
-  // -----------------------------------------
-  InjectProperties(Result, Injections);
-end;
-
-class procedure TCommandVclFactory.ExecuteCommand<T>(const Injections
-  : array of const);
-var
-  AClass: TCommandClass;
-  Command: T;
-begin
-  try
-    // -----------------------------------------
-    AClass := T;
-    Command := T(AClass.Create(nil));
-    // 10.3 Rio: Command := T.Create(nil);
-    // -----------------------------------------
-    InjectProperties(Command, Injections);
-    Command.ExecuteCommand;
-  finally
-    Command.Free;
-  end;
-end;
 
 // ------------------------------------------------------------------------
-
+// ------------------------------------------------------------------------
 { TClassPropertyList }
 
 class function TComponentMetadata.GetPublishedPropetries(aComponent: TComponent)
