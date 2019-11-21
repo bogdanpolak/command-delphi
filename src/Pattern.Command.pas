@@ -23,8 +23,8 @@ type
   const
     // * --------------------------------------------------------------------
     // * Signature
-    ReleaseDate = '2019.11.16';
-    ReleaseVersion = '0.4';
+    ReleaseDate = '2019.11.21';
+    ReleaseVersion = '0.5';
     // * --------------------------------------------------------------------
   protected
     // procedure Guard; - assert injections of all required properties
