@@ -10,8 +10,9 @@ unit Pattern.Command;
 interface
 
 uses
-  System.Classes, System.SysUtils, System.Actions, System.TypInfo,
-  Vcl.ActnList;
+  System.Classes,
+  System.SysUtils,
+  System.TypInfo;
 
 type
   ICommand = interface
@@ -100,8 +101,9 @@ begin
   if (Self.Kind = tkClass) and (aInjection.VType = vtObject) then
   begin
     Result := (aInjection.VObject.ClassName = Self.ClassName);
-    classType := aInjection.VObject.ClassType;
-    while not(Result) and (classType.ClassParent<>nil) do begin
+    classType := aInjection.VObject.classType;
+    while not(Result) and (classType.ClassParent <> nil) do
+    begin
       Result := (classType.ClassParent.ClassName = Self.ClassName);
       classType := classType.ClassParent;
     end;
