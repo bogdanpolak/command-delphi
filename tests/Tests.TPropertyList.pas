@@ -5,7 +5,7 @@ interface
 uses
   DUnitX.TestFramework,
   System.Classes, System.SysUtils, System.TypInfo,
-  Vcl.Pattern.Command;
+  Pattern.Command;
 
 {$TYPEINFO ON}  { Requred for old RTTI metadata form published section }
 

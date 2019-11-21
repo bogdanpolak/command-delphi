@@ -11,10 +11,11 @@ uses
   DUnitX.Loggers.Console,
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
-  Vcl.Pattern.Command in '..\src\Vcl.Pattern.Command.pas',
+  Pattern.Command in '..\src\Pattern.Command.pas',
   Tests.TPropertyList in 'Tests.TPropertyList.pas',
   Tests.TCommandFactory in 'Tests.TCommandFactory.pas',
-  Test.ComponentInjection in 'Test.ComponentInjection.pas';
+  Test.ComponentInjection in 'Test.ComponentInjection.pas',
+  Pattern.CommandAction in '..\src\Pattern.CommandAction.pas';
 
 var
   runner : ITestRunner;

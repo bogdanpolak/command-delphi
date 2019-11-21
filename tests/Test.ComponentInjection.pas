@@ -5,7 +5,7 @@ interface
 uses
   DUnitX.TestFramework,
   System.Classes, System.SysUtils,
-  Vcl.Pattern.Command;
+  Pattern.Command;
 
 {$M+}
 
