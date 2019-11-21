@@ -1,13 +1,9 @@
 ﻿{* ------------------------------------------------------------------------
  * ♥
- * ♥ VCL Command component/class with a factory
+ * ♥ Command Parttern
  * ♥
- * Components:     TCommand, TCommandAction
- * Classes:        TCommandVclFactory
+ * Components:     TCommand
  * Project:        https://github.com/bogdanpolak/command-delphi
- * Documentation:  on the github site
- * ReleaseDate:    ↓ see Signature below ↓
- * ReleaseVersion: ↓ see Signature below ↓
  * ------------------------------------------------------------------------}
 unit Vcl.Pattern.Command;
 
