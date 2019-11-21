@@ -36,7 +36,7 @@ end;
 procedure TCommandAction.OnExecuteEvent(Sender: TObject);
 begin
   Assert(Command <> nil);
-  FCommand.Execute;
+  FCommand.ExecuteCommand;
 end;
 
 function TCommandAction.SetupCaption(const ACaption: string): TCommandAction;

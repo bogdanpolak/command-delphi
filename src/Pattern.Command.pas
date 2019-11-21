@@ -26,15 +26,12 @@ type
     ReleaseDate = '2019.11.16';
     ReleaseVersion = '0.4';
     // * --------------------------------------------------------------------
-  strict private
-    // FReceiver: TReceiver;
   strict protected
     // procedure Guard; - assert injections of all required properties
     procedure Guard; virtual; abstract;
+    procedure Execute; virtual; abstract;
   public
-    procedure Execute; virtual;
-    // call receiver method(s) or just do the job (merged command)
-    // property Receiver: TReceiver read FReceiver set FReceiver;
+    procedure ExecuteCommand;
   end;
 
   TPropertyInfo = record
@@ -79,12 +76,18 @@ const
   ERRMSG_NotSupportedParameter = 'Not supported parameter type to inject!' +
     'Parameter index (zaro-based): %d. Paramter type: %s';
 
-  // ------------------------------------------------------------------------
-  { TCommand }
+procedure __for_code_formatter;
+begin
+end;
 
-procedure TCommand.Execute;
+// ------------------------------------------------------------------------
+// TCommand
+// ------------------------------------------------------------------------
+
+procedure TCommand.ExecuteCommand;
 begin
   Guard;
+  Execute;
 end;
 
 // ------------------------------------------------------------------------
@@ -254,7 +257,7 @@ begin
     // 10.3 Rio: Command := T.Create(nil);
     // -----------------------------------------
     InjectProperties(Command, Injections);
-    Command.Execute;
+    Command.ExecuteCommand;
   finally
     Command.Free;
   end;
