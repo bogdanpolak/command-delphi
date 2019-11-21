@@ -7,7 +7,7 @@ uses
   System.Classes,
   System.SysUtils,
   System.Generics.Collections,
-  Vcl.Pattern.Command;
+  Pattern.Command;
 
 {$M+}
 

@@ -5,7 +5,7 @@
  * Components:     TCommand
  * Project:        https://github.com/bogdanpolak/command-delphi
  * ------------------------------------------------------------------------}
-unit Vcl.Pattern.Command;
+unit Pattern.Command;
 
 interface
 
