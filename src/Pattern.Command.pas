@@ -67,17 +67,6 @@ type
       const Injections: array of const): T;
     class procedure ExecuteCommand<T: TCommand>(const Injections
       : array of const);
-    class function CreateCommandAction<T: TCommand>(AOwner: TComponent;
-      const ACaption: string; const Injections: array of const): TAction;
-  end;
-
-  TCommandAction = class(TAction)
-  strict private
-    FCommand: TCommand;
-    procedure OnExecuteEvent(Sender: TObject);
-  public
-    constructor Create(AOwner: TComponent); override;
-    property Command: TCommand read FCommand write FCommand;
   end;
 
 type
@@ -95,21 +84,6 @@ const
 procedure TCommand.Execute;
 begin
   Guard;
-end;
-
-// ------------------------------------------------------------------------
-{ TCommandAction }
-
-constructor TCommandAction.Create(AOwner: TComponent);
-begin
-  inherited;
-  Self.OnExecute := OnExecuteEvent;
-end;
-
-procedure TCommandAction.OnExecuteEvent(Sender: TObject);
-begin
-  Assert(Command <> nil);
-  FCommand.Execute;
 end;
 
 // ------------------------------------------------------------------------
@@ -282,26 +256,6 @@ begin
   finally
     Command.Free;
   end;
-end;
-
-class function TCommandVclFactory.CreateCommandAction<T>(AOwner: TComponent;
-  const ACaption: string; const Injections: array of const): TAction;
-var
-  act: TCommandAction;
-  AClass: TCommandClass;
-begin
-  act := TCommandAction.Create(AOwner);
-  with act do
-  begin
-    // -----------------------------------------
-    AClass := (T);
-    Command := T(AClass.Create(act));
-    // 10.3 Rio: Command := T.Create(act);
-    // -----------------------------------------
-    Caption := ACaption;
-  end;
-  InjectProperties(act.Command, Injections);
-  Result := act;
 end;
 
 // ------------------------------------------------------------------------

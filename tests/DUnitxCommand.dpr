@@ -14,7 +14,8 @@ uses
   Pattern.Command in '..\src\Pattern.Command.pas',
   Tests.TPropertyList in 'Tests.TPropertyList.pas',
   Tests.TCommandFactory in 'Tests.TCommandFactory.pas',
-  Test.ComponentInjection in 'Test.ComponentInjection.pas';
+  Test.ComponentInjection in 'Test.ComponentInjection.pas',
+  Pattern.CommandAction in '..\src\Pattern.CommandAction.pas';
 
 var
   runner : ITestRunner;
