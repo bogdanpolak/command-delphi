@@ -76,8 +76,8 @@ type
     FActive: boolean;
     FCount: Integer;
   strict protected
-    procedure Guard; override;
-    procedure Execute; override;
+    procedure DoGuard; override;
+    procedure DoExecute; override;
   public
     property Active: boolean read FActive write FActive;
     property Count: Integer read FCount write FCount;
@@ -85,12 +85,12 @@ type
 
 {$REGION 'implementation of the Basic command = TCommandA'}
 
-procedure TCommandA.Guard;
+procedure TCommandA.DoGuard;
 begin
-  System.Assert(Count = 0);
+  // System.Assert( check is injected required property );
 end;
 
-procedure TCommandA.Execute;
+procedure TCommandA.DoExecute;
 begin
   Active := True;
   Count := Count + 1;
@@ -113,7 +113,7 @@ var
   CommandA: TCommandA;
 begin
   CommandA := TCommandA.Create(FOwnerComponent);
-  CommandA.ExecuteCommand;
+  CommandA.Execute;
   Assert.IsTrue(CommandA.Active, 'TCommanndA.Active property expected True');
   Assert.AreEqual(1, CommandA.Count);
 end;
@@ -147,8 +147,8 @@ type
     FCount: Integer;
     FLines: TStringList;
   strict protected
-    procedure Guard; override;
-    procedure Execute; override;
+    procedure DoGuard; override;
+    procedure DoExecute; override;
   public
     property Count: Integer read FCount write FCount;
   published
@@ -157,12 +157,12 @@ type
 
 {$REGION 'implementation TCommandStringList'}
 
-procedure TCommandStringList.Guard;
+procedure TCommandStringList.DoGuard;
 begin
   System.Assert(Lines <> nil);
 end;
 
-procedure TCommandStringList.Execute;
+procedure TCommandStringList.DoExecute;
 begin
   inherited;
   Count := Count + 1;
@@ -196,8 +196,8 @@ var
 begin
   CommandStrings := TCommandStringList.Create(FOwnerComponent);
   CommandStrings.Inject([FStrings]);
-  CommandStrings.ExecuteCommand;
-  CommandStrings.ExecuteCommand;
+  CommandStrings.Execute;
+  CommandStrings.Execute;
   FStrings.Delete(0);
   Assert.AreEqual(1, FStrings.Count);
   Assert.AreEqual(1, CommandStrings.Lines.Count);
@@ -229,8 +229,8 @@ type
     procedure WriteIntegerToStream(aValue: Integer);
     class function isPrime(num: Integer): boolean;
   strict protected
-    procedure Guard; override;
-    procedure Execute; override;
+    procedure DoGuard; override;
+    procedure DoExecute; override;
   public
     constructor Create(AOwner: TComponent); override;
     property Count: Integer read FCount write FCount;
@@ -246,7 +246,7 @@ type
 
 {$REGION 'implementation TAdvancedCommand'}
 
-procedure TAdvancedCommand.Guard;
+procedure TAdvancedCommand.DoGuard;
 begin
   System.Assert(Stream <> nil);
   System.Assert(PrimeLines <> nil);
@@ -278,7 +278,7 @@ begin
   ProcessNonPrimeNumbers := True;
 end;
 
-procedure TAdvancedCommand.Execute;
+procedure TAdvancedCommand.DoExecute;
 var
   i: Integer;
 begin

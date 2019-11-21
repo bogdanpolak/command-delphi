@@ -28,13 +28,13 @@ type
     // * --------------------------------------------------------------------
   protected
     // procedure Guard; - assert injections of all required properties
-    procedure Guard; virtual;
-    procedure Execute; virtual; abstract;
+    procedure DoGuard; virtual;
+    procedure DoExecute; virtual; abstract;
   public
     class procedure AdhocExecute<T: TCommand>(const Injections
       : array of const); static;
     function Inject(const Injections: array of const): TCommand;
-    procedure ExecuteCommand;
+    procedure Execute;
   end;
 
   TPropertyInfo = record
@@ -76,13 +76,13 @@ end;
 // TCommand
 // ------------------------------------------------------------------------
 
-procedure TCommand.ExecuteCommand;
+procedure TCommand.Execute;
 begin
-  Guard;
-  Execute;
+  DoGuard;
+  DoExecute;
 end;
 
-procedure TCommand.Guard;
+procedure TCommand.DoGuard;
 begin
   raise EAbort.Create('Define Guard method for the child Command class. Do not call `inherited` in Guard method.');
 end;
@@ -105,7 +105,7 @@ begin
     // 10.3 Rio: Command := T.Create(nil);
     // -----------------------------------------
     TComponentInjector.InjectProperties(Command, Injections);
-    Command.ExecuteCommand;
+    Command.Execute;
   finally
     Command.Free;
   end;
