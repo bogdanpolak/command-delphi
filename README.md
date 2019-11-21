@@ -26,70 +26,81 @@ The `TCommand` component was created to help the **modernization of the legacy V
 
 ## TCommand component
 
-The easiest way to use the `TCommand` component is to create a new class, paste long method into Execute method and add all dependencies as properties to published section. See sample bellow.
-
-Created object you can wrap into TCommandAction object and use it as classic VCL action. You can use the factory for this task (described below)
+The easiest way to use the `TCommand` component is to create a new class, paste long method into Execute method and add all dependencies as published properties. See sample bellow.
 
 Diagram of TCommand usage in the VCL application:
 
 ![](./docs/resources/tcommand-vcl.png)
 
-## VCL TCommand factory
+## Developing new command
 
-Methods of the class `TCommandVclFactory`:
+> TBD (delivered in ver 0.6)
 
-1) `function CreateCommand` - creates a single command component (TCommand descendant) and inject dependencies into it
-1)  `procedure ExecuteCommand` - executes a command (creates a command, injects dependencies executes it and removes)
-1)  `function CreateCommandAction` - creates TAction, which contains embedded TCommand and injects dependencies
+## TCommand execution
+
+1) Instant (ad-hoc) command execution
+    * `TCommand.AdhocExecute<T>` - executes a command (creates a command, injects dependencies executes it and removes)
+1) Full command construction and execution 
+    * Create command with standard (component) constructor
+    * Call method `Inject`
+    * Execute command with `Execute`
+1) Build command invoker `TCommandAction` which executes the command when the action is invoked
+    * `TCommandAction` class is classic VCL action
+    * This class has special methods to allow rapid construction and initialization
+
+## TCommand injection system
+
+> TBD (delivered in ver 0.6)
+
+## TCommandAction - VCL command invoker
+
+> TBD (delivered in ver 0.6)
 
 ## Samples
 
+Ad-hoc command execution (create, inject, execute, remove)
+```pas
+TCommand.AdhocExecute<TSampleCommand>([Memo1, Edit1]);
+```
+
 Creates command and inject dependencies:
 ```pas
-ACommand := TCommandVclFactory.CreateCommand<TButon2Command>(
-    AOwner, [Memo1, Edit1]);
+cmdSampleCommand := TSampleCommand.Create(AOwner);
+cmdSampleCommand.Inject([Memo1, Edit1]);
 ```
 
-Creates command, inject dependencies, execute it and remove:
+Create invoker `TCommandAction`:
 ```pas
-TCommandVclFactory.ExecuteCommand<TButon2Command>(
-    [Memo1, Edit1]);
-```
-
-Create `TCommandAction` and command with injection:
-```pas
-act := TCommandVclFactory.CreateCommandAction
-    <TButon1Command>(Self, 'Run command: Button1',
-    [Memo1]);
-Button1.Action := act;
+Button1.Action := cmdSampleCommand := TCommandAction.Create(Button1)
+  .SetupCaption('Run sample command')
+  .SetupCommand(TSampleCommand.Create(Button1)
+    .Inject([Memo1, Edit1])
+  );
 ```
 
 Sample `TCommand` component:
 ```pas
 type
-  TButon2Command = class (TCommand)
+  TSampleCommand = class (TCommand)
   private
     FMemo: TMemo;
     FEdit: TEdit;
   protected
-    procedure Guard; override;
-  public
-    procedure Execute; override;
+    procedure DoGuard; override;
+    procedure DoExecute; override;
   published
     property Memo: TMemo read FMemo write FMemo;
     property Edit: TEdit read FEdit write FEdit;
   end;
 
-procedure TButon2Command.Guard; override;
+procedure TSampleCommand.DoGuard; override;
 begin
-  Assert(Memo<>nil);
-  Assert(Edit<>nil);
+  System.Assert(Memo<>nil);
+  System.Assert(Edit<>nil);
 end;
 
-procedure TButon2Command.Execute;
+procedure TSampleCommand.DoExecute;
 begin
-  inherited;
-  Memo.Lines.Add('');
   Memo.Lines.Add('Getting Edit text and put it here ...');
   Memo.Lines.Add('  * Edit.Text: '+Edit.Text);
 end;

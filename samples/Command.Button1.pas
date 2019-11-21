@@ -3,33 +3,33 @@ unit Command.Button1;
 interface
 
 uses
-  System.Classes, System.SysUtils,
-  Vcl.StdCtrls, Vcl.Pattern.Command;
+  System.Classes,
+  System.SysUtils,
+  Vcl.StdCtrls,
+  Pattern.Command;
 
 type
   TButon1Command = class (TCommand)
   private
     FMemo: TMemo;
   protected
-    procedure Guard; override;
-  public
-    procedure Execute; override;
+    procedure DoGuard; override;
+    procedure DoExecute; override;
   published
     property Memo: Vcl.StdCtrls.TMemo read FMemo write FMemo;
   end;
 
 implementation
 
-procedure TButon1Command.Guard;
+procedure TButon1Command.DoGuard;
 begin
-  inherited;
   Assert(Memo<>nil);
 end;
 
-procedure TButon1Command.Execute;
+procedure TButon1Command.DoExecute;
 begin
-  inherited;
-  Memo.Lines.Add('Simple message from command 1');
+  Memo.Lines.Add('[1] Simple message from command 1');
+  Memo.Lines.Add('--- ---');
 end;
 
 end.

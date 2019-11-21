@@ -7,7 +7,7 @@ uses
   System.Classes,
   System.SysUtils,
   System.Generics.Collections,
-  Vcl.Pattern.Command;
+  Pattern.Command;
 
 {$M+}
 
@@ -23,9 +23,6 @@ type
     [TearDown]
     procedure TearDown;
   published
-    procedure Test_AdhocExecuteCommand;
-    procedure Test_CreateCommandProperType;
-    procedure Test_CreateCommandAndDestroyOwner;
     procedure Test_ExecuteCommandAndCheckActive;
     procedure Test_NotExecuteCommand_CounterZero;
     procedure Test_ExecuteCommand2x;
@@ -51,8 +48,8 @@ type
   TestCommndFactory_AdvancedCommand = class(TObject)
   private
     FComponent: TComponent;
-    FStringO: TStringList;
-    FStringE: TStringList;
+    FStringPrime: TStringList;
+    FStringNonPrime: TStringList;
     FMemStream: TMemoryStream;
     FList: TList<Integer>;
   public
@@ -61,7 +58,10 @@ type
     [TearDown]
     procedure TearDown;
   published
-    procedure Execute;
+    procedure Execute_TestPrimes;
+    procedure Execute_TestNonPrimes;
+    procedure Execute_TestStream;
+    procedure Execute_ProcessOnlyPrimes;
   end;
 
 implementation
@@ -75,33 +75,24 @@ type
   strict private
     FActive: boolean;
     FCount: Integer;
-  protected
-    procedure Guard; override;
+  strict protected
+    procedure DoGuard; override;
+    procedure DoExecute; override;
   public
-    class var IsExecuted: boolean;
-    class var IsDestroyed: boolean;
-    procedure Execute; override;
-    destructor Destroy; override;
     property Active: boolean read FActive write FActive;
     property Count: Integer read FCount write FCount;
   end;
 
 {$REGION 'implementation of the Basic command = TCommandA'}
 
-procedure TCommandA.Guard;
+procedure TCommandA.DoGuard;
 begin
+  // System.Assert( check is injected required property );
 end;
 
-destructor TCommandA.Destroy;
-begin
-  IsDestroyed := True;
-  inherited;
-end;
-
-procedure TCommandA.Execute;
+procedure TCommandA.DoExecute;
 begin
   Active := True;
-  IsExecuted := True;
   Count := Count + 1;
 end;
 
@@ -110,8 +101,6 @@ end;
 procedure TestCommndFactory_BasicCommand.Setup;
 begin
   FOwnerComponent := TComponent.Create(nil);
-  TCommandA.IsExecuted := False;
-  TCommandA.IsDestroyed := False;
 end;
 
 procedure TestCommndFactory_BasicCommand.TearDown;
@@ -119,44 +108,21 @@ begin
   FOwnerComponent.Free;
 end;
 
-procedure TestCommndFactory_BasicCommand.Test_AdhocExecuteCommand;
-begin
-  TCommandVclFactory.ExecuteCommand<TCommandA>([]);
-  Assert.IsTrue(TCommandA.IsExecuted, 'TCommandA not executed');
-end;
-
-procedure TestCommndFactory_BasicCommand.Test_CreateCommandProperType;
-var
-  cmd: TCommandA;
-begin
-  cmd := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
-  Assert.InheritsFrom(cmd.ClassType, TCommandA);
-end;
-
-procedure TestCommndFactory_BasicCommand.Test_CreateCommandAndDestroyOwner;
-var
-  AOwner: TComponent;
-begin
-  AOwner := TComponent.Create(nil);
-  TCommandVclFactory.CreateCommand<TCommandA>(AOwner, []);
-  AOwner.Free;
-  Assert.IsTrue(TCommandA.IsDestroyed);
-end;
-
 procedure TestCommndFactory_BasicCommand.Test_ExecuteCommandAndCheckActive;
 var
   CommandA: TCommandA;
 begin
-  CommandA := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
+  CommandA := TCommandA.Create(FOwnerComponent);
   CommandA.Execute;
   Assert.IsTrue(CommandA.Active, 'TCommanndA.Active property expected True');
+  Assert.AreEqual(1, CommandA.Count);
 end;
 
 procedure TestCommndFactory_BasicCommand.Test_NotExecuteCommand_CounterZero;
 var
   CommandA: TCommandA;
 begin
-  CommandA := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
+  CommandA := TCommandA.Create(FOwnerComponent);
   Assert.AreEqual(0, CommandA.Count);
 end;
 
@@ -164,7 +130,7 @@ procedure TestCommndFactory_BasicCommand.Test_ExecuteCommand2x;
 var
   CommandA: TCommandA;
 begin
-  CommandA := TCommandVclFactory.CreateCommand<TCommandA>(FOwnerComponent, []);
+  CommandA := TCommandA.Create(FOwnerComponent);
   CommandA.Execute;
   CommandA.Execute;
   Assert.AreEqual(2, CommandA.Count);
@@ -180,26 +146,30 @@ type
   strict private
     FCount: Integer;
     FLines: TStringList;
-  protected
-    procedure Guard; override;
+  strict protected
+    procedure DoGuard; override;
+    procedure DoExecute; override;
   public
-    procedure Execute; override;
     property Count: Integer read FCount write FCount;
   published
     property Lines: TStringList read FLines write FLines;
   end;
 
-procedure TCommandStringList.Guard;
+{$REGION 'implementation TCommandStringList'}
+
+procedure TCommandStringList.DoGuard;
 begin
   System.Assert(Lines <> nil);
 end;
 
-procedure TCommandStringList.Execute;
+procedure TCommandStringList.DoExecute;
 begin
   inherited;
   Count := Count + 1;
   Lines.Add(Format('%.3d', [Count]));
 end;
+
+{$ENDREGION}
 
 procedure TestCommndFactory_StrigListCommand.Setup;
 begin
@@ -215,8 +185,8 @@ end;
 
 procedure TestCommndFactory_StrigListCommand.NoGuardAssert_WithProperInjection;
 begin
-  TCommandVclFactory.ExecuteCommand<TCommandStringList>([FStrings]);
-  // Fine if there was any exception above
+  TCommand.AdhocExecute<TCommandStringList>([FStrings]);
+  // Check if  there was any exception above
   Assert.Pass;
 end;
 
@@ -224,8 +194,8 @@ procedure TestCommndFactory_StrigListCommand.ChangeStringList_AfterExecute;
 var
   CommandStrings: TCommandStringList;
 begin
-  CommandStrings := TCommandVclFactory.CreateCommand<TCommandStringList>
-    (FOwnerComponent, [FStrings]);
+  CommandStrings := TCommandStringList.Create(FOwnerComponent);
+  CommandStrings.Inject([FStrings]);
   CommandStrings.Execute;
   CommandStrings.Execute;
   FStrings.Delete(0);
@@ -238,7 +208,7 @@ begin
   Assert.WillRaiseDescendant(
     procedure
     begin
-      TCommandVclFactory.ExecuteCommand<TCommandStringList>([]);
+      TCommand.AdhocExecute<TCommandStringList>([]);
     end, EAssertionFailed);
 end;
 
@@ -250,34 +220,51 @@ type
   TAdvancedCommand = class(TCommand)
   private
     FCount: Integer;
-    FEvenLines: TStringList;
-    FOddLines: TStringList;
+    FNonPrimeLines: TStrings;
+    FPrimeLines: TStrings;
     FComponent: TComponent;
-    FStream: TMemoryStream;
+    FStream: TStream;
     FListInt: TList<Integer>;
+    FProcessNonPrimeNumbers: boolean;
     procedure WriteIntegerToStream(aValue: Integer);
-  protected
-    procedure Guard; override;
+    class function isPrime(num: Integer): boolean;
+  strict protected
+    procedure DoGuard; override;
+    procedure DoExecute; override;
   public
-    procedure Execute; override;
+    constructor Create(AOwner: TComponent); override;
     property Count: Integer read FCount write FCount;
   published
-    property Stream: TMemoryStream read FStream write FStream;
-    property OddLines: TStringList read FOddLines write FOddLines;
+    property Stream: TStream read FStream write FStream;
+    property PrimeLines: TStrings read FPrimeLines write FPrimeLines;
     property Component: TComponent read FComponent write FComponent;
-    property EvenLines: TStringList read FEvenLines write FEvenLines;
+    property ProcessNonPrimeNumbers: boolean read FProcessNonPrimeNumbers
+      write FProcessNonPrimeNumbers;
+    property NonPrimeLines: TStrings read FNonPrimeLines write FNonPrimeLines;
     property ListInt: TList<Integer> read FListInt write FListInt;
   end;
 
 {$REGION 'implementation TAdvancedCommand'}
 
-procedure TAdvancedCommand.Guard;
+procedure TAdvancedCommand.DoGuard;
 begin
   System.Assert(Stream <> nil);
-  System.Assert(OddLines <> nil);
+  System.Assert(PrimeLines <> nil);
   System.Assert(Component <> nil);
-  System.Assert(EvenLines <> nil);
+  System.Assert(NonPrimeLines <> nil);
   System.Assert(ListInt <> nil);
+end;
+
+class function TAdvancedCommand.isPrime(num: Integer): boolean;
+var
+  M: Integer;
+begin
+  if num <= 1 then
+    exit(false);
+  for M := 2 to (num div 2) do
+    if num mod M = 0 then
+      exit(false);
+  exit(True);
 end;
 
 procedure TAdvancedCommand.WriteIntegerToStream(aValue: Integer);
@@ -285,21 +272,27 @@ begin
   Stream.Write(aValue, SizeOf(aValue));
 end;
 
-procedure TAdvancedCommand.Execute;
+constructor TAdvancedCommand.Create(AOwner: TComponent);
+begin
+  inherited;
+  ProcessNonPrimeNumbers := True;
+end;
+
+procedure TAdvancedCommand.DoExecute;
 var
   i: Integer;
 begin
   inherited;
-  OddLines.Clear;
-  EvenLines.Clear;
+  PrimeLines.Clear;
+  NonPrimeLines.Clear;
   WriteIntegerToStream(ListInt.Count);
   for i := 0 to ListInt.Count - 1 do
   begin
     WriteIntegerToStream(ListInt[i]);
-    if odd(i) then
-      OddLines.Add('Number: ' + ListInt[i].ToString)
-    else
-      EvenLines.Add(ListInt[i].ToString);
+    if isPrime(ListInt[i]) then
+      PrimeLines.Add(Format('%d is prime', [ListInt[i]]))
+    else if ProcessNonPrimeNumbers then
+      NonPrimeLines.Add(ListInt[i].ToString);
   end;
   with Component do
   begin
@@ -314,34 +307,75 @@ end;
 procedure TestCommndFactory_AdvancedCommand.Setup;
 begin
   FComponent := TComponent.Create(nil);
-  FStringO := TStringList.Create;
-  FStringE := TStringList.Create;
+  FStringPrime := TStringList.Create;
+  FStringNonPrime := TStringList.Create;
   FMemStream := TMemoryStream.Create;
   FList := TList<Integer>.Create;
-  FList.AddRange([10,13,20,17,100,101,105]);
 end;
 
 procedure TestCommndFactory_AdvancedCommand.TearDown;
 begin
-  FStringO.Free;
-  FStringE.Free;
+  FStringPrime.Free;
+  FStringNonPrime.Free;
   FMemStream.Free;
   FList.Free;
   FComponent.Free;
 end;
 
-procedure TestCommndFactory_AdvancedCommand.Execute;
-var
-  MyStream: TStream;
+procedure TestCommndFactory_AdvancedCommand.Execute_TestPrimes;
 begin
-  MyStream := (FMemStream as TStream);
-  TCommandVclFactory.ExecuteCommand<TAdvancedCommand>
-    ([FComponent, FStringO, FStringE, MyStream, FList]);
-  Assert.AreEqual(3,FStringO.Count);
-  Assert.AreEqual('Number: 13',FStringO[0]);
-  Assert.AreEqual(4,FStringE.Count);
-  Assert.AreEqual('10',FStringE[0]);
-  Assert.AreEqual(32,integer(FMemStream.Size));
+  with FList do
+  begin
+    Clear;
+    AddRange([10, 13, 20, 17, 100, 101, 105]);
+  end;
+  TCommand.AdhocExecute<TAdvancedCommand>([FComponent, FStringPrime,
+    FStringNonPrime, FMemStream, FList]);
+  Assert.AreEqual(3, FStringPrime.Count);
+  Assert.AreEqual('13 is prime', FStringPrime[0]);
+  Assert.AreEqual('17 is prime', FStringPrime[1]);
+  Assert.AreEqual('101 is prime', FStringPrime[2]);
+end;
+
+procedure TestCommndFactory_AdvancedCommand.Execute_TestNonPrimes;
+begin
+  with FList do
+  begin
+    Clear;
+    AddRange([10, 13, 20, 17, 100, 101, 105]);
+  end;
+  TCommand.AdhocExecute<TAdvancedCommand>([FComponent, FStringPrime,
+    FStringNonPrime, FMemStream, FList]);
+  Assert.AreEqual(4, FStringNonPrime.Count);
+  Assert.AreEqual('10', FStringNonPrime[0]);
+  Assert.AreEqual('20', FStringNonPrime[1]);
+  Assert.AreEqual('100', FStringNonPrime[2]);
+  Assert.AreEqual('105', FStringNonPrime[3]);
+end;
+
+procedure TestCommndFactory_AdvancedCommand.Execute_TestStream;
+begin
+  with FList do
+  begin
+    Clear;
+    AddRange([10, 13, 20, 17, 100, 101, 105]);
+  end;
+  TCommand.AdhocExecute<TAdvancedCommand>([FComponent, FStringPrime,
+    FStringNonPrime, FMemStream, FList]);
+  Assert.AreEqual(32, Integer(FMemStream.Size));
+end;
+
+procedure TestCommndFactory_AdvancedCommand.Execute_ProcessOnlyPrimes;
+begin
+  with FList do
+  begin
+    Clear;
+    AddRange([10, 13, 20, 17, 100, 101, 105]);
+  end;
+  TCommand.AdhocExecute<TAdvancedCommand>([FComponent, FStringPrime,
+    FStringNonPrime, FMemStream, FList, false]);
+  Assert.AreEqual(3, FStringPrime.Count);
+  Assert.AreEqual(0, FStringNonPrime.Count);
 end;
 
 // ------------------------------------------------------------------------
