@@ -2,8 +2,8 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 242
-  ClientWidth = 520
+  ClientHeight = 309
+  ClientWidth = 556
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,10 +19,11 @@ object Form1: TForm1
     Left = 3
     Top = 3
     Width = 185
-    Height = 236
+    Height = 303
     Align = alLeft
     Caption = 'GroupBox1'
     TabOrder = 0
+    ExplicitHeight = 236
     object Bevel1: TBevel
       AlignWithMargins = True
       Left = 5
@@ -89,8 +90,8 @@ object Form1: TForm1
     AlignWithMargins = True
     Left = 194
     Top = 3
-    Width = 323
-    Height = 236
+    Width = 359
+    Height = 303
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -102,5 +103,7 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1
+    ExplicitWidth = 323
+    ExplicitHeight = 236
   end
 end
