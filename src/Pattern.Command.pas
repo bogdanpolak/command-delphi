@@ -28,7 +28,7 @@ type
     // * --------------------------------------------------------------------
   protected
     // procedure Guard; - assert injections of all required properties
-    procedure Guard; virtual; abstract;
+    procedure Guard; virtual;
     procedure Execute; virtual; abstract;
   public
     class procedure AdhocExecute<T: TCommand>(const Injections
@@ -80,6 +80,11 @@ procedure TCommand.ExecuteCommand;
 begin
   Guard;
   Execute;
+end;
+
+procedure TCommand.Guard;
+begin
+  raise EAbort.Create('Define Guard method for the child Command class. Do not call `inherited` in Guard method.');
 end;
 
 function TCommand.Inject(const Injections: array of const): TCommand;

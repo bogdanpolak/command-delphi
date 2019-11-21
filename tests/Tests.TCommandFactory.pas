@@ -75,7 +75,8 @@ type
   strict private
     FActive: boolean;
     FCount: Integer;
-  protected
+  strict protected
+    procedure Guard; override;
     procedure Execute; override;
   public
     property Active: boolean read FActive write FActive;
@@ -83,6 +84,11 @@ type
   end;
 
 {$REGION 'implementation of the Basic command = TCommandA'}
+
+procedure TCommandA.Guard;
+begin
+  System.Assert(Count = 0);
+end;
 
 procedure TCommandA.Execute;
 begin
@@ -107,7 +113,7 @@ var
   CommandA: TCommandA;
 begin
   CommandA := TCommandA.Create(FOwnerComponent);
-  CommandA.Execute;
+  CommandA.ExecuteCommand;
   Assert.IsTrue(CommandA.Active, 'TCommanndA.Active property expected True');
   Assert.AreEqual(1, CommandA.Count);
 end;
@@ -140,7 +146,7 @@ type
   strict private
     FCount: Integer;
     FLines: TStringList;
-  protected
+  strict protected
     procedure Guard; override;
     procedure Execute; override;
   public
@@ -190,8 +196,8 @@ var
 begin
   CommandStrings := TCommandStringList.Create(FOwnerComponent);
   CommandStrings.Inject([FStrings]);
-  CommandStrings.Execute;
-  CommandStrings.Execute;
+  CommandStrings.ExecuteCommand;
+  CommandStrings.ExecuteCommand;
   FStrings.Delete(0);
   Assert.AreEqual(1, FStrings.Count);
   Assert.AreEqual(1, CommandStrings.Lines.Count);
@@ -222,7 +228,7 @@ type
     FProcessNonPrimeNumbers: boolean;
     procedure WriteIntegerToStream(aValue: Integer);
     class function isPrime(num: Integer): boolean;
-  protected
+  strict protected
     procedure Guard; override;
     procedure Execute; override;
   public
