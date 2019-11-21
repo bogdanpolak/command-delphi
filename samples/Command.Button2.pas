@@ -31,9 +31,9 @@ end;
 
 procedure TButon2Command.DoExecute;
 begin
-  Memo.Lines.Add('');
-  Memo.Lines.Add('Getting info form Edit and put it here ...');
-  Memo.Lines.Add('  * Edit.Text: '+Edit.Text);
+  Memo.Lines.Add('[2] Getting info form Edit and put it here ...');
+  Memo.Lines.Add('[2]   * Edit.Text: '+Edit.Text);
+  Memo.Lines.Add('--- ---');
 end;
 
 end.

@@ -28,7 +28,8 @@ end;
 
 procedure TButon1Command.DoExecute;
 begin
-  Memo.Lines.Add('Simple message from command 1');
+  Memo.Lines.Add('[1] Simple message from command 1');
+  Memo.Lines.Add('--- ---');
 end;
 
 end.
