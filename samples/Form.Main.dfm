@@ -62,7 +62,6 @@ object Form1: TForm1
       Align = alTop
       Caption = 'Button2'
       TabOrder = 1
-      ExplicitTop = 55
     end
     object Edit1: TEdit
       AlignWithMargins = True
@@ -73,7 +72,6 @@ object Form1: TForm1
       Align = alTop
       TabOrder = 2
       Text = 'Edit1'
-      ExplicitTop = 95
     end
     object btnExecuteTwoCommands: TButton
       AlignWithMargins = True
@@ -85,9 +83,6 @@ object Form1: TForm1
       Caption = 'btnExecuteTwoCommands'
       TabOrder = 3
       OnClick = btnExecuteTwoCommandsClick
-      ExplicitLeft = 2
-      ExplicitTop = 167
-      ExplicitWidth = 181
     end
   end
   object Memo1: TMemo

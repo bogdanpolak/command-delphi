@@ -3,8 +3,10 @@ unit Command.Button2;
 interface
 
 uses
-  System.Classes, System.SysUtils,
-  Vcl.StdCtrls, Vcl.Pattern.Command;
+  System.Classes,
+  System.SysUtils,
+  Vcl.StdCtrls,
+  Pattern.Command;
 
 type
   TButon2Command = class (TCommand)
@@ -12,9 +14,8 @@ type
     FMemo: TMemo;
     FEdit: TEdit;
   protected
-    procedure Guard; override;
-  public
-    procedure Execute; override;
+    procedure DoGuard; override;
+    procedure DoExecute; override;
   published
     property Memo: TMemo read FMemo write FMemo;
     property Edit: TEdit read FEdit write FEdit;
@@ -22,16 +23,14 @@ type
 
 implementation
 
-procedure TButon2Command.Guard;
+procedure TButon2Command.DoGuard;
 begin
-  inherited;
   Assert(Memo<>nil);
   Assert(Edit<>nil);
 end;
 
-procedure TButon2Command.Execute;
+procedure TButon2Command.DoExecute;
 begin
-  inherited;
   Memo.Lines.Add('');
   Memo.Lines.Add('Getting info form Edit and put it here ...');
   Memo.Lines.Add('  * Edit.Text: '+Edit.Text);

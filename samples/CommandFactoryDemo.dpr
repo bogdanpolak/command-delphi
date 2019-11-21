@@ -4,8 +4,9 @@ uses
   Vcl.Forms,
   Form.Main in 'Form.Main.pas' {Form1},
   Command.Button1 in 'Command.Button1.pas',
-  Vcl.Pattern.Command in '..\src\Vcl.Pattern.Command.pas',
-  Command.Button2 in 'Command.Button2.pas';
+  Command.Button2 in 'Command.Button2.pas',
+  Pattern.Command in '..\src\Pattern.Command.pas',
+  Pattern.CommandAction in '..\src\Pattern.CommandAction.pas';
 
 {$R *.res}
 
