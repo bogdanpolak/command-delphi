@@ -1,4 +1,4 @@
-program DUnitxCommand;
+program TestCommandPattern;
 
 {$IFNDEF TESTINSIGHT}
 {$APPTYPE CONSOLE}
