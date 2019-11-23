@@ -12,7 +12,7 @@ uses
 type
 
   [TestFixture]
-  TComponentPropertiesSUT = class(TObject)
+  TestPropertyList = class(TObject)
   strict private
     fMetadataArray_TComponent: TPropertyArray;
     fMetadataArray_ComponentTListComponent: TPropertyArray;
@@ -24,7 +24,7 @@ type
   published
     procedure SimpleComponent;
     procedure OnePropertyComponent;
-    procedure ManyProperties_Count;
+    procedure Assert_Count;
     procedure ManyProperties_Param1;
     procedure ManyProperties_Param2;
     procedure ManyProperties_Param3;
@@ -81,7 +81,7 @@ end;
 // Setup / TearDown
 // ----------------------------------------------------------------------
 
-procedure TComponentPropertiesSUT.Setup;
+procedure TestPropertyList.Setup;
 var
   fOwner: TComponent;
   fComponentOneProp: TComponentOneProps;
@@ -107,12 +107,12 @@ end;
 // Tests
 // ----------------------------------------------------------------------
 
-procedure TComponentPropertiesSUT.SimpleComponent;
+procedure TestPropertyList.SimpleComponent;
 begin
   Assert.AreEqual(0, Length(fMetadataArray_TComponent));
 end;
 
-procedure TComponentPropertiesSUT.OnePropertyComponent;
+procedure TestPropertyList.OnePropertyComponent;
 begin
   Assert.AreEqual(1, Length(fMetadataArray_ComponentTListComponent));
   with fMetadataArray_ComponentTListComponent[0] do
@@ -122,12 +122,12 @@ begin
   end;
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Count;
+procedure TestPropertyList.Assert_Count;
 begin
   Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param1;
+procedure TestPropertyList.ManyProperties_Param1;
 begin
   Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
   with fMetadataArray_ComponentWithManyProps[0] do
@@ -138,7 +138,7 @@ begin
   end;
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param2;
+procedure TestPropertyList.ManyProperties_Param2;
 begin
   Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
   with fMetadataArray_ComponentWithManyProps[1] do
@@ -149,7 +149,7 @@ begin
   end;
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param3;
+procedure TestPropertyList.ManyProperties_Param3;
 begin
   Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
   with fMetadataArray_ComponentWithManyProps[2] do
@@ -160,7 +160,7 @@ begin
   end;
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param4;
+procedure TestPropertyList.ManyProperties_Param4;
 begin
   Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
   with fMetadataArray_ComponentWithManyProps[3] do
@@ -171,7 +171,7 @@ begin
   end;
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param5;
+procedure TestPropertyList.ManyProperties_Param5;
 begin
   Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
   with fMetadataArray_ComponentWithManyProps[4] do
@@ -182,7 +182,7 @@ begin
   end;
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param6;
+procedure TestPropertyList.ManyProperties_Param6;
 begin
   Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
   with fMetadataArray_ComponentWithManyProps[5] do
@@ -193,7 +193,7 @@ begin
   end;
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param7;
+procedure TestPropertyList.ManyProperties_Param7;
 begin
   Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
   with fMetadataArray_ComponentWithManyProps[6] do
