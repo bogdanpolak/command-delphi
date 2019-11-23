@@ -13,8 +13,8 @@ uses
   DUnitX.TestFramework,
   Pattern.Command in '..\src\Pattern.Command.pas',
   Tests.TPropertyList in 'Tests.TPropertyList.pas',
-  Tests.TCommandFactory in 'Tests.TCommandFactory.pas',
-  Test.ComponentInjection in 'Test.ComponentInjection.pas',
+  Tests.TCommand in 'Tests.TCommand.pas',
+  Test.Injection in 'Test.Injection.pas',
   Pattern.CommandAction in '..\src\Pattern.CommandAction.pas',
   Test.TCommandAction in 'Test.TCommandAction.pas';
 

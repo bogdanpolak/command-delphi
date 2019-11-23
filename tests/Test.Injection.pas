@@ -1,4 +1,4 @@
-unit Test.ComponentInjection;
+unit Test.Injection;
 
 interface
 

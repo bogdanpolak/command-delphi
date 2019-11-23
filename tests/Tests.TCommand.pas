@@ -1,4 +1,4 @@
-unit Tests.TCommandFactory;
+unit Tests.TCommand;
 
 interface
 
