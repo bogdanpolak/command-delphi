@@ -1,4 +1,4 @@
-unit Test.TCommandAction;
+unit Tests.TCommandAction;
 
 interface
 
