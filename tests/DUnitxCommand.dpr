@@ -15,7 +15,8 @@ uses
   Tests.TPropertyList in 'Tests.TPropertyList.pas',
   Tests.TCommandFactory in 'Tests.TCommandFactory.pas',
   Test.ComponentInjection in 'Test.ComponentInjection.pas',
-  Pattern.CommandAction in '..\src\Pattern.CommandAction.pas';
+  Pattern.CommandAction in '..\src\Pattern.CommandAction.pas',
+  Test.TCommandAction in 'Test.TCommandAction.pas';
 
 var
   runner : ITestRunner;
