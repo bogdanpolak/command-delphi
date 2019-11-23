@@ -27,9 +27,14 @@ type
   published
     procedure Call_SetupCaption;
     procedure Call_SetupCommand;
+    procedure Call_SetupShotcut;
+    procedure Call_SetupEventOnUpdate;
   end;
 
 implementation
+
+uses
+  Vcl.Menus;
 
 type
   TTestCommand = class(TCommand)
@@ -107,6 +112,19 @@ begin
   fAction.Execute;
   // Assert
   Assert.AreEqual(2, cmd.RandomNumbers.Count);
+end;
+
+procedure TestCommandAction.Call_SetupShotcut;
+begin
+  fAction.SetupShortCut(TextToShortCut('CTRL+K'));
+end;
+
+procedure TestCommandAction.Call_SetupEventOnUpdate;
+begin
+  fAction.SetupEventOnUpdate(
+    procedure(act: TCommandAction)
+    begin
+    end);
 end;
 
 end.

@@ -18,6 +18,8 @@ type
     constructor Create(AOwner: TComponent); override;
     function SetupCaption(const ACaption: string): TCommandAction;
     function SetupCommand(ACommand: TCommand): TCommandAction;
+    function SetupShortCut(AShorcut: TShortCut): TCommandAction;
+    function SetupEventOnUpdate(AUpdateProc: TProc<TCommandAction>): TCommandAction;
     property Command: TCommand read FCommand write FCommand;
   end;
 
@@ -48,6 +50,17 @@ end;
 function TCommandAction.SetupCommand(ACommand: TCommand): TCommandAction;
 begin
   Command := ACommand;
+  Result := Self;
+end;
+
+function TCommandAction.SetupEventOnUpdate(
+  AUpdateProc: TProc<TCommandAction>): TCommandAction;
+begin
+  Result := Self;
+end;
+
+function TCommandAction.SetupShortCut(AShorcut: TShortCut): TCommandAction;
+begin
   Result := Self;
 end;
 
