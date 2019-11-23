@@ -12,7 +12,7 @@ uses
 type
 
   [TestFixture]
-  TestSingleInjection = class(TObject)
+  TestInjection_SingleParam = class(TObject)
   private
     FInteger101: integer;
     FStrings: TStringList;
@@ -38,7 +38,7 @@ type
   end;
 
   [TestFixture]
-  TestComponentInjection_MoreInjections = class(TObject)
+  TestInjection_MultipleParams = class(TObject)
   private
     FStrings1: TStringList;
     FStrings2: TStringList;
@@ -49,8 +49,8 @@ type
     [TearDown]
     procedure TearDown;
   published
+    procedure TwoStringLists;
     procedure InjectAll;
-    procedure Inject_TwoStringLists;
   end;
 
 implementation
@@ -91,20 +91,20 @@ type
     property StartDate: TDateTime read FStartDate write FStartDate;
   end;
 
-procedure TestSingleInjection.Setup;
+procedure TestInjection_SingleParam.Setup;
 begin
   FOwnerComponent := TComponent.Create(nil); // used as Owner for TCommand-s
   FStrings := TStringList.Create();
   FInteger101 := 101;
 end;
 
-procedure TestSingleInjection.TearDown;
+procedure TestInjection_SingleParam.TearDown;
 begin
   FOwnerComponent.Free;
   FreeAndNil(FStrings);
 end;
 
-procedure TestSingleInjection.ParameterStringList;
+procedure TestInjection_SingleParam.ParameterStringList;
 var
   StringsComponent: TStringsComponent;
 begin
@@ -114,7 +114,7 @@ begin
   Assert.AreSame(FStrings, StringsComponent.StringList);
 end;
 
-procedure TestSingleInjection.ParameterStringList_ToStringsProperty;
+procedure TestInjection_SingleParam.ParameterStringList_ToStringsProperty;
 var
   StringsComponent: TStringsComponent;
   FStrings2: TStringList;
@@ -130,7 +130,7 @@ begin
   end;
 end;
 
-procedure TestSingleInjection.ParameterStringList_ToObjectProperty;
+procedure TestInjection_SingleParam.ParameterStringList_ToObjectProperty;
 var
   StringsComponent: TStringsComponent;
   FStrings2: TStringList;
@@ -149,7 +149,7 @@ begin
   end;
 end;
 
-procedure TestSingleInjection.ParameterInteger;
+procedure TestInjection_SingleParam.ParameterInteger;
 var
   IntegerComponent: TIntegerComponent;
 begin
@@ -158,7 +158,7 @@ begin
   Assert.AreEqual(FInteger101, IntegerComponent.Number);
 end;
 
-procedure TestSingleInjection.ParameterBoolean;
+procedure TestInjection_SingleParam.ParameterBoolean;
 var
   SimpleComponent: TSimpleComponent;
   b: boolean;
@@ -169,7 +169,7 @@ begin
   Assert.AreEqual(b, SimpleComponent.IsTrue);
 end;
 
-procedure TestSingleInjection.ParameterDouble;
+procedure TestInjection_SingleParam.ParameterDouble;
 var
   SimpleComponent: TSimpleComponent;
   val: Double;
@@ -180,7 +180,7 @@ begin
   Assert.AreEqual(val, SimpleComponent.FloatNumber);
 end;
 
-procedure TestSingleInjection.ParameterDateTime;
+procedure TestInjection_SingleParam.ParameterDateTime;
 var
   SimpleComponent: TSimpleComponent;
   FloatVal: Single;
@@ -194,7 +194,7 @@ begin
   Assert.AreEqual(Date, SimpleComponent.StartDate);
 end;
 
-procedure TestSingleInjection.ParameterWord;
+procedure TestInjection_SingleParam.ParameterWord;
 var
   SimpleComponent: TSimpleComponent;
   Value: word;
@@ -205,7 +205,7 @@ begin
   Assert.AreEqual(999, SimpleComponent.Number);
 end;
 
-procedure TestSingleInjection.ParameterValueInt;
+procedure TestInjection_SingleParam.ParameterValueInt;
 var
   SimpleComponent: TSimpleComponent;
 begin
@@ -214,7 +214,7 @@ begin
   Assert.AreEqual(55, SimpleComponent.Number);
 end;
 
-procedure TestSingleInjection.ParameterValueBoolean;
+procedure TestInjection_SingleParam.ParameterValueBoolean;
 var
   SimpleComponent: TSimpleComponent;
 begin
@@ -223,7 +223,7 @@ begin
   Assert.AreEqual(True, SimpleComponent.IsTrue);
 end;
 
-procedure TestSingleInjection.ParameterValueFloat;
+procedure TestInjection_SingleParam.ParameterValueFloat;
 var
   SimpleComponent: TSimpleComponent;
 begin
@@ -232,7 +232,7 @@ begin
   Assert.AreEqual(99.99, Extended(SimpleComponent.FloatNumber));
 end;
 
-procedure TestSingleInjection.UnsupportedProperty_Exception;
+procedure TestInjection_SingleParam.UnsupportedProperty_Exception;
 type
   TMyRec = record
     a: integer;
@@ -272,21 +272,35 @@ type
     property EvenLines: TStringList read FEvenLines write FEvenLines;
   end;
 
-procedure TestComponentInjection_MoreInjections.Setup;
+procedure TestInjection_MultipleParams.Setup;
 begin
   FStrings1 := TStringList.Create;
   FStrings2 := TStringList.Create;
   FOwnerComponent := TComponent.Create(nil);
 end;
 
-procedure TestComponentInjection_MoreInjections.TearDown;
+procedure TestInjection_MultipleParams.TearDown;
 begin
   FreeAndNil(FStrings1);
   FreeAndNil(FStrings2);
   FreeAndNil(FOwnerComponent);
 end;
 
-procedure TestComponentInjection_MoreInjections.InjectAll;
+procedure TestInjection_MultipleParams.TwoStringLists;
+var
+  ManyPropComponent: TManyPropComponent;
+begin
+  // --
+  ManyPropComponent := TManyPropComponent.Create(FOwnerComponent);
+  // --
+  TComponentInjector.InjectProperties(ManyPropComponent,
+    [FStrings1, FStrings2]);
+  // --
+  Assert.AreSame(FStrings1, ManyPropComponent.OddLines);
+  Assert.AreSame(FStrings2, ManyPropComponent.EvenLines);
+end;
+
+procedure TestInjection_MultipleParams.InjectAll;
 var
   ManyPropComponent: TManyPropComponent;
 begin
@@ -301,26 +315,12 @@ begin
   Assert.AreSame(FOwnerComponent, ManyPropComponent.Component);
 end;
 
-procedure TestComponentInjection_MoreInjections.Inject_TwoStringLists;
-var
-  ManyPropComponent: TManyPropComponent;
-begin
-  // --
-  ManyPropComponent := TManyPropComponent.Create(FOwnerComponent);
-  // --
-  TComponentInjector.InjectProperties(ManyPropComponent,
-    [FStrings1, FStrings2]);
-  // --
-  Assert.AreSame(FStrings1, ManyPropComponent.OddLines);
-  Assert.AreSame(FStrings2, ManyPropComponent.EvenLines);
-end;
-
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
 
 initialization
 
-TDUnitX.RegisterTestFixture(TestSingleInjection);
-TDUnitX.RegisterTestFixture(TestComponentInjection_MoreInjections);
+TDUnitX.RegisterTestFixture(TestInjection_SingleParam);
+TDUnitX.RegisterTestFixture(TestInjection_MultipleParams);
 
 end.
