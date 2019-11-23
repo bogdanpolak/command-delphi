@@ -19,14 +19,17 @@ type
     fOwnerComponent: TComponent;
     fStringList: TStringList;
     fAction: TCommandAction;
+  private
   public
     [Setup]
     procedure Setup;
     [TearDown]
     procedure TearDown;
   published
-    procedure SetupActionCaption;
+    procedure Call_SetupCaption;
+    procedure Call_SetupCommand;
   end;
+
 implementation
 
 type
@@ -80,7 +83,7 @@ begin
   fStringList.Free;
 end;
 
-procedure TestCommandAction.SetupActionCaption;
+procedure TestCommandAction.Call_SetupCaption;
 var
   act: TCommandAction;
 begin
@@ -88,6 +91,22 @@ begin
   fAction.SetupCaption('Execute test command');
   // Assert
   Assert.AreEqual('Execute test command',fAction.Caption);
+end;
+
+procedure TestCommandAction.Call_SetupCommand;
+var
+  cmd: TTestCommand;
+  act: TCommandAction;
+begin
+  // Arrage:
+  cmd := TTestCommand.Create(fOwnerComponent);
+  cmd.Inject([fStringList]);
+  // Act:
+  fAction.SetupCommand(cmd);
+  fAction.Execute;
+  fAction.Execute;
+  // Assert
+  Assert.AreEqual(2,cmd.RandomNumbers.Count);
 end;
 
 end.
