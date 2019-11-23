@@ -115,8 +115,12 @@ begin
 end;
 
 procedure TestCommandAction.Call_SetupShotcut;
+var
+  aShortCut: TShortCut;
 begin
-  fAction.SetupShortCut(TextToShortCut('CTRL+K'));
+  aShortCut := TextToShortCut('CTRL+K');
+  fAction.SetupShortCut(aShortCut);
+  Assert.AreEqual(ShortCutToText(aShortCut), ShortCutToText(fAction.ShortCut));
 end;
 
 procedure TestCommandAction.Call_SetupEventOnUpdate;
@@ -124,7 +128,10 @@ begin
   fAction.SetupEventOnUpdate(
     procedure(act: TCommandAction)
     begin
+      act.Tag := act.Tag + 1;
     end);
+  fAction.Update;
+  Assert.AreEqual(1, fAction.Tag);
 end;
 
 end.

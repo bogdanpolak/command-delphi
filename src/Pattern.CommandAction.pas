@@ -13,7 +13,9 @@ type
   TCommandAction = class(TAction)
   strict private
     FCommand: TCommand;
+    FOnUpdateProc: TProc<TCommandAction>;
     procedure OnExecuteEvent(Sender: TObject);
+    procedure OnUpdateEvent(Sender: TObject);
   public
     constructor Create(AOwner: TComponent); override;
     function SetupCaption(const ACaption: string): TCommandAction;
@@ -37,8 +39,14 @@ end;
 
 procedure TCommandAction.OnExecuteEvent(Sender: TObject);
 begin
-  Assert(Command <> nil);
+  System.Assert(Command <> nil);
   Command.Execute;
+end;
+
+procedure TCommandAction.OnUpdateEvent(Sender: TObject);
+begin
+  if Assigned(FOnUpdateProc) then
+    FOnUpdateProc(Self);
 end;
 
 function TCommandAction.SetupCaption(const ACaption: string): TCommandAction;
@@ -56,11 +64,14 @@ end;
 function TCommandAction.SetupEventOnUpdate(
   AUpdateProc: TProc<TCommandAction>): TCommandAction;
 begin
+  FOnUpdateProc := AUpdateProc;
+  Self.OnUpdate := OnUpdateEvent;
   Result := Self;
 end;
 
 function TCommandAction.SetupShortCut(AShorcut: TShortCut): TCommandAction;
 begin
+  Self.ShortCut := AShorcut;
   Result := Self;
 end;
 
