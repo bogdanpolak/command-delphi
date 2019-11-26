@@ -34,6 +34,29 @@ Diagram of TCommand usage in the VCL application:
 
 ## Creating / implementing new command
 
+Developer to build new command needs to define new class derived from `TCommand` (unit: `Pattern.Command.pas`). He has to implement two protected methods: `DoGuard` and `DoExecute`: 
+* *method* `DoGuard` - can be empty if there is no injection (injection system is explained bellow)
+* *method* `DoExecute` - contains code which is main logic of the command
+
+Sample command without injection:
+```pas
+type
+  TDiceRollCommand = class (TCommand)
+  protected
+    procedure DoGuard; override;
+    procedure DoExecute; override;
+  end;
+
+procedure TDiceRollCommand.DoGuard;
+begin
+  // Required: even if no injection are provided 
+end;
+
+procedure TDiceRollCommand.DoExecute;
+begin
+  ShowMessage('Dice roll: '+RandomRange(1,6).ToString);
+end;
+```
 
 
 ## TCommand injection system
@@ -128,7 +151,7 @@ type
     property Edit: TEdit read FEdit write FEdit;
   end;
 
-procedure TSampleCommand.DoGuard; override;
+procedure TSampleCommand.DoGuard;
 begin
   System.Assert(Memo<>nil);
   System.Assert(Edit<>nil);
