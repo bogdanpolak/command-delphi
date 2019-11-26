@@ -32,9 +32,9 @@ Diagram of TCommand usage in the VCL application:
 
 ![](./docs/resources/tcommand-vcl.png)
 
-## Developing new command
+## Creating / implementing new command
 
-> TBD (delivered in ver 0.6)
+
 
 ## TCommand injection system
 
