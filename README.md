@@ -1,6 +1,7 @@
 # Command Pattern for Delphi
 
 ![ Delphi Support ](https://img.shields.io/badge/Delphi%20Support-%20XE8%20..%2010.3%20Rio-blue.svg)
+![ version ](https://img.shields.io/badge/version-%200.6-yellow.svg)
 
 ## Overview
 
@@ -32,9 +33,48 @@ Diagram of TCommand usage in the VCL application:
 
 ![](./docs/resources/tcommand-vcl.png)
 
-## Developing new command
+## Creating / implementing new command
+
+Developer to build new command needs to define new class derived from `TCommand` (unit: `Pattern.Command.pas`). He has to implement two protected methods: `DoGuard` and `DoExecute`: 
+* *method* `DoGuard` - can be empty if there is no injection (injection system is explained bellow)
+* *method* `DoExecute` - contains code which is main logic of the command
+
+Both methods are `virtual` then defining their interface have to use `override` keyword. You can remove (not to add) `inherited` call from `DoExecute` implementation and you have to remove this call from `DoGuard` implementation, if not then during first call exception will be raise with message that you cant call base `TCommand.DoGuard` code. This safeguards that developer implemented its own `DoGuard` logic.
+
+Sample command without injection (empty guard):
+```pas
+type
+  TDiceRollCommand = class (TCommand)
+  protected
+    procedure DoGuard; override;
+    procedure DoExecute; override;
+  end;
+
+procedure TDiceRollCommand.DoGuard;
+begin
+  // Required: even if no injection are provided 
+end;
+
+procedure TDiceRollCommand.DoExecute;
+begin
+  ShowMessage('Dice roll: '+RandomRange(1,6).ToString);
+end;
+```
+
+To execute command you should create object and call `Execute` public method, which call `DoGuard` and then `DoExecute`. You shouldn't put any business logic into guard method, see bellow section about injection system for more details.
+
+Sample call:
+
+```pas
+cmd := TDiceRollCommand.Ceate(Self);
+cmd.Execute;
+```
+
+## TCommand injection system
 
 > TBD (delivered in ver 0.6)
+
+> TBD: Compare injection via properties (used here) to most popular injection via constructor.
 
 ## TCommand execution
 
@@ -48,9 +88,9 @@ Diagram of TCommand usage in the VCL application:
     * `TCommandAction` class is classic VCL action
     * This class has special methods to allow rapid construction and initialization
 
-## TCommand injection system
+## TCommand memory management
 
-> TBD (delivered in ver 0.6)
+> TBD: Describe advantages of management base on `TComponent` solution using owner.
 
 ## TCommandAction - VCL command invoker
 
@@ -128,7 +168,7 @@ type
     property Edit: TEdit read FEdit write FEdit;
   end;
 
-procedure TSampleCommand.DoGuard; override;
+procedure TSampleCommand.DoGuard;
 begin
   System.Assert(Memo<>nil);
   System.Assert(Edit<>nil);
