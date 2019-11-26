@@ -54,7 +54,42 @@ Diagram of TCommand usage in the VCL application:
 
 ## TCommandAction - VCL command invoker
 
-> TBD (delivered in ver 0.6)
+`TCommandAction` is a wrapper class based on `TAction` and is able to execute commands based on `TCommand` class. Developer, when building VCL application, can easily bind this action to many controls (visual components which are driven by actions or are action-aware). For example `TCheckBox` has `Action` property which is executed when used is changing checkbox state (checked). Actions have some other advantages like build in notification system, precisely two such engines: one for updating visual state and another, more internal, for notifying about creation of new and deletion of existing components. Both engines are too complex to be described in this section, more information can be found in the Delphi online documentation.
+
+Looking form architectural perspective `TCommandAction` can be used as an Invoker object and after migration can be replaced by more elastic custom solution.
+
+Sample construction on `TCommandAction` invoker:
+
+```pas
+Button1.Action := TCommandAction.Create(Button1)
+  .SetupCaption('Run sample command')
+  .SetupCommand(TSampleCommand.Create(Button1)
+    .Inject([Memo1, Edit1])
+  );
+```
+
+`TCommandAction` has some utility methods which allows to quickly initialize its behavior:
+
+| Utility method | Description |
+| --- | --- |
+| `SetupCaption(ACaption)` | Sets action caption which is displayed in a control |
+| `SetupShortCut(AShorcut)` | Sets shortcut which is activating action |
+| `SetupCommand(ACommand)` | Sets command to execute |
+| `SetupEventOnUpdate(...)` | Sets on update event (using anonymous method) |
+
+Sample setup OnUpdate event in `TCommandAction`:
+
+```pas
+Button2.Action := TCommandAction.Create(Self)
+  .SetupCaption('Run sample command')
+  .SetupCommand(MySampleCommand)
+  .SetupEventOnUpdate(
+    procedure(cmd: TCommandAction)
+    begin
+      cmd.Enabled := CheckBox1.Checked;
+    end);
+```
+
 
 ## Samples
 
@@ -71,7 +106,7 @@ cmdSampleCommand.Inject([Memo1, Edit1]);
 
 Create invoker `TCommandAction`:
 ```pas
-Button1.Action := cmdSampleCommand := TCommandAction.Create(Button1)
+Button1.Action := TCommandAction.Create(Button1)
   .SetupCaption('Run sample command')
   .SetupCommand(TSampleCommand.Create(Button1)
     .Inject([Memo1, Edit1])
