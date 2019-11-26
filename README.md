@@ -36,6 +36,10 @@ Diagram of TCommand usage in the VCL application:
 
 > TBD (delivered in ver 0.6)
 
+## TCommand injection system
+
+> TBD (delivered in ver 0.6)
+
 ## TCommand execution
 
 1) Instant (ad-hoc) command execution
@@ -47,10 +51,6 @@ Diagram of TCommand usage in the VCL application:
 1) Build command invoker `TCommandAction` which executes the command when the action is invoked
     * `TCommandAction` class is classic VCL action
     * This class has special methods to allow rapid construction and initialization
-
-## TCommand injection system
-
-> TBD (delivered in ver 0.6)
 
 ## TCommandAction - VCL command invoker
 
