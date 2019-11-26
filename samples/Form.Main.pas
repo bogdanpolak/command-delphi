@@ -20,6 +20,7 @@ type
     Bevel1: TBevel;
     Bevel2: TBevel;
     btnExecuteTwoCommands: TButton;
+    CheckBox1: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure btnExecuteTwoCommandsClick(Sender: TObject);
   private
@@ -50,7 +51,12 @@ begin
 
   Button2.Action := TCommandAction.Create(Self)
     .SetupCaption('Run command: Button2')
-    .SetupCommand(TButon2Command.Create(Self).Inject([Memo1, Edit1]));
+    .SetupCommand(TButon2Command.Create(Self).Inject([Memo1, Edit1]))
+    .SetupEventOnUpdate(
+    procedure(cmd: TCommandAction)
+    begin
+      cmd.Enabled := CheckBox1.Checked;
+    end);
 
   ReportMemoryLeaksOnShutdown := true;
 end;

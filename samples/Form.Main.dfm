@@ -85,6 +85,22 @@ object Form1: TForm1
       TabOrder = 3
       OnClick = btnExecuteTwoCommandsClick
     end
+    object CheckBox1: TCheckBox
+      AlignWithMargins = True
+      Left = 5
+      Top = 220
+      Width = 175
+      Height = 17
+      Margins.Top = 13
+      Align = alTop
+      Caption = 'Enable command Button2'
+      Checked = True
+      State = cbChecked
+      TabOrder = 4
+      ExplicitLeft = 24
+      ExplicitTop = 248
+      ExplicitWidth = 97
+    end
   end
   object Memo1: TMemo
     AlignWithMargins = True
