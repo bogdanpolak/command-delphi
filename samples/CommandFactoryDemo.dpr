@@ -6,7 +6,8 @@ uses
   Command.Button1 in 'Command.Button1.pas',
   Command.Button2 in 'Command.Button2.pas',
   Pattern.Command in '..\src\Pattern.Command.pas',
-  Pattern.CommandAction in '..\src\Pattern.CommandAction.pas';
+  Pattern.CommandAction in '..\src\Pattern.CommandAction.pas',
+  Command.DiceRoll in 'Command.DiceRoll.pas';
 
 {$R *.res}
 
