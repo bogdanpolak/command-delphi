@@ -24,6 +24,8 @@ type
     procedure FormCreate(Sender: TObject);
     procedure btnExecuteTwoCommandsClick(Sender: TObject);
   private
+    procedure OnFormSetup;
+    procedure OnFormTearDown;
   public
   end;
 
@@ -42,9 +44,8 @@ begin
   TCommand.AdhocExecute<TButon2Command>([Memo1, Edit1]);
 end;
 
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TForm1.OnFormSetup;
 begin
-  Memo1.Clear;
   Button1.Action := TCommandAction.Create(Self)
     .SetupCaption('Run command: Button1')
     .SetupCommand(TButon1Command.Create(Self).Inject([Memo1]));
@@ -57,8 +58,25 @@ begin
     begin
       cmd.Enabled := CheckBox1.Checked;
     end);
+end;
 
+procedure TForm1.OnFormTearDown;
+begin
+  fStrsDiceResults.Free;
+end;
+
+procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  OnFormTearDown;
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  Memo1.Clear;
   ReportMemoryLeaksOnShutdown := true;
+  OnFormSetup;
+end;
+
 end;
 
 end.
