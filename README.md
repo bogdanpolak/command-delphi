@@ -72,7 +72,44 @@ cmd.Execute;
 
 ## TCommand injection system
 
-> TBD (delivered in ver 0.6)
+`TCommand` component has built in automated injection system based on classic `RTTI` mechanism used by IDE Form Designer (Object Inspector). Properties exposed to be injectable have to be defined in `published` section of the component (command). All component based classes have switched on run-time type information generation during compilation process (compiler option `{$TYPEINFO ON}`). Thanks of that during creation of new command all dependencies can be easily provided and assigned to published properties automatically. More information about classic RTTI engine can be find in Delphi documentation: [Run-Time Type Information](http://docwiki.embarcadero.com/RADStudio/Rio/en/Run-Time_Type_Information_\(Delphi\))
+
+Sample command with one dependency:
+```pas
+type
+  TDiceRollCommand = class (TCommand)
+  const
+    RollCount = 100;
+  private
+    FOutput: TStrings;
+    FReportingMemo: TMemo; 
+  protected
+    procedure DoGuard; override;
+    procedure DoExecute; override;
+  published
+    property OutputRolls: TStrings read FOutput 
+      write FOutput;
+    property ReportingMemo: TMemo read FReportingMemo 
+      write FReportingMemo;
+  end;
+
+procedure TDiceRollCommand.DoGuard;
+begin
+  System.Assert(FOutput<>nil); 
+end;
+
+procedure TDiceRollCommand.DoExecute;
+begin
+  for var i := 0 to RollCount-1 do
+  begin
+    var number := RandomRange(1,6);
+    FOutput.Add(number.ToString);
+    if (FReportingMemo<>nil) then
+      FReportingMemo.Lines.Add(number.ToString);
+  end;
+end;
+```
+
 
 > TBD: Compare injection via properties (used here) to most popular injection via constructor.
 
