@@ -7,7 +7,8 @@ uses
   Command.Button2 in 'Command.Button2.pas',
   Pattern.Command in '..\src\Pattern.Command.pas',
   Pattern.CommandAction in '..\src\Pattern.CommandAction.pas',
-  Command.DiceRoll in 'Command.DiceRoll.pas';
+  Command.DiceRoll in 'Command.DiceRoll.pas',
+  Helper.TWinControl in 'Helper.TWinControl.pas';
 
 {$R *.res}
 
