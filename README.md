@@ -110,6 +110,16 @@ begin
 end;
 ```
 
+Available published properties of TCommand are matched against types of parameters passed in parameters (open array). Following rules are used by matching algorithm:
+
+1. The same object types are matched
+1. If there is two or more object of the same class passed and more matching properties then parameter are assigned to properties according to order first with first, second with second, etc.
+1. More specific object passed as parameter is matching to more general object in properties list
+1. Numeric integer parameters are assigned to numeric properties
+1. Strings to strings
+1. Supported are also decimals, enumerable and boolean types.
+
+**Warning!** Injected object are accessed by address in memory (pointer), thanks of that any changes made to object are visible inside and outside of the TCommand. Simple types and strings are accessed via value and properties have to updated manually to be updated.
 
 > TBD: Compare injection via properties (used here) to most popular injection via constructor.
 
