@@ -1,4 +1,4 @@
-program DUnitxCommand;
+program TestCommandPattern;
 
 {$IFNDEF TESTINSIGHT}
 {$APPTYPE CONSOLE}
@@ -13,9 +13,10 @@ uses
   DUnitX.TestFramework,
   Pattern.Command in '..\src\Pattern.Command.pas',
   Tests.TPropertyList in 'Tests.TPropertyList.pas',
-  Tests.TCommandFactory in 'Tests.TCommandFactory.pas',
-  Test.ComponentInjection in 'Test.ComponentInjection.pas',
-  Pattern.CommandAction in '..\src\Pattern.CommandAction.pas';
+  Tests.TCommand in 'Tests.TCommand.pas',
+  Tests.Injection in 'Tests.Injection.pas',
+  Pattern.CommandAction in '..\src\Pattern.CommandAction.pas',
+  Tests.TCommandAction in 'Tests.TCommandAction.pas';
 
 var
   runner : ITestRunner;

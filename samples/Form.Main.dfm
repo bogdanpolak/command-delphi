@@ -2,7 +2,7 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 309
+  ClientHeight = 360
   ClientWidth = 556
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -11,6 +11,7 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
@@ -19,31 +20,10 @@ object Form1: TForm1
     Left = 3
     Top = 3
     Width = 185
-    Height = 303
+    Height = 354
     Align = alLeft
     Caption = 'GroupBox1'
     TabOrder = 0
-    ExplicitHeight = 236
-    object Bevel1: TBevel
-      AlignWithMargins = True
-      Left = 5
-      Top = 55
-      Width = 175
-      Height = 18
-      Align = alTop
-      Shape = bsSpacer
-    end
-    object Bevel2: TBevel
-      AlignWithMargins = True
-      Left = 5
-      Top = 146
-      Width = 175
-      Height = 18
-      Align = alTop
-      Shape = bsSpacer
-      ExplicitLeft = 7
-      ExplicitTop = 170
-    end
     object Button1: TButton
       AlignWithMargins = True
       Left = 5
@@ -57,7 +37,7 @@ object Form1: TForm1
     object Button2: TButton
       AlignWithMargins = True
       Left = 5
-      Top = 79
+      Top = 55
       Width = 175
       Height = 34
       Align = alTop
@@ -67,23 +47,56 @@ object Form1: TForm1
     object Edit1: TEdit
       AlignWithMargins = True
       Left = 5
-      Top = 119
+      Top = 95
       Width = 175
       Height = 21
       Align = alTop
       TabOrder = 2
       Text = 'Edit1'
     end
-    object btnExecuteTwoCommands: TButton
+    object Button3: TButton
       AlignWithMargins = True
       Left = 5
-      Top = 170
+      Top = 122
       Width = 175
       Height = 34
+      Action = actExecuteTwoCommands
       Align = alTop
-      Caption = 'btnExecuteTwoCommands'
       TabOrder = 3
-      OnClick = btnExecuteTwoCommandsClick
+    end
+    object CheckBox1: TCheckBox
+      AlignWithMargins = True
+      Left = 5
+      Top = 172
+      Width = 175
+      Height = 17
+      Margins.Top = 13
+      Align = alTop
+      Caption = 'Enable command Button2'
+      Checked = True
+      State = cbChecked
+      TabOrder = 4
+    end
+    object Button4: TButton
+      AlignWithMargins = True
+      Left = 5
+      Top = 212
+      Width = 175
+      Height = 34
+      Margins.Top = 20
+      Action = actDiceRolls
+      Align = alTop
+      TabOrder = 5
+    end
+    object CheckBox2: TCheckBox
+      AlignWithMargins = True
+      Left = 5
+      Top = 252
+      Width = 175
+      Height = 17
+      Action = actShowProgressBar
+      Align = alTop
+      TabOrder = 6
     end
   end
   object Memo1: TMemo
@@ -91,7 +104,7 @@ object Form1: TForm1
     Left = 194
     Top = 3
     Width = 359
-    Height = 303
+    Height = 354
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -103,7 +116,22 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1
-    ExplicitWidth = 323
-    ExplicitHeight = 236
+  end
+  object ActionManager1: TActionManager
+    Left = 232
+    Top = 176
+    StyleName = 'Platform Default'
+    object actExecuteTwoCommands: TAction
+      Caption = 'Execute Both Commands'
+      OnExecute = actExecuteTwoCommandsExecute
+    end
+    object actDiceRolls: TAction
+      Caption = 'Dice Rolls Command'
+      OnExecute = actDiceRollsExecute
+    end
+    object actShowProgressBar: TAction
+      Caption = 'Show Progress Bar'
+      OnExecute = actShowProgressBarExecute
+    end
   end
 end

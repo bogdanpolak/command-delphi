@@ -1,4 +1,4 @@
-unit Tests.TCommandFactory;
+unit Tests.TCommand;
 
 interface
 
@@ -14,7 +14,7 @@ uses
 type
 
   [TestFixture]
-  TestCommndFactory_BasicCommand = class(TObject)
+  TestCommnd_Basic = class(TObject)
   strict private
     FOwnerComponent: TComponent;
   public
@@ -29,7 +29,7 @@ type
   end;
 
   [TestFixture]
-  TestCommndFactory_StrigListCommand = class(TObject)
+  TestCommnd_StrigsCommand = class(TObject)
   private
     FOwnerComponent: TComponent;
     FStrings: TStringList;
@@ -45,7 +45,7 @@ type
   end;
 
   [TestFixture]
-  TestCommndFactory_AdvancedCommand = class(TObject)
+  TestCommnd_Advanced = class(TObject)
   private
     FComponent: TComponent;
     FStringPrime: TStringList;
@@ -98,17 +98,17 @@ end;
 
 {$ENDREGION}
 
-procedure TestCommndFactory_BasicCommand.Setup;
+procedure TestCommnd_Basic.Setup;
 begin
   FOwnerComponent := TComponent.Create(nil);
 end;
 
-procedure TestCommndFactory_BasicCommand.TearDown;
+procedure TestCommnd_Basic.TearDown;
 begin
   FOwnerComponent.Free;
 end;
 
-procedure TestCommndFactory_BasicCommand.Test_ExecuteCommandAndCheckActive;
+procedure TestCommnd_Basic.Test_ExecuteCommandAndCheckActive;
 var
   CommandA: TCommandA;
 begin
@@ -118,7 +118,7 @@ begin
   Assert.AreEqual(1, CommandA.Count);
 end;
 
-procedure TestCommndFactory_BasicCommand.Test_NotExecuteCommand_CounterZero;
+procedure TestCommnd_Basic.Test_NotExecuteCommand_CounterZero;
 var
   CommandA: TCommandA;
 begin
@@ -126,7 +126,7 @@ begin
   Assert.AreEqual(0, CommandA.Count);
 end;
 
-procedure TestCommndFactory_BasicCommand.Test_ExecuteCommand2x;
+procedure TestCommnd_Basic.Test_ExecuteCommand2x;
 var
   CommandA: TCommandA;
 begin
@@ -171,26 +171,26 @@ end;
 
 {$ENDREGION}
 
-procedure TestCommndFactory_StrigListCommand.Setup;
+procedure TestCommnd_StrigsCommand.Setup;
 begin
   FOwnerComponent := TComponent.Create(nil);
   FStrings := TStringList.Create;
 end;
 
-procedure TestCommndFactory_StrigListCommand.TearDown;
+procedure TestCommnd_StrigsCommand.TearDown;
 begin
   FStrings.Free;
   FOwnerComponent.Free;
 end;
 
-procedure TestCommndFactory_StrigListCommand.NoGuardAssert_WithProperInjection;
+procedure TestCommnd_StrigsCommand.NoGuardAssert_WithProperInjection;
 begin
   TCommand.AdhocExecute<TCommandStringList>([FStrings]);
   // Check if  there was any exception above
   Assert.Pass;
 end;
 
-procedure TestCommndFactory_StrigListCommand.ChangeStringList_AfterExecute;
+procedure TestCommnd_StrigsCommand.ChangeStringList_AfterExecute;
 var
   CommandStrings: TCommandStringList;
 begin
@@ -203,7 +203,7 @@ begin
   Assert.AreEqual(1, CommandStrings.Lines.Count);
 end;
 
-procedure TestCommndFactory_StrigListCommand.GuardException_NoInjection;
+procedure TestCommnd_StrigsCommand.GuardException_NoInjection;
 begin
   Assert.WillRaiseDescendant(
     procedure
@@ -304,7 +304,7 @@ end;
 
 {$ENDREGION}
 
-procedure TestCommndFactory_AdvancedCommand.Setup;
+procedure TestCommnd_Advanced.Setup;
 begin
   FComponent := TComponent.Create(nil);
   FStringPrime := TStringList.Create;
@@ -313,7 +313,7 @@ begin
   FList := TList<Integer>.Create;
 end;
 
-procedure TestCommndFactory_AdvancedCommand.TearDown;
+procedure TestCommnd_Advanced.TearDown;
 begin
   FStringPrime.Free;
   FStringNonPrime.Free;
@@ -322,7 +322,7 @@ begin
   FComponent.Free;
 end;
 
-procedure TestCommndFactory_AdvancedCommand.Execute_TestPrimes;
+procedure TestCommnd_Advanced.Execute_TestPrimes;
 begin
   with FList do
   begin
@@ -337,7 +337,7 @@ begin
   Assert.AreEqual('101 is prime', FStringPrime[2]);
 end;
 
-procedure TestCommndFactory_AdvancedCommand.Execute_TestNonPrimes;
+procedure TestCommnd_Advanced.Execute_TestNonPrimes;
 begin
   with FList do
   begin
@@ -353,7 +353,7 @@ begin
   Assert.AreEqual('105', FStringNonPrime[3]);
 end;
 
-procedure TestCommndFactory_AdvancedCommand.Execute_TestStream;
+procedure TestCommnd_Advanced.Execute_TestStream;
 begin
   with FList do
   begin
@@ -365,7 +365,7 @@ begin
   Assert.AreEqual(32, Integer(FMemStream.Size));
 end;
 
-procedure TestCommndFactory_AdvancedCommand.Execute_ProcessOnlyPrimes;
+procedure TestCommnd_Advanced.Execute_ProcessOnlyPrimes;
 begin
   with FList do
   begin

@@ -4,34 +4,39 @@ interface
 
 uses
   DUnitX.TestFramework,
-  System.Classes, System.SysUtils, System.TypInfo,
+  System.Classes,
+  System.SysUtils,
+  System.TypInfo,
   Pattern.Command;
 
-{$TYPEINFO ON}  { Requred for old RTTI metadata form published section }
+{$M+}
 
 type
 
   [TestFixture]
-  TComponentPropertiesSUT = class(TObject)
-  strict private
-    fMetadataArray_TComponent: TPropertyArray;
-    fMetadataArray_ComponentTListComponent: TPropertyArray;
-    fMetadataArray_ComponentWithManyProps: TPropertyArray;
+  TestPropertyList = class(TObject)
   private
+    fComponent: TComponent;
+    procedure AssertMetadataItem(const expectedPropertyName
+  : string; const expectedClassName: string; expectedKind: TTypeKind;
+  const metadataItem: TPropertyInfo);
+    function AssertMetadataSize(const expectedSize: integer;
+      const metadataArray: TPropertyArray): boolean;
   public
     [Setup]
     procedure Setup;
+    [TearDown]
+    procedure TearDown;
   published
-    procedure SimpleComponent;
-    procedure OnePropertyComponent;
-    procedure ManyProperties_Count;
-    procedure ManyProperties_Param1;
-    procedure ManyProperties_Param2;
-    procedure ManyProperties_Param3;
-    procedure ManyProperties_Param4;
-    procedure ManyProperties_Param5;
-    procedure ManyProperties_Param6;
-    procedure ManyProperties_Param7;
+    procedure ComponentWithoutProperties;
+    procedure OneProperty;
+    procedure ManyProperties_StrListTStringList;
+    procedure ManyProperties_IsDoneBoolean;
+    procedure ManyProperties_TCollection;
+    procedure ManyProperties_ValueIntInteger;
+    procedure ManyProperties_AnyDateTDateTime;
+    procedure ManyProperties_MemStreamTMemoryStream;
+    procedure ManyProperties_TextString;
   end;
 
 implementation
@@ -41,7 +46,7 @@ implementation
 // ----------------------------------------------------------------------
 
 type
-  TComponentOneProps = class(TComponent)
+  TComponentWithTList = class(TComponent)
   private
     FList: TList;
   published
@@ -64,7 +69,7 @@ type
     property ValueInt: integer read FValueInt write FValueInt;
     property AnyDate: TDateTime read FAnyDate write FAnyDate;
     property MemStream: TMemoryStream read FMemStream write FMemStream;
-    property Text: string read FText write FText;
+    property Text: String read FText write FText;
   end;
 
 type
@@ -81,127 +86,134 @@ end;
 // Setup / TearDown
 // ----------------------------------------------------------------------
 
-procedure TComponentPropertiesSUT.Setup;
-var
-  fOwner: TComponent;
-  fComponentOneProp: TComponentOneProps;
-  fComponentManyProps: TComponentManyProps;
+procedure TestPropertyList.Setup;
 begin
-  fOwner := TComponent.Create(nil);
-  try
-    fMetadataArray_TComponent :=
-      TComponentMetadata.GetPublishedPropetries(fOwner);
-    fComponentOneProp := TComponentOneProps.Create(fOwner);
-    fMetadataArray_ComponentTListComponent :=
-      TComponentMetadata.GetPublishedPropetries(fComponentOneProp);
-    fComponentManyProps := TComponentManyProps.Create(fOwner);
-    fMetadataArray_ComponentWithManyProps :=
-      TComponentMetadata.GetPublishedPropetries(fComponentManyProps);
-  finally
-    fOwner.Free;
-  end;
+  fComponent := TComponent.Create(nil);
 end;
 
+procedure TestPropertyList.TearDown;
+begin
+  fComponent.Free;
+end;
+
+function TestPropertyList.AssertMetadataSize(const expectedSize: integer;
+  const metadataArray: TPropertyArray): boolean;
+begin
+  Result := (expectedSize <= Length(metadataArray));
+  if not Result then
+    Assert.Fail
+      (Format('Expected %d items but got %d items (metadata TPropertyArray has not enough items)',
+      [expectedSize,Length(metadataArray)]));
+end;
+
+procedure TestPropertyList.AssertMetadataItem(const expectedPropertyName
+  : string; const expectedClassName: string; expectedKind: TTypeKind;
+  const metadataItem: TPropertyInfo);
+begin
+    if (expectedPropertyName <> metadataItem.PropertyName) or
+      (expectedClassName <> metadataItem.ClassName) then
+      Assert.Fail(Format('Expected item %s:%s but got %s:%s',
+        [expectedPropertyName, expectedClassName, metadataItem.PropertyName,
+        metadataItem.ClassName]))
+    else if (expectedKind<>metadataItem.Kind) then
+      Assert.Fail(Format('Expected item kind %s but got %s',
+        [expectedKind.ToString, metadataItem.Kind.ToString]))
+    else
+      Assert.Pass;
+
+end;
 
 // ----------------------------------------------------------------------
 // Tests
 // ----------------------------------------------------------------------
 
-procedure TComponentPropertiesSUT.SimpleComponent;
+procedure TestPropertyList.ComponentWithoutProperties;
+var
+  metadata: TPropertyArray;
 begin
-  Assert.AreEqual(0, Length(fMetadataArray_TComponent));
+  metadata := TComponentMetadata.GetPublishedPropetries(fComponent);
+  if AssertMetadataSize(0,metadata) then
+    Assert.Pass;
 end;
 
-procedure TComponentPropertiesSUT.OnePropertyComponent;
+procedure TestPropertyList.OneProperty;
+var
+  metadata: TPropertyArray;
 begin
-  Assert.AreEqual(1, Length(fMetadataArray_ComponentTListComponent));
-  with fMetadataArray_ComponentTListComponent[0] do
-  begin
-    Assert.AreEqual('List', PropertyName);
-    Assert.AreEqual('TList', ClassName);
-  end;
+  metadata := TComponentMetadata.GetPublishedPropetries
+    (TComponentWithTList.Create(fComponent));
+  AssertMetadataSize(1,metadata);
+  AssertMetadataItem('List','TList',tkClass, metadata[0]);
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Count;
+procedure TestPropertyList.ManyProperties_StrListTStringList;
+var
+  metadata: TPropertyArray;
 begin
-  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
+  metadata := TComponentMetadata.GetPublishedPropetries
+    (TComponentManyProps.Create(fComponent));
+  AssertMetadataSize(7,metadata);
+  AssertMetadataItem('StrList','TStringList',tkClass, metadata[0]);
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param1;
+procedure TestPropertyList.ManyProperties_IsDoneBoolean;
+var
+  metadata: TPropertyArray;
 begin
-  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
-  with fMetadataArray_ComponentWithManyProps[0] do
-  begin
-    Assert.AreEqual('StrList', PropertyName);
-    Assert.AreEqual('TStringList', ClassName);
-    Assert.AreEqual('tkClass', Kind.ToString);
-  end;
+  metadata := TComponentMetadata.GetPublishedPropetries
+    (TComponentManyProps.Create(fComponent));
+  AssertMetadataSize(7,metadata);
+  AssertMetadataItem('IsDone', 'Boolean', tkEnumeration, metadata[1]);
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param2;
+procedure TestPropertyList.ManyProperties_TCollection;
+var
+  metadata: TPropertyArray;
 begin
-  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
-  with fMetadataArray_ComponentWithManyProps[1] do
-  begin
-    Assert.AreEqual('IsDone', PropertyName);
-    Assert.AreEqual('Boolean', ClassName);
-    Assert.AreEqual('tkEnumeration', Kind.ToString);
-  end;
+  metadata := TComponentMetadata.GetPublishedPropetries
+    (TComponentManyProps.Create(fComponent));
+  AssertMetadataSize(7,metadata);
+  AssertMetadataItem('Collection','TCollection',tkClass, metadata[2]);
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param3;
+procedure TestPropertyList.ManyProperties_ValueIntInteger;
+var
+  metadata: TPropertyArray;
 begin
-  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
-  with fMetadataArray_ComponentWithManyProps[2] do
-  begin
-    Assert.AreEqual('Collection', PropertyName);
-    Assert.AreEqual('TCollection', ClassName);
-    Assert.AreEqual('tkClass', Kind.ToString);
-  end;
+  metadata := TComponentMetadata.GetPublishedPropetries
+    (TComponentManyProps.Create(fComponent));
+  AssertMetadataSize(7,metadata);
+  AssertMetadataItem('ValueInt', 'Integer', tkInteger, metadata[3]);
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param4;
+procedure TestPropertyList.ManyProperties_AnyDateTDateTime;
+var
+  metadata: TPropertyArray;
 begin
-  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
-  with fMetadataArray_ComponentWithManyProps[3] do
-  begin
-    Assert.AreEqual('ValueInt', PropertyName);
-    Assert.AreEqual('Integer', ClassName);
-    Assert.AreEqual('tkInteger', Kind.ToString);
-  end;
+  metadata := TComponentMetadata.GetPublishedPropetries
+    (TComponentManyProps.Create(fComponent));
+  AssertMetadataSize(7,metadata);
+  AssertMetadataItem('AnyDate', 'TDateTime', tkFloat, metadata[4]);
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param5;
+procedure TestPropertyList.ManyProperties_MemStreamTMemoryStream;
+var
+  metadata: TPropertyArray;
 begin
-  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
-  with fMetadataArray_ComponentWithManyProps[4] do
-  begin
-    Assert.AreEqual('AnyDate', PropertyName);
-    Assert.AreEqual('TDateTime', ClassName);
-    Assert.AreEqual('tkFloat', Kind.ToString);
-  end;
+  metadata := TComponentMetadata.GetPublishedPropetries
+    (TComponentManyProps.Create(fComponent));
+  AssertMetadataSize(7,metadata);
+  AssertMetadataItem('MemStream', 'TMemoryStream', tkClass, metadata[5]);
 end;
 
-procedure TComponentPropertiesSUT.ManyProperties_Param6;
+procedure TestPropertyList.ManyProperties_TextString;
+var
+  metadata: TPropertyArray;
 begin
-  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
-  with fMetadataArray_ComponentWithManyProps[5] do
-  begin
-    Assert.AreEqual('MemStream', PropertyName);
-    Assert.AreEqual('TMemoryStream', ClassName);
-    Assert.AreEqual('tkClass', Kind.ToString);
-  end;
-end;
-
-procedure TComponentPropertiesSUT.ManyProperties_Param7;
-begin
-  Assert.AreEqual(7, Length(fMetadataArray_ComponentWithManyProps));
-  with fMetadataArray_ComponentWithManyProps[6] do
-  begin
-    Assert.AreEqual('Text', PropertyName);
-    Assert.AreEqual('String', ClassName);
-    Assert.AreEqual('tkUString', Kind.ToString);
-  end;
+  metadata := TComponentMetadata.GetPublishedPropetries
+    (TComponentManyProps.Create(fComponent));
+  AssertMetadataSize(7,metadata);
+  AssertMetadataItem('Text', 'string', tkUString, metadata[6]);
 end;
 
 end.

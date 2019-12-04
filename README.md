@@ -1,6 +1,7 @@
 # Command Pattern for Delphi
 
 ![ Delphi Support ](https://img.shields.io/badge/Delphi%20Support-%20XE8%20..%2010.3%20Rio-blue.svg)
+![ version ](https://img.shields.io/badge/version-%200.6-yellow.svg)
 
 ## Overview
 
@@ -32,9 +33,113 @@ Diagram of TCommand usage in the VCL application:
 
 ![](./docs/resources/tcommand-vcl.png)
 
-## Developing new command
+## Creating / implementing new command
 
-> TBD (delivered in ver 0.6)
+Developer to build new command needs to define new class derived from `TCommand` (unit: `Pattern.Command.pas`). He has to implement two protected methods: `DoGuard` and `DoExecute`: 
+* *method* `DoGuard` - can be empty if there is no injection (injection system is explained bellow)
+* *method* `DoExecute` - contains code which is main logic of the command
+
+Both methods are `virtual` then defining their interface have to use `override` keyword. You can remove (not to add) `inherited` call from `DoExecute` implementation and you have to remove this call from `DoGuard` implementation, if not then during first call exception will be raise with message that you cant call base `TCommand.DoGuard` code. This safeguards that developer implemented its own `DoGuard` logic.
+
+Sample command without injection (empty guard):
+```pas
+type
+  TDiceRollCommand = class (TCommand)
+  protected
+    procedure DoGuard; override;
+    procedure DoExecute; override;
+  end;
+
+procedure TDiceRollCommand.DoGuard;
+begin
+  // Required: even if no injection are provided 
+end;
+
+procedure TDiceRollCommand.DoExecute;
+begin
+  ShowMessage('Dice roll: '+RandomRange(1,6).ToString);
+end;
+```
+
+To execute command you should create object and call `Execute` public method, which call `DoGuard` and then `DoExecute`. You shouldn't put any business logic into guard method, see bellow section about injection system for more details.
+
+Sample call:
+
+```pas
+cmd := TDiceRollCommand.Ceate(Self);
+cmd.Execute;
+```
+
+## TCommand injection system
+
+`TCommand` component has built in automated injection system based on classic `RTTI` mechanism used by IDE Form Designer (Object Inspector). Properties exposed to be injectable have to be defined in `published` section of the component (command). All component based classes have switched on run-time type information generation during compilation process (compiler option `{$TYPEINFO ON}`). Thanks of that during creation of new command all dependencies can be easily provided and assigned to published properties automatically. More information about classic RTTI engine can be find in Delphi documentation: [Run-Time Type Information](http://docwiki.embarcadero.com/RADStudio/Rio/en/Run-Time_Type_Information_\(Delphi\))
+
+Sample command with two dependencies (one required and one optional):
+```pas
+type
+  TDiceRollCommand = class (TCommand)
+  const
+    RollCount = 100;
+  private
+    FOutput: TStrings;
+    FProgressBar: TProgressBar;
+    procedure ShowProgress(aRoll: integer);
+  protected
+    procedure DoGuard; override;
+    procedure DoExecute; override;
+  published
+    property OutputRolls: TStrings read FOutput 
+      write FOutput;
+    property ProgressBar: TProgressBar read FProgressBar 
+      write FProgressBar;
+  end;
+
+procedure TDiceRollCommand.DoGuard;
+begin
+  System.Assert(FOutput<>nil); 
+end;
+
+procedure TDiceRollCommand.ShowProgress(aRoll: integer);
+begin
+  if Assigned(ProgressBar) then begin
+    if aRoll=0 then
+      ProgressBar.Max := RollCount;
+    ProgressBar.Position := aRoll;
+  end;
+end
+
+procedure TDiceRollCommand.DoExecute;
+begin
+  ShowProgress(0);
+  for var i := 0 to RollCount-1 do
+  begin
+    var number := RandomRange(1,6);
+    FOutput.Add(number.ToString);
+    if (FReportingMemo<>nil) then
+      FReportingMemo.Lines.Add(number.ToString);
+    ShowProgress(i+1);
+  end;
+end;
+```
+
+Available published properties of TCommand are matched against types of parameters passed in parameters (open array). Following rules are used by matching algorithm:
+
+1. The same object types are matched
+1. If there is two or more object of the same class passed and more matching properties then parameter are assigned to properties according to order first with first, second with second, etc.
+1. More specific object passed as parameter is matching to more general object in properties list
+1. Numeric integer parameters are assigned to numeric properties
+1. Strings to strings
+1. Supported are also decimals, enumerable and boolean types.
+
+**Warning!** Injected object are accessed by address in memory (pointer), thanks of that any changes made to object are visible inside and outside of the TCommand. Simple types and strings are accessed via value and properties have to updated manually to be updated.
+
+Sample code injecting objects to properties of TDiceRollCommand:
+```pas
+cmd := TDiceRollCommand.Create(Self)
+  .Inject([Memo1.Lines,ProgressBar1]);
+```
+
+Most popular and usually advised method of injecting dependencies is a constructor injection. This solution introduced here (TCommand pattern) is more component based approach. This pattern is more like a transition stage which allow quickly extract and execute important parts of big application. Final target point in that process is the best architectural solution, means injection through the constructor and use interfaces instead of objects.
 
 ## TCommand execution
 
@@ -48,13 +153,48 @@ Diagram of TCommand usage in the VCL application:
     * `TCommandAction` class is classic VCL action
     * This class has special methods to allow rapid construction and initialization
 
-## TCommand injection system
+## TCommand memory management
 
-> TBD (delivered in ver 0.6)
+> TBD: Describe advantages of management base on `TComponent` solution using owner.
 
 ## TCommandAction - VCL command invoker
 
-> TBD (delivered in ver 0.6)
+`TCommandAction` is a wrapper class based on `TAction` and is able to execute commands based on `TCommand` class. Developer, when building VCL application, can easily bind this action to many controls (visual components which are driven by actions or are action-aware). For example `TCheckBox` has `Action` property which is executed when used is changing checkbox state (checked). Actions have some other advantages like build in notification system, precisely two such engines: one for updating visual state and another, more internal, for notifying about creation of new and deletion of existing components. Both engines are too complex to be described in this section, more information can be found in the Delphi online documentation.
+
+Looking form architectural perspective `TCommandAction` can be used as an Invoker object and after migration can be replaced by more elastic custom solution.
+
+Sample construction on `TCommandAction` invoker:
+
+```pas
+Button1.Action := TCommandAction.Create(Button1)
+  .SetupCaption('Run sample command')
+  .SetupCommand(TSampleCommand.Create(Button1)
+    .Inject([Memo1, Edit1])
+  );
+```
+
+`TCommandAction` has some utility methods which allows to quickly initialize its behavior:
+
+| Utility method | Description |
+| --- | --- |
+| `SetupCaption(ACaption)` | Sets action caption which is displayed in a control |
+| `SetupShortCut(AShorcut)` | Sets shortcut which is activating action |
+| `SetupCommand(ACommand)` | Sets command to execute |
+| `SetupEventOnUpdate(...)` | Sets on update event (using anonymous method) |
+
+Sample setup OnUpdate event in `TCommandAction`:
+
+```pas
+Button2.Action := TCommandAction.Create(Self)
+  .SetupCaption('Run sample command')
+  .SetupCommand(MySampleCommand)
+  .SetupEventOnUpdate(
+    procedure(cmd: TCommandAction)
+    begin
+      cmd.Enabled := CheckBox1.Checked;
+    end);
+```
+
 
 ## Samples
 
@@ -71,7 +211,7 @@ cmdSampleCommand.Inject([Memo1, Edit1]);
 
 Create invoker `TCommandAction`:
 ```pas
-Button1.Action := cmdSampleCommand := TCommandAction.Create(Button1)
+Button1.Action := TCommandAction.Create(Button1)
   .SetupCaption('Run sample command')
   .SetupCommand(TSampleCommand.Create(Button1)
     .Inject([Memo1, Edit1])
@@ -93,7 +233,7 @@ type
     property Edit: TEdit read FEdit write FEdit;
   end;
 
-procedure TSampleCommand.DoGuard; override;
+procedure TSampleCommand.DoGuard;
 begin
   System.Assert(Memo<>nil);
   System.Assert(Edit<>nil);
