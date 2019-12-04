@@ -74,7 +74,7 @@ cmd.Execute;
 
 `TCommand` component has built in automated injection system based on classic `RTTI` mechanism used by IDE Form Designer (Object Inspector). Properties exposed to be injectable have to be defined in `published` section of the component (command). All component based classes have switched on run-time type information generation during compilation process (compiler option `{$TYPEINFO ON}`). Thanks of that during creation of new command all dependencies can be easily provided and assigned to published properties automatically. More information about classic RTTI engine can be find in Delphi documentation: [Run-Time Type Information](http://docwiki.embarcadero.com/RADStudio/Rio/en/Run-Time_Type_Information_\(Delphi\))
 
-Sample command with one dependency:
+Sample command with two dependencies (one required and one optional):
 ```pas
 type
   TDiceRollCommand = class (TCommand)
@@ -82,15 +82,16 @@ type
     RollCount = 100;
   private
     FOutput: TStrings;
-    FReportingMemo: TMemo; 
+    FProgressBar: TProgressBar;
+    procedure ShowProgress(aRoll: integer);
   protected
     procedure DoGuard; override;
     procedure DoExecute; override;
   published
     property OutputRolls: TStrings read FOutput 
       write FOutput;
-    property ReportingMemo: TMemo read FReportingMemo 
-      write FReportingMemo;
+    property ProgressBar: TProgressBar read FProgressBar 
+      write FProgressBar;
   end;
 
 procedure TDiceRollCommand.DoGuard;
@@ -98,14 +99,25 @@ begin
   System.Assert(FOutput<>nil); 
 end;
 
+procedure TDiceRollCommand.ShowProgress(aRoll: integer);
+begin
+  if Assigned(ProgressBar) then begin
+    if aRoll=0 then
+      ProgressBar.Max := RollCount;
+    ProgressBar.Position := aRoll;
+  end;
+end
+
 procedure TDiceRollCommand.DoExecute;
 begin
+  ShowProgress(0);
   for var i := 0 to RollCount-1 do
   begin
     var number := RandomRange(1,6);
     FOutput.Add(number.ToString);
     if (FReportingMemo<>nil) then
       FReportingMemo.Lines.Add(number.ToString);
+    ShowProgress(i+1);
   end;
 end;
 ```
@@ -121,7 +133,13 @@ Available published properties of TCommand are matched against types of paramete
 
 **Warning!** Injected object are accessed by address in memory (pointer), thanks of that any changes made to object are visible inside and outside of the TCommand. Simple types and strings are accessed via value and properties have to updated manually to be updated.
 
-> TBD: Compare injection via properties (used here) to most popular injection via constructor.
+Sample code injecting objects to properties of TDiceRollCommand:
+```pas
+cmd := TDiceRollCommand.Create(Self)
+  .Inject([Memo1.Lines,ProgressBar1]);
+```
+
+Most popular and usually advised method of injecting dependencies is a constructor injection. This solution introduced here (TCommand pattern) is more component based approach. This pattern is more like a transition stage which allow quickly extract and execute important parts of big application. Final target point in that process is the best architectural solution, means injection through the constructor and use interfaces instead of objects.
 
 ## TCommand execution
 
