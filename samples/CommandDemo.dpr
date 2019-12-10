@@ -1,4 +1,4 @@
-program CommandFactoryDemo;
+program CommandDemo;
 
 uses
   Vcl.Forms,
