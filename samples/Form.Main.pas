@@ -62,13 +62,15 @@ begin
   // ---------------------------------------------------------
   // ---------------------------------------------------------
   actCommandButon1 := TCommandAction.Create(Self)
-    .SetupCaption('Run command: Button1')
-    .SetupCommand(TButon1Command.Create(Self).Inject([Memo1]));
+    .SetupCommand(TButon1Command.Create(Self))
+    .SetupCaption('Run command: Button1') //.
+    .Inject([Memo1]);
   // ---------------------------------------------------------
   // ---------------------------------------------------------
   actCommandButon2 := TCommandAction.Create(Self)
-    .SetupCaption('Run command: Button2')
-    .SetupCommand(TButon2Command.Create(Self).Inject([Memo1, Edit1]))
+    .SetupCommand(TButon2Command.Create(Self))
+    .SetupCaption('Run command: Button2') //.
+    .Inject([Memo1, Edit1])
     .SetupEventOnUpdate(
     procedure(actCommand: TCommandAction)
     begin
@@ -77,14 +79,16 @@ begin
   // ---------------------------------------------------------
   // ---------------------------------------------------------
   actCommandDiceRoll := TCommandAction.Create(Self)
-    .SetupCaption('Dice Rolls Command')
-    .SetupCommand(TDiceRollCommand.Create(Self).Inject([fStrsDiceResults]))
+    .SetupCommand(TDiceRollCommand.Create(Self))
+    .SetupCaption('Dice Rolls Command') //.
+    .Inject([fStrsDiceResults])
     .SetupEventOnUpdate(
     procedure(actCommand: TCommandAction)
     begin
       (actCommand.Command as TDiceRollCommand).ProgressBar :=
         Self.FindChildControlRecursiveByType(TProgressBar) as TProgressBar;
-    end).SetupEventAfterExecution(
+    end) //.
+    .SetupEventAfterExecution(
     procedure(actCommand: TCommandAction)
     var
       cmd: TDiceRollCommand;
