@@ -28,6 +28,7 @@ type
       : TCommandAction;
     function SetupEventAfterExecution(aAfterProc: TProc<TCommandAction>)
       : TCommandAction;
+    function Inject(const Injections: array of const): TCommandAction;
     property Command: TCommand read fCommand write fCommand;
     property DisableDuringExecution: boolean read fDisableDuringExecution
       write fDisableDuringExecution;
@@ -35,27 +36,35 @@ type
 
 implementation
 
-// ------------------------------------------------------------------------
-{ TCommandAction }
-
 constructor TCommandAction.Create(aOwner: TComponent);
 begin
   inherited;
   DisableDuringExecution := False;
+  fCommand := nil;
+  fOnUpdateProc := nil;
   fOnAfterProc := nil;
   Self.OnExecute := OnExecuteEvent;
 end;
 
 procedure TCommandAction.DoExecuteAction(Sender: TObject);
 begin
-  Command.Execute;
+  fCommand.Execute;
   if Assigned(fOnAfterProc) then
     fOnAfterProc(Self)
 end;
 
+function TCommandAction.Inject(const Injections: array of const)
+  : TCommandAction;
+begin
+  System.Assert(fCommand <> nil,
+    'Command have to be created and provided before injection');
+  fCommand.Inject(Injections);
+  Result := Self;
+end;
+
 procedure TCommandAction.OnExecuteEvent(Sender: TObject);
 begin
-  System.Assert(Command <> nil);
+  System.Assert(fCommand <> nil);
   if DisableDuringExecution then
   begin
     try
@@ -83,7 +92,7 @@ end;
 
 function TCommandAction.SetupCommand(aCommand: TCommand): TCommandAction;
 begin
-  Command := aCommand;
+  fCommand := aCommand;
   Result := Self;
 end;
 
