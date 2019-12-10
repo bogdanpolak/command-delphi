@@ -14,15 +14,19 @@ type
   private
     fCommand: TCommand;
     fOnUpdateProc: TProc<TCommandAction>;
+    fOnAfterProc: TProc<TCommandAction>;
     fDisableDuringExecution: boolean;
     procedure OnExecuteEvent(Sender: TObject);
     procedure OnUpdateEvent(Sender: TObject);
+    procedure DoExecuteAction(Sender: TObject);
   public
     constructor Create(aOwner: TComponent); override;
     function SetupCaption(const aCaption: string): TCommandAction;
     function SetupCommand(aCommand: TCommand): TCommandAction;
     function SetupShortCut(aShorcut: TShortCut): TCommandAction;
     function SetupEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
+      : TCommandAction;
+    function SetupEventAfterExecution(aAfterProc: TProc<TCommandAction>)
       : TCommandAction;
     property Command: TCommand read fCommand write fCommand;
     property DisableDuringExecution: boolean read fDisableDuringExecution
@@ -38,7 +42,15 @@ constructor TCommandAction.Create(aOwner: TComponent);
 begin
   inherited;
   DisableDuringExecution := False;
+  fOnAfterProc := nil;
   Self.OnExecute := OnExecuteEvent;
+end;
+
+procedure TCommandAction.DoExecuteAction(Sender: TObject);
+begin
+  Command.Execute;
+  if Assigned(fOnAfterProc) then
+    fOnAfterProc(Self)
 end;
 
 procedure TCommandAction.OnExecuteEvent(Sender: TObject);
@@ -48,13 +60,13 @@ begin
   begin
     try
       Self.Enabled := False;
-      Command.Execute;
+      DoExecuteAction(Sender);
     finally
       Self.Enabled := True;
     end;
   end
   else
-    Command.Execute;
+    DoExecuteAction(Sender);
 end;
 
 procedure TCommandAction.OnUpdateEvent(Sender: TObject);
@@ -72,6 +84,13 @@ end;
 function TCommandAction.SetupCommand(aCommand: TCommand): TCommandAction;
 begin
   Command := aCommand;
+  Result := Self;
+end;
+
+function TCommandAction.SetupEventAfterExecution
+  (aAfterProc: TProc<TCommandAction>): TCommandAction;
+begin
+  fOnAfterProc := aAfterProc;
   Result := Self;
 end;
 
