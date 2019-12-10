@@ -12,21 +12,21 @@ uses
 type
   TCommandAction = class(TAction)
   private
-    FCommand: TCommand;
-    FOnUpdateProc: TProc<TCommandAction>;
-    FDisableDuringExecution: boolean;
+    fCommand: TCommand;
+    fOnUpdateProc: TProc<TCommandAction>;
+    fDisableDuringExecution: boolean;
     procedure OnExecuteEvent(Sender: TObject);
     procedure OnUpdateEvent(Sender: TObject);
   public
-    constructor Create(AOwner: TComponent); override;
-    function SetupCaption(const ACaption: string): TCommandAction;
-    function SetupCommand(ACommand: TCommand): TCommandAction;
-    function SetupShortCut(AShorcut: TShortCut): TCommandAction;
+    constructor Create(aOwner: TComponent); override;
+    function SetupCaption(const aCaption: string): TCommandAction;
+    function SetupCommand(aCommand: TCommand): TCommandAction;
+    function SetupShortCut(aShorcut: TShortCut): TCommandAction;
     function SetupEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
       : TCommandAction;
-    property Command: TCommand read FCommand write FCommand;
-    property DisableDuringExecution: boolean read FDisableDuringExecution
-      write FDisableDuringExecution;
+    property Command: TCommand read fCommand write fCommand;
+    property DisableDuringExecution: boolean read fDisableDuringExecution
+      write fDisableDuringExecution;
   end;
 
 implementation
@@ -34,7 +34,7 @@ implementation
 // ------------------------------------------------------------------------
 { TCommandAction }
 
-constructor TCommandAction.Create(AOwner: TComponent);
+constructor TCommandAction.Create(aOwner: TComponent);
 begin
   inherited;
   DisableDuringExecution := False;
@@ -59,33 +59,33 @@ end;
 
 procedure TCommandAction.OnUpdateEvent(Sender: TObject);
 begin
-  if Assigned(FOnUpdateProc) then
-    FOnUpdateProc(Self);
+  if Assigned(fOnUpdateProc) then
+    fOnUpdateProc(Self);
 end;
 
-function TCommandAction.SetupCaption(const ACaption: string): TCommandAction;
+function TCommandAction.SetupCaption(const aCaption: string): TCommandAction;
 begin
-  Caption := ACaption;
+  Caption := aCaption;
   Result := Self;
 end;
 
-function TCommandAction.SetupCommand(ACommand: TCommand): TCommandAction;
+function TCommandAction.SetupCommand(aCommand: TCommand): TCommandAction;
 begin
-  Command := ACommand;
+  Command := aCommand;
   Result := Self;
 end;
 
 function TCommandAction.SetupEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
   : TCommandAction;
 begin
-  FOnUpdateProc := AUpdateProc;
+  fOnUpdateProc := AUpdateProc;
   Self.OnUpdate := OnUpdateEvent;
   Result := Self;
 end;
 
-function TCommandAction.SetupShortCut(AShorcut: TShortCut): TCommandAction;
+function TCommandAction.SetupShortCut(aShorcut: TShortCut): TCommandAction;
 begin
-  Self.ShortCut := AShorcut;
+  Self.ShortCut := aShorcut;
   Result := Self;
 end;
 
