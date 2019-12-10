@@ -31,11 +31,15 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure chkShowProgressbarClick(Sender: TObject);
     procedure btnExecuteCommandClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
   private
     fStrsDiceResults: TStringList;
     actCommandDiceRoll: TCommandAction;
     actCommandButon1: TCommandAction;
     actCommandButon2: TCommandAction;
+    procedure BuildCommandsAndActions;
     procedure OnFormSetup;
     procedure OnFormTearDown;
   public
@@ -53,13 +57,14 @@ uses
   Command.Button2,
   Helper.TWinControl;
 
-procedure TForm1.OnFormSetup;
+procedure TForm1.BuildCommandsAndActions;
 begin
-  fStrsDiceResults := TStringList.Create;
+  // ---------------------------------------------------------
   // ---------------------------------------------------------
   actCommandButon1 := TCommandAction.Create(Self)
     .SetupCaption('Run command: Button1')
     .SetupCommand(TButon1Command.Create(Self).Inject([Memo1]));
+  // ---------------------------------------------------------
   // ---------------------------------------------------------
   actCommandButon2 := TCommandAction.Create(Self)
     .SetupCaption('Run command: Button2')
@@ -69,6 +74,7 @@ begin
     begin
       actCommand.Enabled := CheckBox1.Checked;
     end);
+  // ---------------------------------------------------------
   // ---------------------------------------------------------
   actCommandDiceRoll := TCommandAction.Create(Self)
     .SetupCaption('Dice Rolls Command')
@@ -92,7 +98,27 @@ begin
         Memo1.Lines.Add('  ' + cmd.Results[i]);
     end);
   actCommandDiceRoll.DisableDuringExecution := True;
-  // ---------------------------------------------------------
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  // this event is not called, see method: BuildCommandsAndActions
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+  // this event is not called, see method: BuildCommandsAndActions
+end;
+
+procedure TForm1.Button3Click(Sender: TObject);
+begin
+  // this event is not called, see method: BuildCommandsAndActions
+end;
+
+procedure TForm1.OnFormSetup;
+begin
+  fStrsDiceResults := TStringList.Create;
+  BuildCommandsAndActions;
   Button1.Action := actCommandButon1;
   Button2.Action := actCommandButon2;
   Button3.Action := actCommandDiceRoll;
