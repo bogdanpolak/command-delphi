@@ -9,11 +9,11 @@ uses
 
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   Vcl.ActnList, Vcl.ExtCtrls, Vcl.PlatformDefaultStyleActnCtrls,
-  Vcl.ActnMan,
+  Vcl.ActnMan, Vcl.ComCtrls,
 
   Pattern.Command,
   Pattern.CommandAction,
-  Command.DiceRoll, Vcl.ComCtrls;
+  Command.DiceRoll;
 
 type
   TForm1 = class(TForm)
@@ -52,23 +52,24 @@ implementation
 
 uses
   Command.Button1,
-  Command.Button2, Helper.TWinControl;
+  Command.Button2,
+  Helper.TWinControl;
 
 procedure TForm1.OnFormSetup;
 begin
+  fStrsDiceResults := TStringList.Create;
+  // ---------------------------------------------------------
   Button1.Action := TCommandAction.Create(Self)
     .SetupCaption('Run command: Button1')
     .SetupCommand(TButon1Command.Create(Self).Inject([Memo1]));
-
   Button2.Action := TCommandAction.Create(Self)
     .SetupCaption('Run command: Button2')
     .SetupCommand(TButon2Command.Create(Self).Inject([Memo1, Edit1]))
     .SetupEventOnUpdate(
-    procedure(cmd: TCommandAction)
+    procedure(actCommand: TCommandAction)
     begin
-      cmd.Enabled := CheckBox1.Checked;
+      actCommand.Enabled := CheckBox1.Checked;
     end);
-  fStrsDiceResults := TStringList.Create;
   cmdRollDice := TDiceRollCommand.Create(Self);
   cmdRollDice.Results := fStrsDiceResults;
 end;
