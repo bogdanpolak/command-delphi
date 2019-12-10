@@ -36,8 +36,8 @@ type
     procedure actShowProgressBarExecute(Sender: TObject);
     procedure actDiceRollsExecute(Sender: TObject);
   private
-    cmdRollDice: TDiceRollCommand;
     fStrsDiceResults: TStringList;
+    actCommandDiceRoll: TCommandAction;
     procedure OnFormSetup;
     procedure OnFormTearDown;
   public
@@ -70,8 +70,10 @@ begin
     begin
       actCommand.Enabled := CheckBox1.Checked;
     end);
-  cmdRollDice := TDiceRollCommand.Create(Self);
-  cmdRollDice.Results := fStrsDiceResults;
+  actCommandDiceRoll := TCommandAction.Create(Self)
+    .SetupCaption('Dice Rolls Command')
+    .SetupCommand(TDiceRollCommand.Create(Self).Inject([fStrsDiceResults]));
+  // ---------------------------------------------------------
 end;
 
 procedure TForm1.OnFormTearDown;
@@ -107,19 +109,16 @@ end;
 procedure TForm1.actDiceRollsExecute(Sender: TObject);
 var
   i: Integer;
+  cmdDiceRoll: TDiceRollCommand;
 begin
-  cmdRollDice.ProgressBar := Self.FindChildControlRecursiveByType(TProgressBar)
-    as TProgressBar;
-  try
-    actDiceRolls.Enabled := False;
-    cmdRollDice.Execute;
-  finally
-    actDiceRolls.Enabled := true;
-  end;
+  cmdDiceRoll := actCommandDiceRoll.Command as TDiceRollCommand;
+  cmdDiceRoll.ProgressBar := Self.FindChildControlRecursiveByType(TProgressBar) as TProgressBar;
+  actCommandDiceRoll.DisableDuringExecution := True;
+  actCommandDiceRoll.Execute;
   Memo1.Lines.Add(Format('Dice results (%d-sided dice) (number of rolls: %d)',
-    [cmdRollDice.MaxDiceValue, cmdRollDice.RollCount]));
-  for i := 0 to cmdRollDice.Results.Count - 1 do
-    Memo1.Lines.Add('  ' + cmdRollDice.Results[i]);
+    [cmdDiceRoll.MaxDiceValue, cmdDiceRoll.RollCount]));
+  for i := 0 to cmdDiceRoll.Results.Count - 1 do
+    Memo1.Lines.Add('  ' + cmdDiceRoll.Results[i]);
 end;
 
 procedure TForm1.actExecuteTwoCommandsExecute(Sender: TObject);
