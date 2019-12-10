@@ -24,79 +24,100 @@ object Form1: TForm1
     Align = alLeft
     Caption = 'GroupBox1'
     TabOrder = 0
-    object Button1: TButton
+    ExplicitTop = -2
+    object Bevel1: TBevel
+      AlignWithMargins = True
+      Left = 5
+      Top = 75
+      Width = 175
+      Height = 3
+      Margins.Top = 23
+      Margins.Bottom = 23
+      Align = alTop
+      ExplicitTop = 55
+    end
+    object btnExecuteCommand: TButton
       AlignWithMargins = True
       Left = 5
       Top = 18
       Width = 175
       Height = 31
       Align = alTop
-      Caption = 'Button1'
+      Caption = 'btnExecuteCommand'
       TabOrder = 0
+      OnClick = btnExecuteCommandClick
+      ExplicitLeft = 7
     end
-    object Button2: TButton
+    object Button1: TButton
       AlignWithMargins = True
       Left = 5
-      Top = 55
+      Top = 104
       Width = 175
       Height = 34
       Align = alTop
-      Caption = 'Button2'
+      Caption = 'Button1'
       TabOrder = 1
+      ExplicitTop = 55
     end
     object Edit1: TEdit
       AlignWithMargins = True
       Left = 5
-      Top = 95
+      Top = 184
       Width = 175
       Height = 21
       Align = alTop
       TabOrder = 2
       Text = 'Edit1'
+      ExplicitLeft = 7
+      ExplicitTop = 162
     end
-    object Button3: TButton
+    object Button2: TButton
       AlignWithMargins = True
       Left = 5
-      Top = 122
+      Top = 144
       Width = 175
       Height = 34
-      Action = actExecuteTwoCommands
       Align = alTop
+      Caption = 'Button2'
       TabOrder = 3
+      ExplicitTop = 122
     end
     object CheckBox1: TCheckBox
       AlignWithMargins = True
       Left = 5
-      Top = 172
+      Top = 211
       Width = 175
       Height = 17
-      Margins.Top = 13
       Align = alTop
       Caption = 'Enable command Button2'
       Checked = True
       State = cbChecked
       TabOrder = 4
+      ExplicitTop = 172
     end
-    object Button4: TButton
+    object Button3: TButton
       AlignWithMargins = True
       Left = 5
-      Top = 212
+      Top = 251
       Width = 175
       Height = 34
       Margins.Top = 20
-      Action = actDiceRolls
       Align = alTop
+      Caption = 'Button3'
       TabOrder = 5
+      ExplicitTop = 212
     end
-    object CheckBox2: TCheckBox
+    object chkShowProgressbar: TCheckBox
       AlignWithMargins = True
       Left = 5
-      Top = 252
+      Top = 291
       Width = 175
       Height = 17
-      Action = actShowProgressBar
       Align = alTop
+      Caption = 'Show Progress Bar'
       TabOrder = 6
+      OnClick = chkShowProgressbarClick
+      ExplicitLeft = 3
     end
   end
   object Memo1: TMemo
@@ -116,22 +137,6 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1
-  end
-  object ActionManager1: TActionManager
-    Left = 232
-    Top = 176
-    StyleName = 'Platform Default'
-    object actExecuteTwoCommands: TAction
-      Caption = 'Execute Both Commands'
-      OnExecute = actExecuteTwoCommandsExecute
-    end
-    object actDiceRolls: TAction
-      Caption = 'Dice Rolls Command'
-      OnExecute = actDiceRollsExecute
-    end
-    object actShowProgressBar: TAction
-      Caption = 'Show Progress Bar'
-      OnExecute = actShowProgressBarExecute
-    end
+    ExplicitTop = -2
   end
 end

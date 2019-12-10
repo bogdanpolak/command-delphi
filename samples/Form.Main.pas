@@ -18,26 +18,24 @@ uses
 type
   TForm1 = class(TForm)
     GroupBox1: TGroupBox;
+    btnExecuteCommand: TButton;
     Button1: TButton;
-    Button2: TButton;
     Memo1: TMemo;
     Edit1: TEdit;
-    Button3: TButton;
+    Button2: TButton;
     CheckBox1: TCheckBox;
-    Button4: TButton;
-    ActionManager1: TActionManager;
-    actExecuteTwoCommands: TAction;
-    actDiceRolls: TAction;
-    actShowProgressBar: TAction;
-    CheckBox2: TCheckBox;
+    Button3: TButton;
+    chkShowProgressbar: TCheckBox;
+    Bevel1: TBevel;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure actExecuteTwoCommandsExecute(Sender: TObject);
-    procedure actShowProgressBarExecute(Sender: TObject);
-    procedure actDiceRollsExecute(Sender: TObject);
+    procedure chkShowProgressbarClick(Sender: TObject);
+    procedure btnExecuteCommandClick(Sender: TObject);
   private
     fStrsDiceResults: TStringList;
     actCommandDiceRoll: TCommandAction;
+    actCommandButon1: TCommandAction;
+    actCommandButon2: TCommandAction;
     procedure OnFormSetup;
     procedure OnFormTearDown;
   public
@@ -59,10 +57,11 @@ procedure TForm1.OnFormSetup;
 begin
   fStrsDiceResults := TStringList.Create;
   // ---------------------------------------------------------
-  Button1.Action := TCommandAction.Create(Self)
+  actCommandButon1 := TCommandAction.Create(Self)
     .SetupCaption('Run command: Button1')
     .SetupCommand(TButon1Command.Create(Self).Inject([Memo1]));
-  Button2.Action := TCommandAction.Create(Self)
+  // ---------------------------------------------------------
+  actCommandButon2 := TCommandAction.Create(Self)
     .SetupCaption('Run command: Button2')
     .SetupCommand(TButon2Command.Create(Self).Inject([Memo1, Edit1]))
     .SetupEventOnUpdate(
@@ -70,10 +69,33 @@ begin
     begin
       actCommand.Enabled := CheckBox1.Checked;
     end);
+  // ---------------------------------------------------------
   actCommandDiceRoll := TCommandAction.Create(Self)
     .SetupCaption('Dice Rolls Command')
-    .SetupCommand(TDiceRollCommand.Create(Self).Inject([fStrsDiceResults]));
+    .SetupCommand(TDiceRollCommand.Create(Self).Inject([fStrsDiceResults]))
+    .SetupEventOnUpdate(
+    procedure(actCommand: TCommandAction)
+    begin
+      (actCommand.Command as TDiceRollCommand).ProgressBar :=
+        Self.FindChildControlRecursiveByType(TProgressBar) as TProgressBar;
+    end).SetupEventAfterExecution(
+    procedure(actCommand: TCommandAction)
+    var
+      cmd: TDiceRollCommand;
+      i: integer;
+    begin
+      cmd := actCommand.Command as TDiceRollCommand;
+      Memo1.Lines.Add
+        (Format('Dice results (%d-sided dice) (number of rolls: %d)',
+        [cmd.MaxDiceValue, cmd.RollCount]));
+      for i := 0 to cmd.Results.Count - 1 do
+        Memo1.Lines.Add('  ' + cmd.Results[i]);
+    end);
+  actCommandDiceRoll.DisableDuringExecution := True;
   // ---------------------------------------------------------
+  Button1.Action := actCommandButon1;
+  Button2.Action := actCommandButon2;
+  Button3.Action := actCommandDiceRoll;
 end;
 
 procedure TForm1.OnFormTearDown;
@@ -89,42 +111,36 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   Memo1.Clear;
-  ReportMemoryLeaksOnShutdown := true;
+  ReportMemoryLeaksOnShutdown := True;
   OnFormSetup;
 end;
 
-procedure TForm1.actShowProgressBarExecute(Sender: TObject);
-begin
-  with TProgressBar.Create(Self) do
-  begin
-    Name := 'ProgrssBar1';
-    Parent := GroupBox1;
-    Top := 999;
-    Align := alTop;
-    AlignWithMargins := true;
-  end;
-  actShowProgressBar.Visible := False;
-end;
-
-procedure TForm1.actDiceRollsExecute(Sender: TObject);
-var
-  i: Integer;
-  cmdDiceRoll: TDiceRollCommand;
-begin
-  cmdDiceRoll := actCommandDiceRoll.Command as TDiceRollCommand;
-  cmdDiceRoll.ProgressBar := Self.FindChildControlRecursiveByType(TProgressBar) as TProgressBar;
-  actCommandDiceRoll.DisableDuringExecution := True;
-  actCommandDiceRoll.Execute;
-  Memo1.Lines.Add(Format('Dice results (%d-sided dice) (number of rolls: %d)',
-    [cmdDiceRoll.MaxDiceValue, cmdDiceRoll.RollCount]));
-  for i := 0 to cmdDiceRoll.Results.Count - 1 do
-    Memo1.Lines.Add('  ' + cmdDiceRoll.Results[i]);
-end;
-
-procedure TForm1.actExecuteTwoCommandsExecute(Sender: TObject);
+procedure TForm1.btnExecuteCommandClick(Sender: TObject);
 begin
   TCommand.AdhocExecute<TButon1Command>([Memo1]);
-  TCommand.AdhocExecute<TButon2Command>([Memo1, Edit1]);
+end;
+
+procedure TForm1.chkShowProgressbarClick(Sender: TObject);
+var
+  aProgressBar: TProgressBar;
+begin
+  if chkShowProgressbar.Checked then
+  begin
+    aProgressBar := TProgressBar.Create(Self);
+    with aProgressBar do
+    begin
+      Name := 'ProgrssBar1';
+      Parent := GroupBox1;
+      Top := 999;
+      Align := alTop;
+      AlignWithMargins := True;
+    end;
+  end
+  else
+  begin
+    aProgressBar := GroupBox1.FindChildControl('ProgrssBar1') as TProgressBar;
+    aProgressBar.Free;
+  end;
 end;
 
 end.
