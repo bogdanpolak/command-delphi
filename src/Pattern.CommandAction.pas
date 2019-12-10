@@ -14,6 +14,7 @@ type
   private
     FCommand: TCommand;
     FOnUpdateProc: TProc<TCommandAction>;
+    FDisableDuringExecution: boolean;
     procedure OnExecuteEvent(Sender: TObject);
     procedure OnUpdateEvent(Sender: TObject);
   public
@@ -24,6 +25,8 @@ type
     function SetupEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
       : TCommandAction;
     property Command: TCommand read FCommand write FCommand;
+    property DisableDuringExecution: boolean read FDisableDuringExecution
+      write FDisableDuringExecution;
   end;
 
 implementation
@@ -34,13 +37,24 @@ implementation
 constructor TCommandAction.Create(AOwner: TComponent);
 begin
   inherited;
+  DisableDuringExecution := False;
   Self.OnExecute := OnExecuteEvent;
 end;
 
 procedure TCommandAction.OnExecuteEvent(Sender: TObject);
 begin
   System.Assert(Command <> nil);
-  Command.Execute;
+  if DisableDuringExecution then
+  begin
+    try
+      Self.Enabled := False;
+      Command.Execute;
+    finally
+      Self.Enabled := True;
+    end;
+  end
+  else
+    Command.Execute;
 end;
 
 procedure TCommandAction.OnUpdateEvent(Sender: TObject);
