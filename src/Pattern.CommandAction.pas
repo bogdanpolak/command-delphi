@@ -11,7 +11,7 @@ uses
 
 type
   TCommandAction = class(TAction)
-  strict private
+  private
     FCommand: TCommand;
     FOnUpdateProc: TProc<TCommandAction>;
     procedure OnExecuteEvent(Sender: TObject);
@@ -21,12 +21,12 @@ type
     function SetupCaption(const ACaption: string): TCommandAction;
     function SetupCommand(ACommand: TCommand): TCommandAction;
     function SetupShortCut(AShorcut: TShortCut): TCommandAction;
-    function SetupEventOnUpdate(AUpdateProc: TProc<TCommandAction>): TCommandAction;
+    function SetupEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
+      : TCommandAction;
     property Command: TCommand read FCommand write FCommand;
   end;
 
 implementation
-
 
 // ------------------------------------------------------------------------
 { TCommandAction }
@@ -61,8 +61,8 @@ begin
   Result := Self;
 end;
 
-function TCommandAction.SetupEventOnUpdate(
-  AUpdateProc: TProc<TCommandAction>): TCommandAction;
+function TCommandAction.SetupEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
+  : TCommandAction;
 begin
   FOnUpdateProc := AUpdateProc;
   Self.OnUpdate := OnUpdateEvent;
