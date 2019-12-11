@@ -66,14 +66,30 @@ type
     function GetValue: integer;
   end;
 
+  ISample2 = interface (IInvokable)
+    ['{D0562FD6-5393-4CA8-8285-46308C21B532}']
+    function GetValue(aValue: integer): integer;
+  end;
+
   TSampleClass = class (TInterfacedObject,ISample1)
     function GetValue: integer;
+  end;
+
+  TAnotherClass = class (TInterfacedObject,ISample2)
+    function GetValue(aValue: integer): integer;
   end;
 
 function TSampleClass.GetValue: integer;
 begin
   Exit(0);
 end;
+
+function TAnotherClass.GetValue(aValue: integer): integer;
+begin
+  Result := aValue;
+end;
+
+
 
 // ------------------------------------------------------------------------
 // sample components used in the tests
@@ -300,13 +316,17 @@ type
     FOddLines: TStringList;
     FComponent: TComponent;
     FStream: TStream;
+    FSample1: ISample1;
+    FSample2: ISample2;
   public
     property Count: integer read FCount write FCount;
     property Stream: TStream read FStream write FStream;
   published
     property OddLines: TStringList read FOddLines write FOddLines;
     property Component: TComponent read FComponent write FComponent;
+    property Sample1: ISample1 read FSample1 write FSample1;
     property EvenLines: TStringList read FEvenLines write FEvenLines;
+    property Sample2: ISample2 read FSample2 write FSample2;
   end;
 
 procedure TestInjection_MultipleParams.Setup;
@@ -340,16 +360,23 @@ end;
 procedure TestInjection_MultipleParams.InjectAll;
 var
   ManyPropComponent: TManyPropComponent;
+  sample1: ISample1;
+  sample2: ISample2;
 begin
   // Arrange:
   ManyPropComponent := TManyPropComponent.Create(FOwnerComponent);
+  sample1 := TSampleClass.Create;
+  sample2 := TAnotherClass.Create;
   // Act:
   TComponentInjector.InjectProperties(ManyPropComponent,
-    [FStrings1, FStrings2, FOwnerComponent]);
+    [FStrings1, FStrings2, FOwnerComponent, sample2, sample1]);
   // Assert
   Assert.AreSame(FStrings1, ManyPropComponent.OddLines);
   Assert.AreSame(FStrings2, ManyPropComponent.EvenLines);
   Assert.AreSame(FOwnerComponent, ManyPropComponent.Component);
+  Assert.AreSame(sample1, ManyPropComponent.Sample1);
+  Assert.AreSame(sample2, ManyPropComponent.Sample2);
+  Assert.AreEqual(99, ManyPropComponent.Sample2.GetValue(99));
 end;
 
 // ------------------------------------------------------------------------
