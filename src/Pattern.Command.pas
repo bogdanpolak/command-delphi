@@ -144,18 +144,15 @@ var
   implementedList: TArray<TRttiInterfaceType>;
   IntfType: TRttiInterfaceType;
   ctx: TRttiContext;
-  tmpIntf: IInterface;
+  tmpIntf: TRttiInterfaceType;
 begin
   System.Assert(aInjection.VType = vtInterface);
   obj := IInterface(aInjection.VInterface) as TObject;
   implementedList := (ctx.GetType(obj.ClassType) as TRttiInstanceType)
     .GetImplementedInterfaces;
   for IntfType in implementedList do
-  begin
-    if obj.GetInterface(IntfType.GUID, tmpIntf) then
-      if tmpIntf = IInterface(aInjection.VInterface) then
-        Exit(true);
-  end;
+    if IntfType.Name = aInterfaceName then
+      Exit(true);
   Result := false;
 end;
 
