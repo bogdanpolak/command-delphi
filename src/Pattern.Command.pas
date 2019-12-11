@@ -64,6 +64,9 @@ type
 
 implementation
 
+uses
+  System.RTTI;
+
 const
   ERRMSG_NotSupportedParameter = 'Not supported parameter type to inject!' +
     'Parameter index (zaro-based): %d. Paramter type: %s';
@@ -119,12 +122,56 @@ end;
 
 { TPropertyInfo }
 
+procedure SetInterfaceProperty(aComponent: TComponent;
+  const aPropertyName: string; const aInjection: TVarRec);
+var
+  ctx: TRttiContext;
+  typ: TRttiType;
+  prop: TRttiProperty;
+  val: TValue;
+begin
+  typ := ctx.GetType(aComponent.ClassType);
+  val := TValue.From(IInterface(aInjection.VInterface) as TObject);
+  for prop in typ.GetProperties do
+    if prop.Name = aPropertyName then
+      prop.SetValue(aComponent,  val);
+end;
+
+function IsInterfaceInjectionImplementsInterface(const aInjection: TVarRec;
+  const aInterfaceName: string): boolean;
+var
+  obj: TObject;
+  implementedList: TArray<TRttiInterfaceType>;
+  IntfType: TRttiInterfaceType;
+  ctx: TRttiContext;
+  tmpIntf: IInterface;
+begin
+  System.Assert(aInjection.VType = vtInterface);
+  obj := IInterface(aInjection.VInterface) as TObject;
+  implementedList := (ctx.GetType(obj.ClassType) as TRttiInstanceType)
+    .GetImplementedInterfaces;
+  for IntfType in implementedList do
+  begin
+    if obj.GetInterface(IntfType.GUID, tmpIntf) then
+      if tmpIntf = IInterface(aInjection.VInterface) then
+        Exit(true);
+  end;
+  Result := false;
+end;
+
 function TPropertyInfo.isAvaliableForInjection(const aInjection
   : TVarRec): boolean;
 var
   ClassType: TClass;
 begin
-  if (Self.Kind = tkClass) and (aInjection.VType = vtObject) then
+  if (Self.Kind = tkInterface) and (aInjection.VType = vtInterface) then
+  begin
+    if IsInterfaceInjectionImplementsInterface(aInjection, Self.ClassName) then
+      Exit(true)
+    else
+      Exit(false)
+  end
+  else if (Self.Kind = tkClass) and (aInjection.VType = vtObject) then
   begin
     Result := (aInjection.VObject.ClassName = Self.ClassName);
     ClassType := aInjection.VObject.ClassType;
@@ -195,8 +242,8 @@ var
   j: Integer;
 begin
   for j := 0 to High(Injections) do
-    if not(Injections[j].VType in [vtObject, vtInteger, vtBoolean, vtExtended])
-    then
+    if not(Injections[j].VType in [vtObject, vtInterface, vtInteger, vtBoolean,
+      vtExtended]) then
       Assert(false, Format(ERRMSG_NotSupportedParameter,
         [j, VTypeToStr(Injections[j].VType)]));
 end;
@@ -228,6 +275,9 @@ begin
       begin
         UsedInjection[j] := true;
         case propInfo.Kind of
+          tkInterface:
+            SetInterfaceProperty(aComponent, propInfo.PropertyName,
+              Injections[j]);
           tkClass:
             SetObjectProp(aComponent, propInfo.PropertyName,
               Injections[j].VObject);
