@@ -266,7 +266,7 @@ begin
   SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
   sample1 := TSampleClass.Create;
   TComponentInjector.InjectProperties(SimpleComponent, [sample1]);
-  Assert.IsTrue(SimpleComponent.Sample1<>nil);
+  Assert.IsTrue(SimpleComponent.Sample1 = sample1);
 end;
 
 procedure TestInjection_SingleParam.UnsupportedProperty_Exception;
