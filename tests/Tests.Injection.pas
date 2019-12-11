@@ -56,7 +56,7 @@ type
 implementation
 
 // ------------------------------------------------------------------------
-// Test_OneInjection - test injection for components with one published property
+// sample components used in the tests
 // ------------------------------------------------------------------------
 
 type
@@ -90,6 +90,10 @@ type
     property FloatNumber: Double read FFloatNumber write FFloatNumber;
     property StartDate: TDateTime read FStartDate write FStartDate;
   end;
+
+// ------------------------------------------------------------------------
+// tests: inject single parameter
+// ------------------------------------------------------------------------
 
 procedure TestInjection_SingleParam.Setup;
 begin
