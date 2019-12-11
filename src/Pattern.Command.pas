@@ -84,7 +84,8 @@ end;
 
 procedure TCommand.DoGuard;
 begin
-  raise EAbort.Create('Define Guard method for the child Command class. Do not call `inherited` in Guard method.');
+  raise EAbort.Create
+    ('Define Guard method for the child Command class. Do not call `inherited` in Guard method.');
 end;
 
 function TCommand.Inject(const Injections: array of const): TCommand;
@@ -121,16 +122,16 @@ end;
 function TPropertyInfo.isAvaliableForInjection(const aInjection
   : TVarRec): boolean;
 var
-  classType: TClass;
+  ClassType: TClass;
 begin
   if (Self.Kind = tkClass) and (aInjection.VType = vtObject) then
   begin
     Result := (aInjection.VObject.ClassName = Self.ClassName);
-    classType := aInjection.VObject.classType;
-    while not(Result) and (classType.ClassParent <> nil) do
+    ClassType := aInjection.VObject.ClassType;
+    while not(Result) and (ClassType.ClassParent <> nil) do
     begin
-      Result := (classType.ClassParent.ClassName = Self.ClassName);
-      classType := classType.ClassParent;
+      Result := (ClassType.ClassParent.ClassName = Self.ClassName);
+      ClassType := ClassType.ClassParent;
     end;
   end
   else
@@ -196,7 +197,7 @@ begin
   for j := 0 to High(Injections) do
     if not(Injections[j].VType in [vtObject, vtInteger, vtBoolean, vtExtended])
     then
-      Assert(False, Format(ERRMSG_NotSupportedParameter,
+      Assert(false, Format(ERRMSG_NotSupportedParameter,
         [j, VTypeToStr(Injections[j].VType)]));
 end;
 
@@ -225,7 +226,7 @@ begin
       if not(UsedInjection[j]) and propInfo.isAvaliableForInjection
         (Injections[j]) then
       begin
-        UsedInjection[j] := True;
+        UsedInjection[j] := true;
         case propInfo.Kind of
           tkClass:
             SetObjectProp(aComponent, propInfo.PropertyName,
