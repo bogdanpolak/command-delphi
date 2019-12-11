@@ -205,15 +205,6 @@ begin
   Assert.AreEqual(999, SimpleComponent.Number);
 end;
 
-procedure TestInjection_SingleParam.ParameterValueInt;
-var
-  SimpleComponent: TSimpleComponent;
-begin
-  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
-  TComponentInjector.InjectProperties(SimpleComponent, [55]);
-  Assert.AreEqual(55, SimpleComponent.Number);
-end;
-
 procedure TestInjection_SingleParam.ParameterValueBoolean;
 var
   SimpleComponent: TSimpleComponent;
@@ -221,6 +212,15 @@ begin
   SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
   TComponentInjector.InjectProperties(SimpleComponent, [True]);
   Assert.AreEqual(True, SimpleComponent.IsTrue);
+end;
+
+procedure TestInjection_SingleParam.ParameterValueInt;
+var
+  SimpleComponent: TSimpleComponent;
+begin
+  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
+  TComponentInjector.InjectProperties(SimpleComponent, [55]);
+  Assert.AreEqual(55, SimpleComponent.Number);
 end;
 
 procedure TestInjection_SingleParam.ParameterValueFloat;
