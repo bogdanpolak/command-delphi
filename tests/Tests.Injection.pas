@@ -34,6 +34,7 @@ type
     procedure ParameterValueBoolean;
     procedure ParameterValueFloat;
     procedure ParameterValueInt;
+    procedure ParameterInterface;
     procedure UnsupportedProperty_Exception;
   end;
 
@@ -54,6 +55,25 @@ type
   end;
 
 implementation
+
+// ------------------------------------------------------------------------
+// sample interfaces injected into components
+// ------------------------------------------------------------------------
+
+type
+  ISample1 = interface (IInvokable)
+    ['{AB5F0562-A0E6-4E93-910C-DD592FF02ADE}']
+    function GetValue: integer;
+  end;
+
+  TSampleClass = class (TInterfacedObject,ISample1)
+    function GetValue: integer;
+  end;
+
+function TSampleClass.GetValue: integer;
+begin
+  Exit(0);
+end;
 
 // ------------------------------------------------------------------------
 // sample components used in the tests
@@ -84,11 +104,13 @@ type
     FIsTrue: boolean;
     FFloatNumber: Double;
     FStartDate: TDateTime;
+    FSample1: ISample1;
   published
     property Number: integer read FNumber write FNumber;
     property IsTrue: boolean read FIsTrue write FIsTrue;
     property FloatNumber: Double read FFloatNumber write FFloatNumber;
     property StartDate: TDateTime read FStartDate write FStartDate;
+    property Sample1: ISample1 read FSample1 write FSample1;
   end;
 
 // ------------------------------------------------------------------------
@@ -234,6 +256,17 @@ begin
   SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
   TComponentInjector.InjectProperties(SimpleComponent, [99.99]);
   Assert.AreEqual(99.99, Extended(SimpleComponent.FloatNumber));
+end;
+
+procedure TestInjection_SingleParam.ParameterInterface;
+var
+  SimpleComponent: TSimpleComponent;
+  sample1: ISample1;
+begin
+  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
+  sample1 := TSampleClass.Create;
+  TComponentInjector.InjectProperties(SimpleComponent, [sample1]);
+  Assert.IsTrue(SimpleComponent.Sample1<>nil);
 end;
 
 procedure TestInjection_SingleParam.UnsupportedProperty_Exception;
