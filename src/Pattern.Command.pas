@@ -134,7 +134,7 @@ begin
   val := TValue.From(IInterface(aInjection.VInterface) as TObject);
   for prop in typ.GetProperties do
     if prop.Name = aPropertyName then
-      prop.SetValue(aComponent,  val);
+      prop.SetValue(aComponent, val);
 end;
 
 function IsInterfaceInjectionImplementsInterface(const aInjection: TVarRec;
@@ -165,12 +165,8 @@ var
   ClassType: TClass;
 begin
   if (Self.Kind = tkInterface) and (aInjection.VType = vtInterface) then
-  begin
-    if IsInterfaceInjectionImplementsInterface(aInjection, Self.ClassName) then
-      Exit(true)
-    else
-      Exit(false)
-  end
+    Result := IsInterfaceInjectionImplementsInterface(aInjection,
+      Self.ClassName)
   else if (Self.Kind = tkClass) and (aInjection.VType = vtObject) then
   begin
     Result := (aInjection.VObject.ClassName = Self.ClassName);
