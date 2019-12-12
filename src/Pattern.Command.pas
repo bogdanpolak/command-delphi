@@ -34,7 +34,7 @@ type
     class procedure AdhocExecute<T: TCommand>(const Injections
       : array of const); static;
     function Inject(const Injections: array of const): TCommand;
-    procedure Execute;
+    procedure Execute; virtual;
   end;
 
   TPropertyInfo = record
