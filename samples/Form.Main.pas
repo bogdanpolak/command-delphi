@@ -17,16 +17,18 @@ uses
 
 type
   TForm1 = class(TForm)
-    GroupBox1: TGroupBox;
-    btnExecuteCommand: TButton;
-    Button1: TButton;
     Memo1: TMemo;
-    Edit1: TEdit;
+    Panel1: TPanel;
+    GroupBoxSimpleDemo: TGroupBox;
+    btnExecuteCommand: TButton;
+    GroupBoxButtonCommands: TGroupBox;
+    GroupBoxDiceRolls: TGroupBox;
+    Button1: TButton;
     Button2: TButton;
+    Edit1: TEdit;
     CheckBox1: TCheckBox;
     Button3: TButton;
     chkShowProgressbar: TCheckBox;
-    Bevel1: TBevel;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure chkShowProgressbarClick(Sender: TObject);
@@ -70,7 +72,7 @@ begin
   actCommandButon2 := TCommandAction.Create(Self)
     .SetupCommand(TButon2Command.Create(Self))
     .SetupCaption('Run command: Button2') //.
-    .Inject([Memo1, Edit1])
+    .Inject([Memo1, Edit1]) //.
     .SetupEventOnUpdate(
     procedure(actCommand: TCommandAction)
     begin
@@ -81,12 +83,13 @@ begin
   actCommandDiceRoll := TCommandAction.Create(Self)
     .SetupCommand(TDiceRollCommand.Create(Self))
     .SetupCaption('Dice Rolls Command') //.
-    .Inject([fStrsDiceResults])
+    .Inject([fStrsDiceResults]) //.
     .SetupEventOnUpdate(
     procedure(actCommand: TCommandAction)
     begin
       (actCommand.Command as TDiceRollCommand).ProgressBar :=
-        Self.FindChildControlRecursiveByType(TProgressBar) as TProgressBar;
+        GroupBoxDiceRolls.FindChildControlRecursiveByType(TProgressBar)
+        as TProgressBar;
     end) //.
     .SetupEventAfterExecution(
     procedure(actCommand: TCommandAction)
@@ -159,8 +162,8 @@ begin
     aProgressBar := TProgressBar.Create(Self);
     with aProgressBar do
     begin
-      Name := 'ProgrssBar1';
-      Parent := GroupBox1;
+      Name := 'ProgrssBarRolls1';
+      Parent := GroupBoxDiceRolls;
       Top := 999;
       Align := alTop;
       AlignWithMargins := True;
@@ -168,7 +171,8 @@ begin
   end
   else
   begin
-    aProgressBar := GroupBox1.FindChildControl('ProgrssBar1') as TProgressBar;
+    aProgressBar := GroupBoxDiceRolls.FindChildControl('ProgrssBarRolls1')
+      as TProgressBar;
     aProgressBar.Free;
   end;
 end;
