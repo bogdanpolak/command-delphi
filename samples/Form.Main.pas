@@ -13,7 +13,7 @@ uses
 
   Pattern.Command,
   Pattern.CommandAction,
-  Command.DiceRoll;
+  Command.AsyncDiceRoll;
 
 type
   TForm1 = class(TForm)
@@ -29,6 +29,10 @@ type
     CheckBox1: TCheckBox;
     Button3: TButton;
     chkShowProgressbar: TCheckBox;
+    GroupBoxAsyncCommandRoll: TGroupBox;
+    Button4: TButton;
+    ProgressBar1: TProgressBar;
+    TimerAsyncDiceRoll: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure chkShowProgressbarClick(Sender: TObject);
@@ -36,6 +40,10 @@ type
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure TimerAsyncDiceRollTimer(Sender: TObject);
+  public
+    cmdAsyncDiceRoll: TAsyncDiceRollCommand;
   private
     fStrsDiceResults: TStringList;
     actCommandDiceRoll: TCommandAction;
@@ -44,7 +52,6 @@ type
     procedure BuildCommandsAndActions;
     procedure OnFormSetup;
     procedure OnFormTearDown;
-  public
   end;
 
 var
@@ -57,6 +64,7 @@ implementation
 uses
   Command.Button1,
   Command.Button2,
+  Command.DiceRoll,
   Helper.TWinControl;
 
 procedure TForm1.BuildCommandsAndActions;
@@ -105,21 +113,10 @@ begin
         Memo1.Lines.Add('  ' + cmd.Results[i]);
     end);
   actCommandDiceRoll.DisableDuringExecution := True;
-end;
-
-procedure TForm1.Button1Click(Sender: TObject);
-begin
-  // this event is not called, see method: BuildCommandsAndActions
-end;
-
-procedure TForm1.Button2Click(Sender: TObject);
-begin
-  // this event is not called, see method: BuildCommandsAndActions
-end;
-
-procedure TForm1.Button3Click(Sender: TObject);
-begin
-  // this event is not called, see method: BuildCommandsAndActions
+  // ---------------------------------------------------------
+  // ---------------------------------------------------------
+  cmdAsyncDiceRoll := TAsyncDiceRollCommand.Create(Self);
+  cmdAsyncDiceRoll.Inject([ProgressBar1,Memo1]);
 end;
 
 procedure TForm1.OnFormSetup;
@@ -146,6 +143,32 @@ begin
   Memo1.Clear;
   ReportMemoryLeaksOnShutdown := True;
   OnFormSetup;
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  // this event is not called, see method: BuildCommandsAndActions
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+  // this event is not called, see method: BuildCommandsAndActions
+end;
+
+procedure TForm1.Button3Click(Sender: TObject);
+begin
+  // this event is not called, see method: BuildCommandsAndActions
+end;
+
+procedure TForm1.Button4Click(Sender: TObject);
+begin
+  if cmdAsyncDiceRoll.IsFinished then
+    cmdAsyncDiceRoll.Execute;
+end;
+
+procedure TForm1.TimerAsyncDiceRollTimer(Sender: TObject);
+begin
+  cmdAsyncDiceRoll.IsFinished
 end;
 
 procedure TForm1.btnExecuteCommandClick(Sender: TObject);

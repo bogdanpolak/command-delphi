@@ -33,8 +33,6 @@ object Form1: TForm1
     ScrollBars = ssVertical
     TabOrder = 1
     ExplicitTop = -2
-    ExplicitWidth = 346
-    ExplicitHeight = 354
   end
   object Panel1: TPanel
     AlignWithMargins = True
@@ -45,8 +43,7 @@ object Form1: TForm1
     Align = alLeft
     Caption = ' '
     TabOrder = 0
-    ExplicitTop = 8
-    ExplicitHeight = 782
+    ExplicitTop = -2
     object GroupBoxSimpleDemo: TGroupBox
       AlignWithMargins = True
       Left = 4
@@ -167,5 +164,44 @@ object Form1: TForm1
         ExplicitWidth = 175
       end
     end
+    object GroupBoxAsyncCommandRoll: TGroupBox
+      AlignWithMargins = True
+      Left = 4
+      Top = 391
+      Width = 190
+      Height = 105
+      Align = alTop
+      Caption = 'Async Command: Dice Rolls'
+      TabOrder = 3
+      ExplicitLeft = 0
+      ExplicitTop = 448
+      ExplicitWidth = 185
+      object Button4: TButton
+        AlignWithMargins = True
+        Left = 5
+        Top = 18
+        Width = 180
+        Height = 34
+        Align = alTop
+        Caption = 'Button4'
+        TabOrder = 0
+        OnClick = Button4Click
+      end
+      object ProgressBar1: TProgressBar
+        AlignWithMargins = True
+        Left = 5
+        Top = 58
+        Width = 180
+        Height = 23
+        Align = alTop
+        TabOrder = 1
+      end
+    end
+  end
+  object TimerAsyncDiceRoll: TTimer
+    Interval = 100
+    OnTimer = TimerAsyncDiceRollTimer
+    Left = 192
+    Top = 440
   end
 end
