@@ -8,7 +8,8 @@ uses
   Pattern.Command in '..\src\Pattern.Command.pas',
   Pattern.CommandAction in '..\src\Pattern.CommandAction.pas',
   Command.DiceRoll in 'Command.DiceRoll.pas',
-  Helper.TWinControl in 'Helper.TWinControl.pas';
+  Helper.TWinControl in 'Helper.TWinControl.pas',
+  Command.AsyncDiceRoll in 'Command.AsyncDiceRoll.pas';
 
 {$R *.res}
 

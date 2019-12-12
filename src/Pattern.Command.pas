@@ -34,7 +34,19 @@ type
     class procedure AdhocExecute<T: TCommand>(const Injections
       : array of const); static;
     function Inject(const Injections: array of const): TCommand;
-    procedure Execute;
+    procedure Execute; virtual;
+  end;
+
+  TAsyncCommand = class(TCommand)
+  protected
+    fThread: TThread;
+    fIsThreadTermianed: boolean;
+    procedure DoPrepare; virtual; abstract;
+    procedure DoTeardown; virtual; abstract;
+  public
+    constructor Create(AOwner: TComponent); override;
+    procedure Execute; override;
+    function IsFinished: boolean;
   end;
 
   TPropertyInfo = record
@@ -67,17 +79,13 @@ implementation
 uses
   System.RTTI;
 
-const
-  ERRMSG_NotSupportedParameter = 'Not supported parameter type to inject!' +
-    'Parameter index (zaro-based): %d. Paramter type: %s';
-
-procedure __for_code_formatter;
-begin
-end;
-
 // ------------------------------------------------------------------------
 // TCommand
 // ------------------------------------------------------------------------
+
+const
+  ERRMSG_NotSupportedParameter = 'Not supported parameter type to inject!' +
+    'Parameter index (zaro-based): %d. Paramter type: %s';
 
 procedure TCommand.Execute;
 begin
@@ -117,13 +125,56 @@ end;
 
 
 // ------------------------------------------------------------------------
+// TAsyncCommand
+// ------------------------------------------------------------------------
+
+constructor TAsyncCommand.Create(AOwner: TComponent);
+begin
+  inherited;
+  fThread := nil;
+  fIsThreadTermianed := true;
+end;
+
+procedure TAsyncCommand.Execute;
+begin
+  DoGuard;
+  DoPrepare;
+  fThread := TThread.CreateAnonymousThread(
+    procedure
+    begin
+      try
+        fIsThreadTermianed := False;
+        DoExecute;
+      finally
+        // TODO: lock or critical section is required bellow (critical !!!)
+        fIsThreadTermianed := True;
+      end;
+    end);
+  fThread.FreeOnTerminate := False;
+  fThread.Start;
+end;
+
+function TAsyncCommand.IsFinished: boolean;
+begin
+  if fThread = nil then
+    Exit(true);
+  Result := fIsThreadTermianed;
+  if Result and (fThread<>nil) then
+  begin
+    fThread.Free;
+    fThread := nil;
+    DoTeardown;
+  end;
+end;
+
+// ------------------------------------------------------------------------
 // TComponentInjector
 // ------------------------------------------------------------------------
 
 { TPropertyInfo }
 
 procedure SetInterfaceProperty(aComponent: TComponent;
-  const aPropertyName: string; const aInjection: TVarRec);
+const aPropertyName: string; const aInjection: TVarRec);
 var
   ctx: TRttiContext;
   typ: TRttiType;
@@ -138,13 +189,12 @@ begin
 end;
 
 function IsInterfaceInjectionImplementsInterface(const aInjection: TVarRec;
-  const aInterfaceName: string): boolean;
+const aInterfaceName: string): boolean;
 var
   obj: TObject;
   implementedList: TArray<TRttiInterfaceType>;
   IntfType: TRttiInterfaceType;
   ctx: TRttiContext;
-  tmpIntf: TRttiInterfaceType;
 begin
   System.Assert(aInjection.VType = vtInterface);
   obj := IInterface(aInjection.VInterface) as TObject;
@@ -152,8 +202,8 @@ begin
     .GetImplementedInterfaces;
   for IntfType in implementedList do
     if IntfType.Name = aInterfaceName then
-      Exit(true);
-  Result := false;
+      Exit(True);
+  Result := False;
 end;
 
 function TPropertyInfo.isAvaliableForInjection(const aInjection
@@ -237,7 +287,7 @@ begin
   for j := 0 to High(Injections) do
     if not(Injections[j].VType in [vtObject, vtInterface, vtInteger, vtBoolean,
       vtExtended]) then
-      Assert(false, Format(ERRMSG_NotSupportedParameter,
+      Assert(False, Format(ERRMSG_NotSupportedParameter,
         [j, VTypeToStr(Injections[j].VType)]));
 end;
 
@@ -247,7 +297,7 @@ end;
 // tkInterface, tkInt64, tkDynArray, tkUString
 // - - - - - - - - - - - - - - - - - - - - - - - - -
 class procedure TComponentInjector.InjectProperties(aComponent: TComponent;
-  const Injections: array of const);
+const Injections: array of const);
 var
   i: Integer;
   j: Integer;
@@ -266,7 +316,7 @@ begin
       if not(UsedInjection[j]) and propInfo.isAvaliableForInjection
         (Injections[j]) then
       begin
-        UsedInjection[j] := true;
+        UsedInjection[j] := True;
         case propInfo.Kind of
           tkInterface:
             SetInterfaceProperty(aComponent, propInfo.PropertyName,
