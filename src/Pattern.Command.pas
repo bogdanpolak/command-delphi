@@ -38,11 +38,9 @@ type
   end;
 
   TAsyncCommand = class(TCommand)
-  private
-    fIsWorking: boolean;
-    fIsTearDownRequired: boolean;
   protected
     fThread: TThread;
+    fIsThreadTermianed: boolean;
     procedure DoPrepare; virtual; abstract;
     procedure DoTeardown; virtual; abstract;
   public
@@ -134,37 +132,39 @@ constructor TAsyncCommand.Create(AOwner: TComponent);
 begin
   inherited;
   fThread := nil;
+  fIsThreadTermianed := true;
 end;
 
 procedure TAsyncCommand.Execute;
 begin
   DoGuard;
   DoPrepare;
-  fIsWorking := True;
-  fIsTearDownRequired := True;
-  TThread.CreateAnonymousThread(
+  fThread := TThread.CreateAnonymousThread(
     procedure
     begin
       try
+        fIsThreadTermianed := False;
         DoExecute;
       finally
         // TODO: lock or critical section is required bellow (critical !!!)
-        fIsWorking := False;
+        fIsThreadTermianed := True;
       end;
     end);
+  fThread.FreeOnTerminate := False;
+  fThread.Start;
 end;
 
 function TAsyncCommand.IsFinished: boolean;
 begin
-  if not(fIsWorking) and fIsTearDownRequired then
+  if fThread = nil then
+    Exit(true);
+  Result := fIsThreadTermianed;
+  if Result and (fThread<>nil) then
   begin
-    try
-      DoTeardown;
-    finally
-      fIsTearDownRequired := false;
-    end;
+    fThread.Free;
+    fThread := nil;
+    DoTeardown;
   end;
-  Result := fIsWorking;
 end;
 
 // ------------------------------------------------------------------------
@@ -202,8 +202,8 @@ begin
     .GetImplementedInterfaces;
   for IntfType in implementedList do
     if IntfType.Name = aInterfaceName then
-      Exit(true);
-  Result := false;
+      Exit(True);
+  Result := False;
 end;
 
 function TPropertyInfo.isAvaliableForInjection(const aInjection
@@ -287,7 +287,7 @@ begin
   for j := 0 to High(Injections) do
     if not(Injections[j].VType in [vtObject, vtInterface, vtInteger, vtBoolean,
       vtExtended]) then
-      Assert(false, Format(ERRMSG_NotSupportedParameter,
+      Assert(False, Format(ERRMSG_NotSupportedParameter,
         [j, VTypeToStr(Injections[j].VType)]));
 end;
 
@@ -316,7 +316,7 @@ begin
       if not(UsedInjection[j]) and propInfo.isAvaliableForInjection
         (Injections[j]) then
       begin
-        UsedInjection[j] := true;
+        UsedInjection[j] := True;
         case propInfo.Kind of
           tkInterface:
             SetInterfaceProperty(aComponent, propInfo.PropertyName,
