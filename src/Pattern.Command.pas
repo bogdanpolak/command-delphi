@@ -119,7 +119,7 @@ end;
 { TPropertyInfo }
 
 procedure SetInterfaceProperty(aComponent: TComponent;
-  const aPropertyName: string; const aInjection: TVarRec);
+const aPropertyName: string; const aInjection: TVarRec);
 var
   ctx: TRttiContext;
   typ: TRttiType;
@@ -134,13 +134,12 @@ begin
 end;
 
 function IsInterfaceInjectionImplementsInterface(const aInjection: TVarRec;
-  const aInterfaceName: string): boolean;
+const aInterfaceName: string): boolean;
 var
   obj: TObject;
   implementedList: TArray<TRttiInterfaceType>;
   IntfType: TRttiInterfaceType;
   ctx: TRttiContext;
-  tmpIntf: TRttiInterfaceType;
 begin
   System.Assert(aInjection.VType = vtInterface);
   obj := IInterface(aInjection.VInterface) as TObject;
@@ -243,7 +242,7 @@ end;
 // tkInterface, tkInt64, tkDynArray, tkUString
 // - - - - - - - - - - - - - - - - - - - - - - - - -
 class procedure TComponentInjector.InjectProperties(aComponent: TComponent;
-  const Injections: array of const);
+const Injections: array of const);
 var
   i: Integer;
   j: Integer;
