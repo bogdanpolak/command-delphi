@@ -67,17 +67,13 @@ implementation
 uses
   System.RTTI;
 
-const
-  ERRMSG_NotSupportedParameter = 'Not supported parameter type to inject!' +
-    'Parameter index (zaro-based): %d. Paramter type: %s';
-
-procedure __for_code_formatter;
-begin
-end;
-
 // ------------------------------------------------------------------------
 // TCommand
 // ------------------------------------------------------------------------
+
+const
+  ERRMSG_NotSupportedParameter = 'Not supported parameter type to inject!' +
+    'Parameter index (zaro-based): %d. Paramter type: %s';
 
 procedure TCommand.Execute;
 begin
