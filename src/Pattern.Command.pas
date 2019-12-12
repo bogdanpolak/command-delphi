@@ -37,6 +37,20 @@ type
     procedure Execute; virtual;
   end;
 
+  TAsyncCommand = class(TCommand)
+  private
+    fIsWorking: boolean;
+    fIsTearDownRequired: boolean;
+  protected
+    fThread: TThread;
+    procedure DoPrepare; virtual; abstract;
+    procedure DoTeardown; virtual; abstract;
+  public
+    constructor Create(AOwner: TComponent); override;
+    procedure Execute; override;
+    function IsFinished: boolean;
+  end;
+
   TPropertyInfo = record
     Kind: TTypeKind;
     PropertyName: string;
@@ -111,6 +125,47 @@ begin
   end;
 end;
 
+
+// ------------------------------------------------------------------------
+// TAsyncCommand
+// ------------------------------------------------------------------------
+
+constructor TAsyncCommand.Create(AOwner: TComponent);
+begin
+  inherited;
+  fThread := nil;
+end;
+
+procedure TAsyncCommand.Execute;
+begin
+  DoGuard;
+  DoPrepare;
+  fIsWorking := True;
+  fIsTearDownRequired := True;
+  TThread.CreateAnonymousThread(
+    procedure
+    begin
+      try
+        DoExecute;
+      finally
+        // TODO: lock or critical section is required bellow (critical !!!)
+        fIsWorking := False;
+      end;
+    end);
+end;
+
+function TAsyncCommand.IsFinished: boolean;
+begin
+  if not(fIsWorking) and fIsTearDownRequired then
+  begin
+    try
+      DoTeardown;
+    finally
+      fIsTearDownRequired := false;
+    end;
+  end;
+  Result := fIsWorking;
+end;
 
 // ------------------------------------------------------------------------
 // TComponentInjector
