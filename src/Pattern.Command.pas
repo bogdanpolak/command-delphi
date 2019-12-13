@@ -147,7 +147,7 @@ begin
         DoExecute;
       finally
         // TODO: lock or critical section is required bellow (critical !!!)
-        fIsThreadTermianed := True;
+        fIsThreadTermianed := true;
       end;
     end);
   fThread.FreeOnTerminate := False;
@@ -159,7 +159,7 @@ begin
   if fThread = nil then
     Exit(true);
   Result := fIsThreadTermianed;
-  if Result and (fThread<>nil) then
+  if Result and (fThread <> nil) then
   begin
     fThread.Free;
     fThread := nil;
@@ -202,7 +202,7 @@ begin
     .GetImplementedInterfaces;
   for IntfType in implementedList do
     if IntfType.Name = aInterfaceName then
-      Exit(True);
+      Exit(true);
   Result := False;
 end;
 
@@ -316,7 +316,7 @@ begin
       if not(UsedInjection[j]) and propInfo.isAvaliableForInjection
         (Injections[j]) then
       begin
-        UsedInjection[j] := True;
+        UsedInjection[j] := true;
         case propInfo.Kind of
           tkInterface:
             SetInterfaceProperty(aComponent, propInfo.PropertyName,
