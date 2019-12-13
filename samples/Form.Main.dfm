@@ -2,8 +2,8 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 360
-  ClientWidth = 556
+  ClientHeight = 517
+  ClientWidth = 626
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,96 +15,12 @@ object Form1: TForm1
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object GroupBox1: TGroupBox
-    AlignWithMargins = True
-    Left = 3
-    Top = 3
-    Width = 185
-    Height = 354
-    Align = alLeft
-    Caption = 'GroupBox1'
-    TabOrder = 0
-    object Button1: TButton
-      AlignWithMargins = True
-      Left = 5
-      Top = 18
-      Width = 175
-      Height = 31
-      Align = alTop
-      Caption = 'Button1'
-      TabOrder = 0
-    end
-    object Button2: TButton
-      AlignWithMargins = True
-      Left = 5
-      Top = 55
-      Width = 175
-      Height = 34
-      Align = alTop
-      Caption = 'Button2'
-      TabOrder = 1
-    end
-    object Edit1: TEdit
-      AlignWithMargins = True
-      Left = 5
-      Top = 95
-      Width = 175
-      Height = 21
-      Align = alTop
-      TabOrder = 2
-      Text = 'Edit1'
-    end
-    object Button3: TButton
-      AlignWithMargins = True
-      Left = 5
-      Top = 122
-      Width = 175
-      Height = 34
-      Action = actExecuteTwoCommands
-      Align = alTop
-      TabOrder = 3
-    end
-    object CheckBox1: TCheckBox
-      AlignWithMargins = True
-      Left = 5
-      Top = 172
-      Width = 175
-      Height = 17
-      Margins.Top = 13
-      Align = alTop
-      Caption = 'Enable command Button2'
-      Checked = True
-      State = cbChecked
-      TabOrder = 4
-    end
-    object Button4: TButton
-      AlignWithMargins = True
-      Left = 5
-      Top = 212
-      Width = 175
-      Height = 34
-      Margins.Top = 20
-      Action = actDiceRolls
-      Align = alTop
-      TabOrder = 5
-    end
-    object CheckBox2: TCheckBox
-      AlignWithMargins = True
-      Left = 5
-      Top = 252
-      Width = 175
-      Height = 17
-      Action = actShowProgressBar
-      Align = alTop
-      TabOrder = 6
-    end
-  end
   object Memo1: TMemo
     AlignWithMargins = True
-    Left = 194
+    Left = 207
     Top = 3
-    Width = 359
-    Height = 354
+    Width = 416
+    Height = 511
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -116,22 +32,176 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1
+    ExplicitTop = -2
   end
-  object ActionManager1: TActionManager
-    Left = 232
-    Top = 176
-    StyleName = 'Platform Default'
-    object actExecuteTwoCommands: TAction
-      Caption = 'Execute Both Commands'
-      OnExecute = actExecuteTwoCommandsExecute
+  object Panel1: TPanel
+    AlignWithMargins = True
+    Left = 3
+    Top = 3
+    Width = 198
+    Height = 511
+    Align = alLeft
+    Caption = ' '
+    TabOrder = 0
+    ExplicitTop = -2
+    object GroupBoxSimpleDemo: TGroupBox
+      AlignWithMargins = True
+      Left = 4
+      Top = 4
+      Width = 190
+      Height = 77
+      Align = alTop
+      Caption = 'GroupBoxSimpleDemo'
+      TabOrder = 0
+      object btnExecuteCommand: TButton
+        AlignWithMargins = True
+        Left = 5
+        Top = 18
+        Width = 180
+        Height = 31
+        Align = alTop
+        Caption = 'btnExecuteCommand'
+        TabOrder = 0
+        OnClick = btnExecuteCommandClick
+        ExplicitWidth = 175
+      end
     end
-    object actDiceRolls: TAction
-      Caption = 'Dice Rolls Command'
-      OnExecute = actDiceRollsExecute
+    object GroupBoxButtonCommands: TGroupBox
+      AlignWithMargins = True
+      Left = 4
+      Top = 87
+      Width = 190
+      Height = 170
+      Align = alTop
+      Caption = 'GroupBoxButtonCommands'
+      TabOrder = 1
+      object Button1: TButton
+        AlignWithMargins = True
+        Left = 5
+        Top = 18
+        Width = 180
+        Height = 34
+        Align = alTop
+        Caption = 'Button1'
+        TabOrder = 0
+        OnClick = Button1Click
+        ExplicitLeft = 10
+        ExplicitTop = 26
+      end
+      object Button2: TButton
+        AlignWithMargins = True
+        Left = 5
+        Top = 58
+        Width = 180
+        Height = 34
+        Align = alTop
+        Caption = 'Button2'
+        TabOrder = 1
+        OnClick = Button2Click
+        ExplicitTop = 144
+        ExplicitWidth = 175
+      end
+      object Edit1: TEdit
+        AlignWithMargins = True
+        Left = 5
+        Top = 98
+        Width = 180
+        Height = 21
+        Align = alTop
+        TabOrder = 2
+        Text = 'Edit1'
+        ExplicitTop = 184
+        ExplicitWidth = 175
+      end
+      object CheckBox1: TCheckBox
+        AlignWithMargins = True
+        Left = 5
+        Top = 125
+        Width = 180
+        Height = 17
+        Align = alTop
+        Caption = 'Enable command Button2'
+        Checked = True
+        State = cbChecked
+        TabOrder = 3
+        ExplicitLeft = 3
+        ExplicitTop = 203
+      end
     end
-    object actShowProgressBar: TAction
-      Caption = 'Show Progress Bar'
-      OnExecute = actShowProgressBarExecute
+    object GroupBoxDiceRolls: TGroupBox
+      AlignWithMargins = True
+      Left = 4
+      Top = 263
+      Width = 190
+      Height = 122
+      Align = alTop
+      Caption = 'Dice Rolls'
+      TabOrder = 2
+      object Button3: TButton
+        AlignWithMargins = True
+        Left = 5
+        Top = 18
+        Width = 180
+        Height = 34
+        Align = alTop
+        Caption = 'Button3'
+        TabOrder = 0
+        OnClick = Button3Click
+        ExplicitTop = 251
+        ExplicitWidth = 175
+      end
+      object chkShowProgressbar: TCheckBox
+        AlignWithMargins = True
+        Left = 5
+        Top = 58
+        Width = 180
+        Height = 17
+        Align = alTop
+        Caption = 'Show Progress Bar'
+        TabOrder = 1
+        OnClick = chkShowProgressbarClick
+        ExplicitTop = 291
+        ExplicitWidth = 175
+      end
     end
+    object GroupBoxAsyncCommandRoll: TGroupBox
+      AlignWithMargins = True
+      Left = 4
+      Top = 391
+      Width = 190
+      Height = 105
+      Align = alTop
+      Caption = 'Async Command: Dice Rolls'
+      TabOrder = 3
+      ExplicitLeft = 0
+      ExplicitTop = 448
+      ExplicitWidth = 185
+      object Button4: TButton
+        AlignWithMargins = True
+        Left = 5
+        Top = 18
+        Width = 180
+        Height = 34
+        Align = alTop
+        Caption = 'Button4'
+        TabOrder = 0
+        OnClick = Button4Click
+      end
+      object ProgressBar1: TProgressBar
+        AlignWithMargins = True
+        Left = 5
+        Top = 58
+        Width = 180
+        Height = 23
+        Align = alTop
+        TabOrder = 1
+      end
+    end
+  end
+  object TimerAsyncDiceRoll: TTimer
+    Interval = 100
+    OnTimer = TimerAsyncDiceRollTimer
+    Left = 192
+    Top = 440
   end
 end

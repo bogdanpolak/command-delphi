@@ -1,4 +1,4 @@
-unit Helper.TWinControl;
+﻿unit Helper.TWinControl;
 
 interface
 
@@ -9,11 +9,8 @@ uses
 
 type
   TWinControlHelper = class helper for TWinControl
-  const
-    // * --------------------------------------------------------------------
-    ReleaseDate = '2019.11.27';
-    ReleaseVersion = '1.2';
-    // * --------------------------------------------------------------------
+  private const
+    Version = '1.3';
   private
   public
     function FindChildControlByType(aClass: TClass): TControl;
@@ -54,7 +51,8 @@ end;
 function TWinControlHelper.FindChildControlRecursive(const aName: string)
   : TControl;
 begin
-
+  // TODO: implement - simmilar to FindChildControlRecursiveByType but by name
+  Result := nil;
 end;
 
 end.

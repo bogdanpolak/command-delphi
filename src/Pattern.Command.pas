@@ -1,10 +1,8 @@
-﻿{* ------------------------------------------------------------------------
- * ♥
- * ♥ Command Parttern
- * ♥
- * Components:     TCommand
+﻿{* ------------------------------------------------------------------------ *
+ * ♥   Command Parttern
+ * Components:     TCommand, TAsyncCommand
  * Project:        https://github.com/bogdanpolak/command-delphi
- * ------------------------------------------------------------------------}
+ * ------------------------------------------------------------------------ *}
 unit Pattern.Command;
 
 interface
@@ -20,12 +18,8 @@ type
   end;
 
   TCommand = class(TComponent, ICommand)
-  const
-    // * --------------------------------------------------------------------
-    // * Signature
-    ReleaseDate = '2019.12.04';
-    ReleaseVersion = '0.6';
-    // * --------------------------------------------------------------------
+  private const
+    Version = '0.7';
   protected
     // procedure Guard; - assert injections of all required properties
     procedure DoGuard; virtual;
@@ -34,7 +28,19 @@ type
     class procedure AdhocExecute<T: TCommand>(const Injections
       : array of const); static;
     function Inject(const Injections: array of const): TCommand;
-    procedure Execute;
+    procedure Execute; virtual;
+  end;
+
+  TAsyncCommand = class(TCommand)
+  protected
+    fThread: TThread;
+    fIsThreadTermianed: boolean;
+    procedure DoPrepare; virtual; abstract;
+    procedure DoTeardown; virtual; abstract;
+  public
+    constructor Create(AOwner: TComponent); override;
+    procedure Execute; override;
+    function IsFinished: boolean;
   end;
 
   TPropertyInfo = record
@@ -64,17 +70,16 @@ type
 
 implementation
 
-const
-  ERRMSG_NotSupportedParameter = 'Not supported parameter type to inject!' +
-    'Parameter index (zaro-based): %d. Paramter type: %s';
-
-procedure __for_code_formatter;
-begin
-end;
+uses
+  System.RTTI;
 
 // ------------------------------------------------------------------------
 // TCommand
 // ------------------------------------------------------------------------
+
+const
+  ERRMSG_NotSupportedParameter = 'Not supported parameter type to inject!' +
+    'Parameter index (zaro-based): %d. Paramter type: %s';
 
 procedure TCommand.Execute;
 begin
@@ -84,7 +89,8 @@ end;
 
 procedure TCommand.DoGuard;
 begin
-  raise EAbort.Create('Define Guard method for the child Command class. Do not call `inherited` in Guard method.');
+  raise EAbort.Create
+    ('Define Guard method for the child Command class. Do not call `inherited` in Guard method.');
 end;
 
 function TCommand.Inject(const Injections: array of const): TCommand;
@@ -113,24 +119,103 @@ end;
 
 
 // ------------------------------------------------------------------------
+// TAsyncCommand
+// ------------------------------------------------------------------------
+
+constructor TAsyncCommand.Create(AOwner: TComponent);
+begin
+  inherited;
+  fThread := nil;
+  fIsThreadTermianed := true;
+end;
+
+procedure TAsyncCommand.Execute;
+begin
+  DoGuard;
+  DoPrepare;
+  fThread := TThread.CreateAnonymousThread(
+    procedure
+    begin
+      try
+        fIsThreadTermianed := False;
+        DoExecute;
+      finally
+        // TODO: lock or critical section is required bellow (critical !!!)
+        fIsThreadTermianed := true;
+      end;
+    end);
+  fThread.FreeOnTerminate := False;
+  fThread.Start;
+end;
+
+function TAsyncCommand.IsFinished: boolean;
+begin
+  if fThread = nil then
+    Exit(true);
+  Result := fIsThreadTermianed;
+  if Result and (fThread <> nil) then
+  begin
+    fThread.Free;
+    fThread := nil;
+    DoTeardown;
+  end;
+end;
+
+// ------------------------------------------------------------------------
 // TComponentInjector
 // ------------------------------------------------------------------------
 
 { TPropertyInfo }
 
+procedure SetInterfaceProperty(aComponent: TComponent;
+const aPropertyName: string; const aInjection: TVarRec);
+var
+  ctx: TRttiContext;
+  typ: TRttiType;
+  prop: TRttiProperty;
+  val: TValue;
+begin
+  typ := ctx.GetType(aComponent.ClassType);
+  val := TValue.From(IInterface(aInjection.VInterface) as TObject);
+  for prop in typ.GetProperties do
+    if prop.Name = aPropertyName then
+      prop.SetValue(aComponent, val);
+end;
+
+function IsInterfaceInjectionImplementsInterface(const aInjection: TVarRec;
+const aInterfaceName: string): boolean;
+var
+  obj: TObject;
+  implementedList: TArray<TRttiInterfaceType>;
+  IntfType: TRttiInterfaceType;
+  ctx: TRttiContext;
+begin
+  System.Assert(aInjection.VType = vtInterface);
+  obj := IInterface(aInjection.VInterface) as TObject;
+  implementedList := (ctx.GetType(obj.ClassType) as TRttiInstanceType)
+    .GetImplementedInterfaces;
+  for IntfType in implementedList do
+    if IntfType.Name = aInterfaceName then
+      Exit(true);
+  Result := False;
+end;
+
 function TPropertyInfo.isAvaliableForInjection(const aInjection
   : TVarRec): boolean;
 var
-  classType: TClass;
+  ClassType: TClass;
 begin
-  if (Self.Kind = tkClass) and (aInjection.VType = vtObject) then
+  if (Self.Kind = tkInterface) and (aInjection.VType = vtInterface) then
+    Result := IsInterfaceInjectionImplementsInterface(aInjection,
+      Self.ClassName)
+  else if (Self.Kind = tkClass) and (aInjection.VType = vtObject) then
   begin
     Result := (aInjection.VObject.ClassName = Self.ClassName);
-    classType := aInjection.VObject.classType;
-    while not(Result) and (classType.ClassParent <> nil) do
+    ClassType := aInjection.VObject.ClassType;
+    while not(Result) and (ClassType.ClassParent <> nil) do
     begin
-      Result := (classType.ClassParent.ClassName = Self.ClassName);
-      classType := classType.ClassParent;
+      Result := (ClassType.ClassParent.ClassName = Self.ClassName);
+      ClassType := ClassType.ClassParent;
     end;
   end
   else
@@ -194,8 +279,8 @@ var
   j: Integer;
 begin
   for j := 0 to High(Injections) do
-    if not(Injections[j].VType in [vtObject, vtInteger, vtBoolean, vtExtended])
-    then
+    if not(Injections[j].VType in [vtObject, vtInterface, vtInteger, vtBoolean,
+      vtExtended]) then
       Assert(False, Format(ERRMSG_NotSupportedParameter,
         [j, VTypeToStr(Injections[j].VType)]));
 end;
@@ -206,7 +291,7 @@ end;
 // tkInterface, tkInt64, tkDynArray, tkUString
 // - - - - - - - - - - - - - - - - - - - - - - - - -
 class procedure TComponentInjector.InjectProperties(aComponent: TComponent;
-  const Injections: array of const);
+const Injections: array of const);
 var
   i: Integer;
   j: Integer;
@@ -225,8 +310,11 @@ begin
       if not(UsedInjection[j]) and propInfo.isAvaliableForInjection
         (Injections[j]) then
       begin
-        UsedInjection[j] := True;
+        UsedInjection[j] := true;
         case propInfo.Kind of
+          tkInterface:
+            SetInterfaceProperty(aComponent, propInfo.PropertyName,
+              Injections[j]);
           tkClass:
             SetObjectProp(aComponent, propInfo.PropertyName,
               Injections[j].VObject);

@@ -34,6 +34,7 @@ type
     procedure ParameterValueBoolean;
     procedure ParameterValueFloat;
     procedure ParameterValueInt;
+    procedure ParameterInterface;
     procedure UnsupportedProperty_Exception;
   end;
 
@@ -56,7 +57,42 @@ type
 implementation
 
 // ------------------------------------------------------------------------
-// Test_OneInjection - test injection for components with one published property
+// sample interfaces injected into components
+// ------------------------------------------------------------------------
+
+type
+  ISample1 = interface (IInvokable)
+    ['{AB5F0562-A0E6-4E93-910C-DD592FF02ADE}']
+    function GetValue: integer;
+  end;
+
+  ISample2 = interface (IInvokable)
+    ['{D0562FD6-5393-4CA8-8285-46308C21B532}']
+    function GetValue(aValue: integer): integer;
+  end;
+
+  TSampleClass = class (TInterfacedObject,ISample1)
+    function GetValue: integer;
+  end;
+
+  TAnotherClass = class (TInterfacedObject,ISample2)
+    function GetValue(aValue: integer): integer;
+  end;
+
+function TSampleClass.GetValue: integer;
+begin
+  Exit(0);
+end;
+
+function TAnotherClass.GetValue(aValue: integer): integer;
+begin
+  Result := aValue;
+end;
+
+
+
+// ------------------------------------------------------------------------
+// sample components used in the tests
 // ------------------------------------------------------------------------
 
 type
@@ -84,12 +120,18 @@ type
     FIsTrue: boolean;
     FFloatNumber: Double;
     FStartDate: TDateTime;
+    FSample1: ISample1;
   published
     property Number: integer read FNumber write FNumber;
     property IsTrue: boolean read FIsTrue write FIsTrue;
     property FloatNumber: Double read FFloatNumber write FFloatNumber;
     property StartDate: TDateTime read FStartDate write FStartDate;
+    property Sample1: ISample1 read FSample1 write FSample1;
   end;
+
+// ------------------------------------------------------------------------
+// tests: inject single parameter
+// ------------------------------------------------------------------------
 
 procedure TestInjection_SingleParam.Setup;
 begin
@@ -205,15 +247,6 @@ begin
   Assert.AreEqual(999, SimpleComponent.Number);
 end;
 
-procedure TestInjection_SingleParam.ParameterValueInt;
-var
-  SimpleComponent: TSimpleComponent;
-begin
-  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
-  TComponentInjector.InjectProperties(SimpleComponent, [55]);
-  Assert.AreEqual(55, SimpleComponent.Number);
-end;
-
 procedure TestInjection_SingleParam.ParameterValueBoolean;
 var
   SimpleComponent: TSimpleComponent;
@@ -223,6 +256,15 @@ begin
   Assert.AreEqual(True, SimpleComponent.IsTrue);
 end;
 
+procedure TestInjection_SingleParam.ParameterValueInt;
+var
+  SimpleComponent: TSimpleComponent;
+begin
+  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
+  TComponentInjector.InjectProperties(SimpleComponent, [55]);
+  Assert.AreEqual(55, SimpleComponent.Number);
+end;
+
 procedure TestInjection_SingleParam.ParameterValueFloat;
 var
   SimpleComponent: TSimpleComponent;
@@ -230,6 +272,17 @@ begin
   SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
   TComponentInjector.InjectProperties(SimpleComponent, [99.99]);
   Assert.AreEqual(99.99, Extended(SimpleComponent.FloatNumber));
+end;
+
+procedure TestInjection_SingleParam.ParameterInterface;
+var
+  SimpleComponent: TSimpleComponent;
+  sample1: ISample1;
+begin
+  SimpleComponent := TSimpleComponent.Create(FOwnerComponent);
+  sample1 := TSampleClass.Create;
+  TComponentInjector.InjectProperties(SimpleComponent, [sample1]);
+  Assert.IsTrue(SimpleComponent.Sample1 = sample1);
 end;
 
 procedure TestInjection_SingleParam.UnsupportedProperty_Exception;
@@ -263,13 +316,17 @@ type
     FOddLines: TStringList;
     FComponent: TComponent;
     FStream: TStream;
+    FSample1: ISample1;
+    FSample2: ISample2;
   public
     property Count: integer read FCount write FCount;
     property Stream: TStream read FStream write FStream;
   published
     property OddLines: TStringList read FOddLines write FOddLines;
     property Component: TComponent read FComponent write FComponent;
+    property Sample1: ISample1 read FSample1 write FSample1;
     property EvenLines: TStringList read FEvenLines write FEvenLines;
+    property Sample2: ISample2 read FSample2 write FSample2;
   end;
 
 procedure TestInjection_MultipleParams.Setup;
@@ -303,16 +360,23 @@ end;
 procedure TestInjection_MultipleParams.InjectAll;
 var
   ManyPropComponent: TManyPropComponent;
+  sample1: ISample1;
+  sample2: ISample2;
 begin
   // Arrange:
   ManyPropComponent := TManyPropComponent.Create(FOwnerComponent);
+  sample1 := TSampleClass.Create;
+  sample2 := TAnotherClass.Create;
   // Act:
   TComponentInjector.InjectProperties(ManyPropComponent,
-    [FStrings1, FStrings2, FOwnerComponent]);
+    [FStrings1, FStrings2, FOwnerComponent, sample2, sample1]);
   // Assert
   Assert.AreSame(FStrings1, ManyPropComponent.OddLines);
   Assert.AreSame(FStrings2, ManyPropComponent.EvenLines);
   Assert.AreSame(FOwnerComponent, ManyPropComponent.Component);
+  Assert.AreSame(sample1, ManyPropComponent.Sample1);
+  Assert.AreSame(sample2, ManyPropComponent.Sample2);
+  Assert.AreEqual(99, ManyPropComponent.Sample2.GetValue(99));
 end;
 
 // ------------------------------------------------------------------------
