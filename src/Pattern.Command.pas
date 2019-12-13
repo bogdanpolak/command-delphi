@@ -19,7 +19,7 @@ type
 
   TCommand = class(TComponent, ICommand)
   private const
-    Version = '0.6';
+    Version = '0.7';
   protected
     // procedure Guard; - assert injections of all required properties
     procedure DoGuard; virtual;
