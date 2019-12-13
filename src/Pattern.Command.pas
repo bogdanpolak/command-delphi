@@ -1,10 +1,8 @@
-﻿{* ------------------------------------------------------------------------
- * ♥
- * ♥ Command Parttern
- * ♥
- * Components:     TCommand
+﻿(* ------------------------------------------------------------------------
+ * ♥   Command Parttern
+ * Components:     TCommand, TAsyncCommand
  * Project:        https://github.com/bogdanpolak/command-delphi
- * ------------------------------------------------------------------------}
+ * ------------------------------------------------------------------------ *)
 unit Pattern.Command;
 
 interface
@@ -20,12 +18,8 @@ type
   end;
 
   TCommand = class(TComponent, ICommand)
-  const
-    // * --------------------------------------------------------------------
-    // * Signature
-    ReleaseDate = '2019.12.04';
-    ReleaseVersion = '0.6';
-    // * --------------------------------------------------------------------
+  private const
+    Version = '0.6';
   protected
     // procedure Guard; - assert injections of all required properties
     procedure DoGuard; virtual;

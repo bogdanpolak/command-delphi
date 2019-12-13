@@ -1,3 +1,8 @@
+﻿(* ------------------------------------------------------------------------
+ * ♥   Command Invoker
+ * Components:     TCommandAction
+ * Project:        https://github.com/bogdanpolak/command-delphi
+ * ------------------------------------------------------------------------ *)
 unit Pattern.CommandAction;
 
 interface
@@ -11,6 +16,8 @@ uses
 
 type
   TCommandAction = class(TAction)
+  private const
+    Version = '0.6';
   private
     fCommand: TCommand;
     fOnUpdateProc: TProc<TCommandAction>;
