@@ -159,6 +159,18 @@ Block of a business logic, extracted into the command, can be easily converted i
 
 Introducing parallel programing into your project is not very simple in general, usually developers are struggling with many issues coming from that area, but in this days there is no other alternative and `TAsyncCommand` pattern can make this transition much easier.
 
+Important rules during converting standard command into async one are:
+1) Remove code manipulating UI controls
+    - The best approach is to remove all such code  from `DoExecute` method and process everything without any visual feedback
+    - if this is not possible remove as much as you are able
+    - all other UI manipulation have to be done in a main thread: outside `DoExecute` or inside it but with `Synchronize` (more info bellow)
+1) Do not share memory structures between treads (if possible)
+   - Use memory structures only internally, for example if you want to access SQL server and fetch some data then create a dedicated new SQL connection for async command
+   - You can crate a structure colones before async execution and read all results from internal structures after processing
+1) If you have to share memory structures
+   - Use proper concurrency control components like TMonitor to prevent parallel modification made by many threads
+   - This is the most challenging scenario of parallel computing and proper solutions and patterns are far beyond the scope of this documanation.
+
 ## TCommand memory management
 
 > TBD: Describe advantages of management base on `TComponent` solution using owner.
