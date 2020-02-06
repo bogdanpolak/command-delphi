@@ -19,16 +19,13 @@ uses
 type
   TForm1 = class(TForm)
     Memo1: TMemo;
-    Panel1: TPanel;
     GroupBoxSimpleDemo: TGroupBox;
-    btnExecuteCommand: TButton;
-    GroupBoxButtonCommands: TGroupBox;
+    btnAdhocExecute: TButton;
     Button1: TButton;
     Button2: TButton;
     Edit1: TEdit;
-    CheckBox1: TCheckBox;
     procedure FormCreate(Sender: TObject);
-    procedure btnExecuteCommandClick(Sender: TObject);
+    procedure btnAdhocExecuteClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
   public
@@ -51,21 +48,16 @@ begin
   // ---------------------------------------------------------
   actCommandButon1 := TCommandAction.Create(Self)
     .SetupCommand(TButon1Command.Create(Self))
-    // .SetupShortCut(TextToShortCut('Ctrl+1'))
+    .SetupShortCut(TextToShortCut('Ctrl+1'))
     .SetupCaption('Run command: Button1') //-->
     .Inject([Memo1]);
   // ---------------------------------------------------------
   // ---------------------------------------------------------
   actCommandButon2 := TCommandAction.Create(Self)
     .SetupCommand(TButon2Command.Create(Self))
-    // .SetupShortCut(TextToShortCut('Ctrl+2'))
+    .SetupShortCut(TextToShortCut('Ctrl+2'))
     .SetupCaption('Run command: Button2') //-->
-    .Inject([Memo1, Edit1]) //-->
-    .SetupEventOnUpdate(
-    procedure(actCommand: TCommandAction)
-    begin
-      actCommand.Enabled := CheckBox1.Checked;
-    end);
+    .Inject([Memo1, Edit1]);
   // ---------------------------------------------------------
   // ---------------------------------------------------------
   Button1.Action := actCommandButon1;
@@ -89,7 +81,7 @@ begin
   // this event is not called. Action actCommandButon2 is triggered
 end;
 
-procedure TForm1.btnExecuteCommandClick(Sender: TObject);
+procedure TForm1.btnAdhocExecuteClick(Sender: TObject);
 begin
   TCommand.AdhocExecute<TButon1Command>([Memo1]);
 end;

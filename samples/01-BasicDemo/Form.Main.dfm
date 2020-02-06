@@ -2,8 +2,8 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 517
-  ClientWidth = 626
+  ClientHeight = 397
+  ClientWidth = 678
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,10 +16,10 @@ object Form1: TForm1
   TextHeight = 13
   object Memo1: TMemo
     AlignWithMargins = True
-    Left = 207
+    Left = 246
     Top = 3
-    Width = 416
-    Height = 511
+    Width = 429
+    Height = 391
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -31,90 +31,77 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1
+    ExplicitLeft = 207
+    ExplicitWidth = 416
+    ExplicitHeight = 511
   end
-  object Panel1: TPanel
+  object GroupBoxSimpleDemo: TGroupBox
     AlignWithMargins = True
     Left = 3
     Top = 3
-    Width = 198
-    Height = 511
+    Width = 237
+    Height = 391
     Align = alLeft
-    Caption = ' '
+    Caption = 'GroupBoxSimpleDemo'
     TabOrder = 0
-    object GroupBoxSimpleDemo: TGroupBox
+    ExplicitHeight = 511
+    object btnAdhocExecute: TButton
       AlignWithMargins = True
-      Left = 4
-      Top = 4
-      Width = 190
-      Height = 77
+      Left = 5
+      Top = 18
+      Width = 227
+      Height = 31
       Align = alTop
-      Caption = 'GroupBoxSimpleDemo'
+      Caption = 'btnAdhocExecute'
       TabOrder = 0
-      object btnExecuteCommand: TButton
-        AlignWithMargins = True
-        Left = 5
-        Top = 18
-        Width = 180
-        Height = 31
-        Align = alTop
-        Caption = 'btnExecuteCommand'
-        TabOrder = 0
-        OnClick = btnExecuteCommandClick
-      end
+      OnClick = btnAdhocExecuteClick
+      ExplicitLeft = 7
     end
-    object GroupBoxButtonCommands: TGroupBox
+    object Button1: TButton
       AlignWithMargins = True
-      Left = 4
-      Top = 87
-      Width = 190
-      Height = 170
+      Left = 5
+      Top = 77
+      Width = 227
+      Height = 34
+      Margins.Top = 25
       Align = alTop
-      Caption = 'GroupBoxButtonCommands'
+      Caption = 'Button1'
       TabOrder = 1
-      object Button1: TButton
-        AlignWithMargins = True
-        Left = 5
-        Top = 18
-        Width = 180
-        Height = 34
-        Align = alTop
-        Caption = 'Button1'
-        TabOrder = 0
-        OnClick = Button1Click
-      end
-      object Button2: TButton
-        AlignWithMargins = True
-        Left = 5
-        Top = 58
-        Width = 180
-        Height = 34
-        Align = alTop
-        Caption = 'Button2'
-        TabOrder = 1
-        OnClick = Button2Click
-      end
-      object Edit1: TEdit
-        AlignWithMargins = True
-        Left = 5
-        Top = 98
-        Width = 180
-        Height = 21
-        Align = alTop
-        TabOrder = 2
-        Text = 'Edit1'
-      end
-      object CheckBox1: TCheckBox
-        AlignWithMargins = True
-        Left = 5
-        Top = 125
-        Width = 180
-        Height = 17
-        Align = alTop
-        Caption = 'Enable command Button2'
-        Checked = True
-        State = cbChecked
-        TabOrder = 3
-      end
+      OnClick = Button1Click
+      ExplicitWidth = 180
+    end
+    object Button2: TButton
+      AlignWithMargins = True
+      Left = 5
+      Top = 117
+      Width = 227
+      Height = 34
+      Align = alTop
+      Caption = 'Button2'
+      TabOrder = 2
+      OnClick = Button2Click
+      ExplicitWidth = 180
+    end
+    object Edit1: TEdit
+      AlignWithMargins = True
+      Left = 7
+      Top = 162
+      Width = 223
+      Height = 27
+      Margins.Left = 5
+      Margins.Top = 8
+      Margins.Right = 5
+      Margins.Bottom = 8
+      Align = alTop
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 3
+      Text = 'Edit1'
+      ExplicitWidth = 176
     end
   end
 end
