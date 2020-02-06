@@ -130,10 +130,16 @@ end;
 
 function TCommandAction.SetupShortCut(aShorcut: TShortCut): TCommandAction;
 begin
+  // ------------------------------------------------------------------
+  // Too support shortcuts action requires TActionList assigned
+  // ---
+  // this code is constructing a new ActionList only once when a new
+  // shortcut is assigned to this action (deleyed construction)
+  // ------------------------------------------------------------------
   if fActionList = nil then
   begin
     fActionList := TActionList.Create(Owner);
-    ActionList := fActionList;
+    Self.ActionList := fActionList;
   end;
   Self.ShortCut := aShorcut;
   Result := Self;
