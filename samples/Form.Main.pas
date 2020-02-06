@@ -62,25 +62,31 @@ implementation
 {$R *.dfm}
 
 uses
+  Vcl.Menus,
+
   Command.Button1,
   Command.Button2,
   Command.DiceRoll,
   Helper.TWinControl;
 
 procedure TForm1.BuildCommandsAndActions;
+var
+  aShotCut: TShortCut;
 begin
   // ---------------------------------------------------------
   // ---------------------------------------------------------
   actCommandButon1 := TCommandAction.Create(Self)
     .SetupCommand(TButon1Command.Create(Self))
-    .SetupCaption('Run command: Button1') //.
+    .SetupShortCut(TextToShortCut('Ctrl+1'))
+    .SetupCaption('Run command: Button1') //-->
     .Inject([Memo1]);
   // ---------------------------------------------------------
   // ---------------------------------------------------------
   actCommandButon2 := TCommandAction.Create(Self)
     .SetupCommand(TButon2Command.Create(Self))
-    .SetupCaption('Run command: Button2') //.
-    .Inject([Memo1, Edit1]) //.
+    .SetupShortCut(TextToShortCut('Ctrl+2'))
+    .SetupCaption('Run command: Button2') //-->
+    .Inject([Memo1, Edit1]) //-->
     .SetupEventOnUpdate(
     procedure(actCommand: TCommandAction)
     begin
