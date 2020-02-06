@@ -1,7 +1,5 @@
 ﻿{* ------------------------------------------------------------------------ *
- * ♥   Command Parttern
- * Components:     TCommand, TAsyncCommand
- * Project:        https://github.com/bogdanpolak/command-delphi
+ * Command Parttern  ♥  TCommand
  * ------------------------------------------------------------------------ *}
 unit Pattern.Command;
 
@@ -31,17 +29,6 @@ type
     procedure Execute; virtual;
   end;
 
-  TAsyncCommand = class(TCommand)
-  protected
-    fThread: TThread;
-    fIsThreadTermianed: boolean;
-    procedure DoPrepare; virtual; abstract;
-    procedure DoTeardown; virtual; abstract;
-  public
-    constructor Create(AOwner: TComponent); override;
-    procedure Execute; override;
-    function IsFinished: boolean;
-  end;
 
   TPropertyInfo = record
     Kind: TTypeKind;
@@ -117,49 +104,6 @@ begin
   end;
 end;
 
-
-// ------------------------------------------------------------------------
-// TAsyncCommand
-// ------------------------------------------------------------------------
-
-constructor TAsyncCommand.Create(AOwner: TComponent);
-begin
-  inherited;
-  fThread := nil;
-  fIsThreadTermianed := true;
-end;
-
-procedure TAsyncCommand.Execute;
-begin
-  DoGuard;
-  DoPrepare;
-  fThread := TThread.CreateAnonymousThread(
-    procedure
-    begin
-      try
-        fIsThreadTermianed := False;
-        DoExecute;
-      finally
-        // TODO: lock or critical section is required bellow (critical !!!)
-        fIsThreadTermianed := true;
-      end;
-    end);
-  fThread.FreeOnTerminate := False;
-  fThread.Start;
-end;
-
-function TAsyncCommand.IsFinished: boolean;
-begin
-  if fThread = nil then
-    Exit(true);
-  Result := fIsThreadTermianed;
-  if Result and (fThread <> nil) then
-  begin
-    fThread.Free;
-    fThread := nil;
-    DoTeardown;
-  end;
-end;
 
 // ------------------------------------------------------------------------
 // TComponentInjector
