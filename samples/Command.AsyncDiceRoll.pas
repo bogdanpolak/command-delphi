@@ -6,9 +6,9 @@ uses
   System.SysUtils,
   System.Classes,
   System.Math,
-  Pattern.Command,
   Vcl.ComCtrls, // for TProgressBar class (needs refactoring)
-  Vcl.StdCtrls; // for TMemo class (needs refactoring)
+  Vcl.StdCtrls, // for TMemo class (needs refactoring)
+  Pattern.AsyncCommand;
 
 type
   TAsyncDiceRollCommand = class(TAsyncCommand)
