@@ -1,7 +1,5 @@
 ﻿{* ------------------------------------------------------------------------ *
- * ♥   Command Parttern
- * Components:     TCommand, TAsyncCommand
- * Project:        https://github.com/bogdanpolak/command-delphi
+ * Command Parttern  ♥  TCommand
  * ------------------------------------------------------------------------ *}
 unit Pattern.Command;
 

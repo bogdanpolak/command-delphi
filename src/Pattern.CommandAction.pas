@@ -1,7 +1,5 @@
 ﻿{* ------------------------------------------------------------------------ *
- * ♥   Command Invoker
- * Components:     TCommandAction
- * Project:        https://github.com/bogdanpolak/command-delphi
+ * Command Parttern  ♥  TCommandAction = command invoker
  * ------------------------------------------------------------------------ *}
 unit Pattern.CommandAction;
 
