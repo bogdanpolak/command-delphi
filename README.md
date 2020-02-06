@@ -153,6 +153,12 @@ Most popular and usually advised method of injecting dependencies is a construct
     * `TCommandAction` class is classic VCL action
     * This class has special methods to allow rapid construction and initialization
 
+## Asynchronous command
+
+Block of a business logic, extracted into the command, can be easily converted into asynchronous execution using `TAsyncCommand` class. Asynchronous means that all code implemented in `DoExecute` method will be processed in a separate background thread. Today when each machine has access multiple CPU cores this functionality will allow to execute domain code in background, even in parallel, without any negative influence on displayed UI.
+
+Introducing parallel programing into your project is not very simple in general, usually developers are struggling with many issues coming from that area, but in this days there is no other alternative and `TAsyncCommand` pattern can make this transition much easier.
+
 ## TCommand memory management
 
 > TBD: Describe advantages of management base on `TComponent` solution using owner.
