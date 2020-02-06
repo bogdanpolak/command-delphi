@@ -11,7 +11,6 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
@@ -117,73 +116,5 @@ object Form1: TForm1
         TabOrder = 3
       end
     end
-    object GroupBoxDiceRolls: TGroupBox
-      AlignWithMargins = True
-      Left = 4
-      Top = 263
-      Width = 190
-      Height = 122
-      Align = alTop
-      Caption = 'Dice Rolls'
-      TabOrder = 2
-      object Button3: TButton
-        AlignWithMargins = True
-        Left = 5
-        Top = 18
-        Width = 180
-        Height = 34
-        Align = alTop
-        Caption = 'Button3'
-        TabOrder = 0
-        OnClick = Button3Click
-      end
-      object chkShowProgressbar: TCheckBox
-        AlignWithMargins = True
-        Left = 5
-        Top = 58
-        Width = 180
-        Height = 17
-        Align = alTop
-        Caption = 'Show Progress Bar'
-        TabOrder = 1
-        OnClick = chkShowProgressbarClick
-      end
-    end
-    object GroupBoxAsyncCommandRoll: TGroupBox
-      AlignWithMargins = True
-      Left = 4
-      Top = 391
-      Width = 190
-      Height = 105
-      Align = alTop
-      Caption = 'Async Command: Dice Rolls'
-      TabOrder = 3
-      object Button4: TButton
-        AlignWithMargins = True
-        Left = 5
-        Top = 18
-        Width = 180
-        Height = 34
-        Align = alTop
-        Caption = 'Button4'
-        TabOrder = 0
-        OnClick = Button4Click
-      end
-      object ProgressBar1: TProgressBar
-        AlignWithMargins = True
-        Left = 5
-        Top = 58
-        Width = 180
-        Height = 23
-        Align = alTop
-        TabOrder = 1
-      end
-    end
-  end
-  object TimerAsyncDiceRoll: TTimer
-    Interval = 100
-    OnTimer = TimerAsyncDiceRollTimer
-    Left = 192
-    Top = 440
   end
 end
