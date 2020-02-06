@@ -23,11 +23,13 @@ type
     fOnUpdateProc: TProc<TCommandAction>;
     fOnAfterProc: TProc<TCommandAction>;
     fDisableDuringExecution: boolean;
+    fActionList: TActionList;
     procedure OnExecuteEvent(Sender: TObject);
     procedure OnUpdateEvent(Sender: TObject);
     procedure DoExecuteAction(Sender: TObject);
   public
     constructor Create(aOwner: TComponent); override;
+    destructor Destroy; override;
     function SetupCaption(const aCaption: string): TCommandAction;
     function SetupCommand(aCommand: TCommand): TCommandAction;
     function SetupShortCut(aShorcut: TShortCut): TCommandAction;
@@ -47,10 +49,18 @@ constructor TCommandAction.Create(aOwner: TComponent);
 begin
   inherited;
   DisableDuringExecution := False;
+  fActionList := nil;
   fCommand := nil;
   fOnUpdateProc := nil;
   fOnAfterProc := nil;
   Self.OnExecute := OnExecuteEvent;
+end;
+
+destructor TCommandAction.Destroy;
+begin
+  if fActionList <> nil then
+    fActionList.Free;
+  inherited;
 end;
 
 procedure TCommandAction.DoExecuteAction(Sender: TObject);
@@ -120,6 +130,17 @@ end;
 
 function TCommandAction.SetupShortCut(aShorcut: TShortCut): TCommandAction;
 begin
+  // ------------------------------------------------------------------
+  // Too support shortcuts action requires TActionList assigned
+  // ---
+  // this code is constructing a new ActionList only once when a new
+  // shortcut is assigned to this action (deleyed construction)
+  // ------------------------------------------------------------------
+  if fActionList = nil then
+  begin
+    fActionList := TActionList.Create(Owner);
+    Self.ActionList := fActionList;
+  end;
   Self.ShortCut := aShorcut;
   Result := Self;
 end;

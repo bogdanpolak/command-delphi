@@ -32,7 +32,6 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1
-    ExplicitTop = -2
   end
   object Panel1: TPanel
     AlignWithMargins = True
@@ -43,7 +42,6 @@ object Form1: TForm1
     Align = alLeft
     Caption = ' '
     TabOrder = 0
-    ExplicitTop = -2
     object GroupBoxSimpleDemo: TGroupBox
       AlignWithMargins = True
       Left = 4
@@ -63,7 +61,6 @@ object Form1: TForm1
         Caption = 'btnExecuteCommand'
         TabOrder = 0
         OnClick = btnExecuteCommandClick
-        ExplicitWidth = 175
       end
     end
     object GroupBoxButtonCommands: TGroupBox
@@ -85,8 +82,6 @@ object Form1: TForm1
         Caption = 'Button1'
         TabOrder = 0
         OnClick = Button1Click
-        ExplicitLeft = 10
-        ExplicitTop = 26
       end
       object Button2: TButton
         AlignWithMargins = True
@@ -98,8 +93,6 @@ object Form1: TForm1
         Caption = 'Button2'
         TabOrder = 1
         OnClick = Button2Click
-        ExplicitTop = 144
-        ExplicitWidth = 175
       end
       object Edit1: TEdit
         AlignWithMargins = True
@@ -110,8 +103,6 @@ object Form1: TForm1
         Align = alTop
         TabOrder = 2
         Text = 'Edit1'
-        ExplicitTop = 184
-        ExplicitWidth = 175
       end
       object CheckBox1: TCheckBox
         AlignWithMargins = True
@@ -124,8 +115,6 @@ object Form1: TForm1
         Checked = True
         State = cbChecked
         TabOrder = 3
-        ExplicitLeft = 3
-        ExplicitTop = 203
       end
     end
     object GroupBoxDiceRolls: TGroupBox
@@ -147,8 +136,6 @@ object Form1: TForm1
         Caption = 'Button3'
         TabOrder = 0
         OnClick = Button3Click
-        ExplicitTop = 251
-        ExplicitWidth = 175
       end
       object chkShowProgressbar: TCheckBox
         AlignWithMargins = True
@@ -160,8 +147,6 @@ object Form1: TForm1
         Caption = 'Show Progress Bar'
         TabOrder = 1
         OnClick = chkShowProgressbarClick
-        ExplicitTop = 291
-        ExplicitWidth = 175
       end
     end
     object GroupBoxAsyncCommandRoll: TGroupBox
@@ -173,9 +158,6 @@ object Form1: TForm1
       Align = alTop
       Caption = 'Async Command: Dice Rolls'
       TabOrder = 3
-      ExplicitLeft = 0
-      ExplicitTop = 448
-      ExplicitWidth = 185
       object Button4: TButton
         AlignWithMargins = True
         Left = 5
