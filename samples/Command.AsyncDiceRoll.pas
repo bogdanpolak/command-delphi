@@ -83,8 +83,8 @@ var
 begin
   fProgressBar.Position := RollCount;
   ReportMemo.Lines.Add
-        (Format('Dice results (%d-sided dice) (number of rolls: %d)',
-        [MaxDiceValue, RollCount]));
+    (Format('Dice results (%d-sided dice) (number of rolls: %d)',
+    [MaxDiceValue, RollCount]));
   for i := 1 to MaxDiceValue do
     ReportMemo.Lines.Add(Format('  [%d] : %d', [i, fResultDistribution[i]]));
 end;
