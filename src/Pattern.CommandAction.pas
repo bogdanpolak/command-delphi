@@ -56,8 +56,6 @@ end;
 
 destructor TCommandAction.Destroy;
 begin
-  if fActionList <> nil then
-    fActionList.Free;
   inherited;
 end;
 
@@ -133,8 +131,10 @@ begin
   // ---
   // this code is constructing a new ActionList only once when a new
   // shortcut is assigned to this action (deleyed construction)
+  // ---
+  // Memory of fActionList is not released by Free but managed by Owner
   // ------------------------------------------------------------------
-  if fActionList = nil then
+  if (Owner <> nil) and (Self.ActionList = nil) and (fActionList = nil) then
   begin
     fActionList := TActionList.Create(Owner);
     Self.ActionList := fActionList;
