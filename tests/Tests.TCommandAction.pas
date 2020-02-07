@@ -7,7 +7,9 @@ uses
   System.Classes,
   System.SysUtils,
   Pattern.Command,
-  Pattern.CommandAction;
+  Pattern.CommandAction,
+  Vcl.StdCtrls,
+  Vcl.Forms;
 
 {$M+}
 
@@ -26,11 +28,11 @@ type
     procedure TearDown;
   published
     procedure ActionWithCaption;
-    // procedure SetupCaption_ButtonCaptionChanged;
     procedure ActionWithCommand;
     procedure ActionWithShotcut;
     procedure ActionWitnEventOnUpdate;
     procedure ActionWithInjections;
+    procedure ActionCaption_WillChangeButtonCaption;
   end;
 
 implementation
@@ -147,6 +149,16 @@ begin
   fAction.Execute;
   actualNumbers := (fAction.Command as TTestCommand).RandomNumbers.Count;
   Assert.AreEqual(3, actualNumbers);
+end;
+
+procedure TestCommandAction.ActionCaption_WillChangeButtonCaption;
+var
+  aButton: TButton;
+begin
+  aButton := TButton.Create(fOwnerComponent);
+  fAction.WithCaption('Sample caption');
+  aButton.Action := fAction;
+  Assert.AreEqual('Sample caption', aButton.Caption);
 end;
 
 end.
