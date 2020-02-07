@@ -44,7 +44,6 @@ procedure TDiceRollCommand.DoExecute;
 var
   i: Integer;
   number: Integer;
-  ResultCounters: array [1 .. MaxDiceValue] of Integer;
   counterReport: Integer;
 begin
   fProgressBar.Max := fRollsCount;
