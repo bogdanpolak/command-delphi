@@ -7,7 +7,9 @@ uses
   System.Classes,
   System.SysUtils,
   Pattern.Command,
-  Pattern.CommandAction;
+  Pattern.CommandAction,
+  Vcl.StdCtrls,
+  Vcl.Forms;
 
 {$M+}
 
@@ -25,10 +27,12 @@ type
     [TearDown]
     procedure TearDown;
   published
-    procedure Call_SetupCaption;
-    procedure Call_SetupCommand;
-    procedure Call_SetupShotcut;
-    procedure Call_SetupEventOnUpdate;
+    procedure ActionWithCaption;
+    procedure ActionWithCommand;
+    procedure ActionWithShotcut;
+    procedure ActionWitnEventOnUpdate;
+    procedure ActionWithInjections;
+    procedure ActionCaption_WillChangeButtonCaption;
   end;
 
 implementation
@@ -88,50 +92,73 @@ begin
   fStringList.Free;
 end;
 
-procedure TestCommandAction.Call_SetupCaption;
+procedure TestCommandAction.ActionWithCaption;
 var
   act: TCommandAction;
 begin
   // Arrage & Act:
-  fAction.SetupCaption('Execute test command');
+  fAction.WithCaption('Execute test command');
   // Assert
   Assert.AreEqual('Execute test command', fAction.Caption);
 end;
 
-procedure TestCommandAction.Call_SetupCommand;
+procedure TestCommandAction.ActionWithCommand;
 var
   cmd: TTestCommand;
-  act: TCommandAction;
 begin
   // Arrage:
   cmd := TTestCommand.Create(fOwnerComponent);
-  cmd.Inject([fStringList]);
+  cmd.WithInjections([fStringList]);
   // Act:
-  fAction.SetupCommand(cmd);
+  fAction.WithCommand(cmd);
   fAction.Execute;
   fAction.Execute;
   // Assert
   Assert.AreEqual(2, cmd.RandomNumbers.Count);
 end;
 
-procedure TestCommandAction.Call_SetupShotcut;
+procedure TestCommandAction.ActionWithShotcut;
 var
   aShortCut: TShortCut;
 begin
   aShortCut := TextToShortCut('CTRL+K');
-  fAction.SetupShortCut(aShortCut);
+  fAction.WithShortCut(aShortCut);
   Assert.AreEqual(ShortCutToText(aShortCut), ShortCutToText(fAction.ShortCut));
 end;
 
-procedure TestCommandAction.Call_SetupEventOnUpdate;
+procedure TestCommandAction.ActionWitnEventOnUpdate;
 begin
-  fAction.SetupEventOnUpdate(
+  fAction.WithEventOnUpdate(
     procedure(act: TCommandAction)
     begin
       act.Tag := act.Tag + 1;
     end);
   fAction.Update;
   Assert.AreEqual(1, fAction.Tag);
+end;
+
+procedure TestCommandAction.ActionWithInjections;
+var
+  actualNumbers: integer;
+begin
+  fAction // --+
+    .WithCommand(TTestCommand.Create(fOwnerComponent)) //--+
+    .WithInjections([fStringList]);
+  fAction.Execute;
+  fAction.Execute;
+  fAction.Execute;
+  actualNumbers := (fAction.Command as TTestCommand).RandomNumbers.Count;
+  Assert.AreEqual(3, actualNumbers);
+end;
+
+procedure TestCommandAction.ActionCaption_WillChangeButtonCaption;
+var
+  aButton: TButton;
+begin
+  aButton := TButton.Create(fOwnerComponent);
+  fAction.WithCaption('Sample caption');
+  aButton.Action := fAction;
+  Assert.AreEqual('Sample caption', aButton.Caption);
 end;
 
 end.

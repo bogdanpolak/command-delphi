@@ -195,7 +195,7 @@ var
   CommandStrings: TCommandStringList;
 begin
   CommandStrings := TCommandStringList.Create(FOwnerComponent);
-  CommandStrings.Inject([FStrings]);
+  CommandStrings.WithInjections([FStrings]);
   CommandStrings.Execute;
   CommandStrings.Execute;
   FStrings.Delete(0);

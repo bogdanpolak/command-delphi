@@ -28,14 +28,14 @@ type
   public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
-    function SetupCaption(const aCaption: string): TCommandAction;
-    function SetupCommand(aCommand: TCommand): TCommandAction;
-    function SetupShortCut(aShorcut: TShortCut): TCommandAction;
-    function SetupEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
+    function WithCaption(const aCaption: string): TCommandAction;
+    function WithCommand(aCommand: TCommand): TCommandAction;
+    function WithShortCut(aShorcut: TShortCut): TCommandAction;
+    function WithEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
       : TCommandAction;
     function SetupEventAfterExecution(aAfterProc: TProc<TCommandAction>)
       : TCommandAction;
-    function Inject(const Injections: array of const): TCommandAction;
+    function WithInjections(const Injections: array of const): TCommandAction;
     property Command: TCommand read fCommand write fCommand;
     property DisableDuringExecution: boolean read fDisableDuringExecution
       write fDisableDuringExecution;
@@ -66,12 +66,12 @@ begin
     fOnAfterProc(Self)
 end;
 
-function TCommandAction.Inject(const Injections: array of const)
+function TCommandAction.WithInjections(const Injections: array of const)
   : TCommandAction;
 begin
   System.Assert(fCommand <> nil,
     'Command have to be created and provided before injection');
-  fCommand.Inject(Injections);
+  fCommand.WithInjections(Injections);
   Result := Self;
 end;
 
@@ -97,13 +97,13 @@ begin
     fOnUpdateProc(Self);
 end;
 
-function TCommandAction.SetupCaption(const aCaption: string): TCommandAction;
+function TCommandAction.WithCaption(const aCaption: string): TCommandAction;
 begin
   Caption := aCaption;
   Result := Self;
 end;
 
-function TCommandAction.SetupCommand(aCommand: TCommand): TCommandAction;
+function TCommandAction.WithCommand(aCommand: TCommand): TCommandAction;
 begin
   fCommand := aCommand;
   Result := Self;
@@ -116,7 +116,7 @@ begin
   Result := Self;
 end;
 
-function TCommandAction.SetupEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
+function TCommandAction.WithEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
   : TCommandAction;
 begin
   fOnUpdateProc := AUpdateProc;
@@ -124,7 +124,7 @@ begin
   Result := Self;
 end;
 
-function TCommandAction.SetupShortCut(aShorcut: TShortCut): TCommandAction;
+function TCommandAction.WithShortCut(aShorcut: TShortCut): TCommandAction;
 begin
   // ------------------------------------------------------------------
   // Too support shortcuts action requires TActionList assigned
