@@ -51,8 +51,12 @@ begin
         fIsThreadTermianed := False;
         DoExecute;
       finally
-        // TODO: lock or critical section is required bellow (critical !!!)
-        fIsThreadTermianed := true;
+        TMonitor.Enter(Self);
+        try
+          fIsThreadTermianed := true;
+        finally
+          TMonitor.Exit(Self);
+        end;
       end;
     end);
   fThread.FreeOnTerminate := False;
@@ -63,7 +67,14 @@ function TAsyncCommand.IsFinished: boolean;
 begin
   if fThread = nil then
     Exit(true);
-  Result := fIsThreadTermianed;
+  // ---
+  TMonitor.Enter(Self);
+  try
+    Result := fIsThreadTermianed;
+  finally
+    TMonitor.Exit(Self);
+  end;
+  // ---
   if Result and (fThread <> nil) then
   begin
     fThread.Free;
