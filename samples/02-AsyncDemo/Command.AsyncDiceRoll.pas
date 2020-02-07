@@ -51,7 +51,7 @@ var
   number: Integer;
   counterReport: Integer;
 begin
-  TThread.Synchronize(fThread,
+  Synchronize(
     procedure
     begin
       fProgressBar.Max := fRollsCount;
@@ -70,7 +70,7 @@ begin
     if counterReport = 0 then
     begin
       counterReport := ReportEveryRolls;
-      TThread.Synchronize(fThread,
+      Synchronize(
         procedure
         begin
           fProgressBar.Position := i + 1;
@@ -79,7 +79,7 @@ begin
     dec(counterReport);
     fThread.Sleep(2);
   end;
-  TThread.Synchronize(fThread, ReportResults);
+  Synchronize(ReportResults);
 end;
 
 procedure TAsyncDiceRollCommand.ReportResults;
