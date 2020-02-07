@@ -30,6 +30,7 @@ type
     procedure ActionWithCommand;
     procedure ActionWithShotcut;
     procedure ActionWitnEventOnUpdate;
+    procedure ActionWithInjections;
   end;
 
 implementation
@@ -102,7 +103,6 @@ end;
 procedure TestCommandAction.ActionWithCommand;
 var
   cmd: TTestCommand;
-  act: TCommandAction;
 begin
   // Arrage:
   cmd := TTestCommand.Create(fOwnerComponent);
@@ -133,6 +133,20 @@ begin
     end);
   fAction.Update;
   Assert.AreEqual(1, fAction.Tag);
+end;
+
+procedure TestCommandAction.ActionWithInjections;
+var
+  actualNumbers: integer;
+begin
+  fAction // --+
+    .WithCommand(TTestCommand.Create(fOwnerComponent)) //--+
+    .WithInjections([fStringList]);
+  fAction.Execute;
+  fAction.Execute;
+  fAction.Execute;
+  actualNumbers := (fAction.Command as TTestCommand).RandomNumbers.Count;
+  Assert.AreEqual(3, actualNumbers);
 end;
 
 end.

@@ -35,7 +35,7 @@ type
       : TCommandAction;
     function SetupEventAfterExecution(aAfterProc: TProc<TCommandAction>)
       : TCommandAction;
-    function Inject(const Injections: array of const): TCommandAction;
+    function WithInjections(const Injections: array of const): TCommandAction;
     property Command: TCommand read fCommand write fCommand;
     property DisableDuringExecution: boolean read fDisableDuringExecution
       write fDisableDuringExecution;
@@ -66,7 +66,7 @@ begin
     fOnAfterProc(Self)
 end;
 
-function TCommandAction.Inject(const Injections: array of const)
+function TCommandAction.WithInjections(const Injections: array of const)
   : TCommandAction;
 begin
   System.Assert(fCommand <> nil,
