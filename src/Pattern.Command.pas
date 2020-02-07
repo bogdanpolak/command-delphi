@@ -25,7 +25,7 @@ type
   public
     class procedure AdhocExecute<T: TCommand>(const Injections
       : array of const); static;
-    function Inject(const Injections: array of const): TCommand;
+    function WithInjections(const Injections: array of const): TCommand;
     procedure Execute; virtual;
   end;
 
@@ -80,7 +80,7 @@ begin
     ('Define Guard method for the child Command class. Do not call `inherited` in Guard method.');
 end;
 
-function TCommand.Inject(const Injections: array of const): TCommand;
+function TCommand.WithInjections(const Injections: array of const): TCommand;
 begin
   TComponentInjector.InjectProperties(Self, Injections);
   Result := Self;

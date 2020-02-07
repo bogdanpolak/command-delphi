@@ -25,10 +25,11 @@ type
     [TearDown]
     procedure TearDown;
   published
-    procedure Call_SetupCaption;
-    procedure Call_SetupCommand;
-    procedure Call_SetupShotcut;
-    procedure Call_SetupEventOnUpdate;
+    procedure ActionWithCaption;
+    // procedure SetupCaption_ButtonCaptionChanged;
+    procedure ActionWithCommand;
+    procedure ActionWithShotcut;
+    procedure ActionWitnEventOnUpdate;
   end;
 
 implementation
@@ -88,44 +89,44 @@ begin
   fStringList.Free;
 end;
 
-procedure TestCommandAction.Call_SetupCaption;
+procedure TestCommandAction.ActionWithCaption;
 var
   act: TCommandAction;
 begin
   // Arrage & Act:
-  fAction.SetupCaption('Execute test command');
+  fAction.WithCaption('Execute test command');
   // Assert
   Assert.AreEqual('Execute test command', fAction.Caption);
 end;
 
-procedure TestCommandAction.Call_SetupCommand;
+procedure TestCommandAction.ActionWithCommand;
 var
   cmd: TTestCommand;
   act: TCommandAction;
 begin
   // Arrage:
   cmd := TTestCommand.Create(fOwnerComponent);
-  cmd.Inject([fStringList]);
+  cmd.WithInjections([fStringList]);
   // Act:
-  fAction.SetupCommand(cmd);
+  fAction.WithCommand(cmd);
   fAction.Execute;
   fAction.Execute;
   // Assert
   Assert.AreEqual(2, cmd.RandomNumbers.Count);
 end;
 
-procedure TestCommandAction.Call_SetupShotcut;
+procedure TestCommandAction.ActionWithShotcut;
 var
   aShortCut: TShortCut;
 begin
   aShortCut := TextToShortCut('CTRL+K');
-  fAction.SetupShortCut(aShortCut);
+  fAction.WithShortCut(aShortCut);
   Assert.AreEqual(ShortCutToText(aShortCut), ShortCutToText(fAction.ShortCut));
 end;
 
-procedure TestCommandAction.Call_SetupEventOnUpdate;
+procedure TestCommandAction.ActionWitnEventOnUpdate;
 begin
-  fAction.SetupEventOnUpdate(
+  fAction.WithEventOnUpdate(
     procedure(act: TCommandAction)
     begin
       act.Tag := act.Tag + 1;
