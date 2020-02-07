@@ -21,6 +21,7 @@ type
     fIsThreadTermianed: boolean;
     procedure DoPrepare; virtual; abstract;
     procedure DoTeardown; virtual; abstract;
+    procedure Synchronize (aProc: TThreadProcedure);
   public
     constructor Create(AOwner: TComponent); override;
     procedure Execute; override;
@@ -82,6 +83,12 @@ begin
     fThread := nil;
     DoTeardown;
   end;
+end;
+
+procedure TAsyncCommand.Synchronize (aProc: TThreadProcedure);
+begin
+  if (fThread<>nil) and Assigned(aProc) then
+    TThread.Synchronize(fThread, aProc);
 end;
 
 end.
