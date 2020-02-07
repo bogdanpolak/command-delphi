@@ -44,7 +44,7 @@ procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   CanClose := fAsyncCommand.IsFinished;
   if not fAsyncCommand.IsFinished then
-    ShowMessage('Cant colse application - async command in progress');
+    ShowMessage('Can''t close application - async command in progress');
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
