@@ -47,6 +47,7 @@ begin
   fThread := TThread.CreateAnonymousThread(
     procedure
     begin
+      TThread.NameThreadForDebugging('Command: '+Self.ClassName);
       try
         fIsThreadTermianed := False;
         DoExecute;
