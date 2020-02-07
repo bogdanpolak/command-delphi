@@ -47,17 +47,17 @@ begin
   // ---------------------------------------------------------
   // ---------------------------------------------------------
   actCommandButon1 := TCommandAction.Create(Self)
-    .SetupCommand(TButon1Command.Create(Self))
-    .SetupShortCut(TextToShortCut('Ctrl+1'))
-    .SetupCaption('Run command: Button1') //-->
-    .Inject([Memo1]);
+    .WithCommand(TButon1Command.Create(Self))
+    .WithShortCut(TextToShortCut('Ctrl+1'))
+    .WithCaption('Run command: Button1') //--+
+    .WithInjections([Memo1]);
   // ---------------------------------------------------------
   // ---------------------------------------------------------
   actCommandButon2 := TCommandAction.Create(Self)
-    .SetupCommand(TButon2Command.Create(Self))
-    .SetupShortCut(TextToShortCut('Ctrl+2'))
-    .SetupCaption('Run command: Button2') //-->
-    .Inject([Memo1, Edit1]);
+    .WithCommand(TButon2Command.Create(Self))
+    .WithShortCut(TextToShortCut('Ctrl+2'))
+    .WithCaption('Run command: Button2') //--+
+    .WithInjections([Memo1, Edit1]);
   // ---------------------------------------------------------
   // ---------------------------------------------------------
   Button1.Action := actCommandButon1;

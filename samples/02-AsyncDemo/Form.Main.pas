@@ -62,13 +62,13 @@ end;
 
 procedure TForm1.btnAsycDiceRollCmdClick(Sender: TObject);
 begin
-  fAsyncCommand.Inject([ProgressBar1,Memo1,500]);
+  fAsyncCommand.WithInjections([ProgressBar1,Memo1,500]);
   fAsyncCommand.Execute;
 end;
 
 procedure TForm1.btnDiceRollCommandClick(Sender: TObject);
 begin
-  fCommand.Inject([ProgressBar1,Memo1,100]);
+  fCommand.WithInjections([ProgressBar1,Memo1,100]);
   fCommand.Execute;
 end;
 
