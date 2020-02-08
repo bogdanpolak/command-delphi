@@ -169,7 +169,7 @@ Important rules during converting standard command into async one are:
    - You can crate a structure colones before async execution and read all results from internal structures after processing
 1) If you have to share memory structures
    - Use proper concurrency control components like TMonitor to prevent parallel modification made by many threads
-   - This is the most challenging scenario of parallel computing and proper solutions and patterns are far beyond the scope of this documanation.
+   - This is the most challenging scenario of parallel computing and proper solutions and patterns are far beyond the scope of this documentation.
 
 ## TCommand memory management
 
