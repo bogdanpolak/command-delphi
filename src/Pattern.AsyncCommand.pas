@@ -21,7 +21,7 @@ type
     fIsThreadTermianed: boolean;
     procedure DoPrepare; virtual; abstract;
     procedure DoTeardown; virtual; abstract;
-    procedure Synchronize (aProc: TThreadProcedure);
+    procedure Synchronize(aProc: TThreadProcedure);
   public
     constructor Create(AOwner: TComponent); override;
     procedure Execute; override;
@@ -48,7 +48,7 @@ begin
   fThread := TThread.CreateAnonymousThread(
     procedure
     begin
-      TThread.NameThreadForDebugging('Command: '+Self.ClassName);
+      TThread.NameThreadForDebugging('Command: ' + Self.ClassName);
       try
         fIsThreadTermianed := False;
         DoExecute;
@@ -85,9 +85,9 @@ begin
   end;
 end;
 
-procedure TAsyncCommand.Synchronize (aProc: TThreadProcedure);
+procedure TAsyncCommand.Synchronize(aProc: TThreadProcedure);
 begin
-  if (fThread<>nil) and Assigned(aProc) then
+  if (fThread <> nil) and Assigned(aProc) then
     TThread.Synchronize(fThread, aProc);
 end;
 
