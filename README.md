@@ -81,30 +81,30 @@ type
   const
     RollCount = 100;
   private
-    FOutput: TStrings;
-    FProgressBar: TProgressBar;
+    fOutput: TStrings;
+    fProgressBar: TProgressBar;
     procedure ShowProgress(aRoll: integer);
   protected
     procedure DoGuard; override;
     procedure DoExecute; override;
   published
-    property OutputRolls: TStrings read FOutput 
-      write FOutput;
-    property ProgressBar: TProgressBar read FProgressBar 
-      write FProgressBar;
+    property OutputRolls: TStrings read fOutput 
+      write fOutput;
+    property ProgressBar: TProgressBar read fProgressBar 
+      write fProgressBar;
   end;
 
 procedure TDiceRollCommand.DoGuard;
 begin
-  System.Assert(FOutput<>nil); 
+  System.Assert(fOutput<>nil); 
 end;
 
 procedure TDiceRollCommand.ShowProgress(aRoll: integer);
 begin
-  if Assigned(ProgressBar) then begin
+  if Assigned(fProgressBar) then begin
     if aRoll=0 then
-      ProgressBar.Max := RollCount;
-    ProgressBar.Position := aRoll;
+      fProgressBar.Max := RollCount;
+    fProgressBar.Position := aRoll;
   end;
 end
 
@@ -113,10 +113,7 @@ begin
   ShowProgress(0);
   for var i := 0 to RollCount-1 do
   begin
-    var number := RandomRange(1,6);
-    FOutput.Add(number.ToString);
-    if (FReportingMemo<>nil) then
-      FReportingMemo.Lines.Add(number.ToString);
+    fOutput.Add(RandomRange(1,7).ToString);
     ShowProgress(i+1);
   end;
 end;
@@ -153,23 +150,25 @@ Most popular and usually advised method of injecting dependencies is a construct
     * `TCommandAction` class is classic VCL action
     * This class has special methods to allow rapid construction and initialization
 
-## Asynchronous command
+## Asynchronous Command
 
-Block of a business logic, extracted into the command, can be easily converted into asynchronous execution using `TAsyncCommand` class. Asynchronous means that all code implemented in `DoExecute` method will be processed in a separate background thread. Today when each machine has access multiple CPU cores this functionality will allow to execute domain code in background, even in parallel, without any negative influence on displayed UI.
+Business logic, extracted into the command, can be easily converted into asynchronous command, processed in a separate background thread. Replacing `TCommand` class with `TAsyncCommand` is first steep in such transformation:
 
-Introducing parallel programing into your project is not very simple in general, usually developers are struggling with many issues coming from that area, but in this days there is no other alternative and `TAsyncCommand` pattern can make this transition much easier.
+```pas
+uses
+  Pattern.AsyncCommand;
+type
+  TAsyncDiceRollCommand = class (TAsyncCommand)
+     ...
+  end;
+```
 
-Important rules during converting standard command into async one are:
-1) Remove code manipulating UI controls
-    - The best approach is to remove all such code  from `DoExecute` method and process everything without any visual feedback
-    - if this is not possible remove as much as you are able
-    - all other UI manipulation have to be done in a main thread: outside `DoExecute` or inside it but with `Synchronize` (more info bellow)
-1) Do not share memory structures between treads (if possible)
-   - Use memory structures only internally, for example if you want to access SQL server and fetch some data then create a dedicated new SQL connection for async command
-   - You can crate a structure colones before async execution and read all results from internal structures after processing
-1) If you have to share memory structures
-   - Use proper concurrency control components like TMonitor to prevent parallel modification made by many threads
-   - This is the most challenging scenario of parallel computing and proper solutions and patterns are far beyond the scope of this documanation.
+Although the change is very simple, but in general, multi-threaded processing is a much more serious subject and requires deeper knowledge of this area. In this example (`TDiceRollCommand`) two topics are problematic:
+
+1. Access to UI control `fProgressBar: TProgressBar`
+1. Access to shared memory `fOutputRolls: TStrings`
+
+You can easily deal with them, but this requires more general multithread processing knowledge. More info you can find in dedicated documentation: [Asynchronous Command](docs/AsyncCommand.md)
 
 ## TCommand memory management
 
