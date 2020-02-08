@@ -6,7 +6,8 @@ uses
   Pattern.Command in '..\..\src\Pattern.Command.pas',
   Command.AsyncDiceRoll in 'Command.AsyncDiceRoll.pas',
   Command.DiceRoll in 'Command.DiceRoll.pas',
-  Form.Main in 'Form.Main.pas' {Form1};
+  Form.Main in 'Form.Main.pas' {Form1},
+  Command.AsyncDiceRoll2 in 'Command.AsyncDiceRoll2.pas';
 
 {$R *.res}
 
