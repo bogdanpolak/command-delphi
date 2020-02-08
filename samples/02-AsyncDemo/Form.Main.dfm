@@ -23,9 +23,6 @@ object Form1: TForm1
     Align = alBottom
     Caption = 'pnProgressBar'
     TabOrder = 0
-    ExplicitLeft = 192
-    ExplicitTop = 232
-    ExplicitWidth = 185
     object ProgressBar1: TProgressBar
       AlignWithMargins = True
       Left = 9
@@ -38,9 +35,6 @@ object Form1: TForm1
       Margins.Bottom = 8
       Align = alClient
       TabOrder = 0
-      ExplicitLeft = 8
-      ExplicitTop = 12
-      ExplicitWidth = 546
     end
   end
   object Memo1: TMemo
@@ -60,10 +54,6 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1
-    ExplicitLeft = 192
-    ExplicitTop = 8
-    ExplicitWidth = 337
-    ExplicitHeight = 377
   end
   object GroupBoxDiceRolls: TGroupBox
     AlignWithMargins = True
@@ -82,9 +72,8 @@ object Form1: TForm1
       Height = 34
       Align = alTop
       Caption = 'Asynchrous Dice Roll'
-      TabOrder = 0
+      TabOrder = 1
       OnClick = btnAsycDiceRollCmdClick
-      ExplicitWidth = 99
     end
     object btnDiceRollCommand: TButton
       AlignWithMargins = True
@@ -94,15 +83,25 @@ object Form1: TForm1
       Height = 34
       Align = alTop
       Caption = 'Standard Dice Roll'
-      TabOrder = 1
+      TabOrder = 0
       OnClick = btnDiceRollCommandClick
-      ExplicitLeft = 7
+    end
+    object btnAsycDiceRollCmdTwo: TButton
+      AlignWithMargins = True
+      Left = 5
+      Top = 98
+      Width = 172
+      Height = 34
+      Align = alTop
+      Caption = 'Asynchrous Dice Roll (2)'
+      TabOrder = 2
+      OnClick = btnAsycDiceRollCmdTwoClick
     end
   end
   object Timer1: TTimer
     Interval = 100
     OnTimer = Timer1Timer
-    Left = 64
-    Top = 152
+    Left = 72
+    Top = 192
   end
 end

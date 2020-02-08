@@ -1,4 +1,4 @@
-unit Command.AsyncDiceRoll;
+unit Command.AsyncDiceRoll2;
 
 interface
 
@@ -7,39 +7,41 @@ uses
   System.Classes,
   System.Math,
   Vcl.ComCtrls, // for TProgressBar class (needs refactoring)
-  Vcl.StdCtrls, // for TMemo class (needs refactoring)
   Pattern.AsyncCommand;
 
 type
-  TAsyncDiceRollCommand = class(TAsyncCommand)
+  TAsyncDiceRollCommandTwo = class(TAsyncCommand)
   const
     MaxDiceValue = 6;
     ReportEveryRolls = 10;
   private
     fRolls: TArray<Integer>;
     fResultDistribution: TArray<Integer>;
-    fReportMemo: TMemo;
     fProgressBar: TProgressBar;
     fRollsCount: Integer;
-    procedure ReportResults;
   protected
     procedure DoGuard; override;
     procedure DoExecute; override;
+  public
+    function GetDistribution: TArray<Integer>;
   published
-    property ReportMemo: TMemo read fReportMemo write fReportMemo;
     property ProgressBar: TProgressBar read fProgressBar write fProgressBar;
     property RollsCount: Integer read fRollsCount write fRollsCount;
   end;
 
 implementation
 
-procedure TAsyncDiceRollCommand.DoGuard;
+procedure TAsyncDiceRollCommandTwo.DoGuard;
 begin
-  System.Assert(fReportMemo <> nil);
   System.Assert(fProgressBar <> nil);
 end;
 
-procedure TAsyncDiceRollCommand.DoExecute;
+function TAsyncDiceRollCommandTwo.GetDistribution: TArray<Integer>;
+begin
+  Result := fResultDistribution;
+end;
+
+procedure TAsyncDiceRollCommandTwo.DoExecute;
 var
   i: Integer;
   number: Integer;
@@ -73,19 +75,6 @@ begin
     dec(counterReport);
     fThread.Sleep(2);
   end;
-  Synchronize(ReportResults);
-end;
-
-procedure TAsyncDiceRollCommand.ReportResults;
-var
-  i: Integer;
-begin
-  fProgressBar.Position := fRollsCount;
-  ReportMemo.Lines.Add
-    (Format('Dice results (%d-sided dice) (number of rolls: %d)',
-    [MaxDiceValue, fRollsCount]));
-  for i := 1 to MaxDiceValue do
-    ReportMemo.Lines.Add(Format('  [%d] : %d', [i, fResultDistribution[i]]));
 end;
 
 end.
