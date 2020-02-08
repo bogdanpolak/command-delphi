@@ -17,13 +17,15 @@ type
   private const
     Version = '0.7';
   protected
+    fBeforeStartEvent: TProc;
+    fAfterFinishEvent: TProc;
     fThread: TThread;
     fIsThreadTermianed: boolean;
-    procedure DoPrepare; virtual; abstract;
-    procedure DoTeardown; virtual; abstract;
     procedure Synchronize(aProc: TThreadProcedure);
   public
     constructor Create(AOwner: TComponent); override;
+    function WithEventBeforeStart(aBeforeStart: TProc): TAsyncCommand;
+    function WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
     procedure Execute; override;
     function IsFinished: boolean;
   end;
@@ -38,13 +40,16 @@ constructor TAsyncCommand.Create(AOwner: TComponent);
 begin
   inherited;
   fThread := nil;
+  fBeforeStartEvent := nil;
+  fAfterFinishEvent := nil;
   fIsThreadTermianed := true;
 end;
 
 procedure TAsyncCommand.Execute;
 begin
   DoGuard;
-  DoPrepare;
+  if Assigned(fBeforeStartEvent) then
+    fBeforeStartEvent();
   fThread := TThread.CreateAnonymousThread(
     procedure
     begin
@@ -81,7 +86,8 @@ begin
   begin
     fThread.Free;
     fThread := nil;
-    DoTeardown;
+    if Assigned(fAfterFinishEvent) then
+      fAfterFinishEvent();
   end;
 end;
 
@@ -89,6 +95,18 @@ procedure TAsyncCommand.Synchronize(aProc: TThreadProcedure);
 begin
   if (fThread <> nil) and Assigned(aProc) then
     TThread.Synchronize(fThread, aProc);
+end;
+
+function TAsyncCommand.WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
+begin
+  fAfterFinishEvent := aAfterFinish;
+  Result := Self;
+end;
+
+function TAsyncCommand.WithEventBeforeStart(aBeforeStart: TProc): TAsyncCommand;
+begin
+  fBeforeStartEvent := aBeforeStart;
+  Result := Self;
 end;
 
 end.

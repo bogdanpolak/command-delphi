@@ -24,9 +24,7 @@ type
     procedure ReportResults;
   protected
     procedure DoGuard; override;
-    procedure DoPrepare; override;
     procedure DoExecute; override;
-    procedure DoTeardown; override;
   published
     property ReportMemo: TMemo read fReportMemo write fReportMemo;
     property ProgressBar: TProgressBar read fProgressBar write fProgressBar;
@@ -39,10 +37,6 @@ procedure TAsyncDiceRollCommand.DoGuard;
 begin
   System.Assert(fReportMemo <> nil);
   System.Assert(fProgressBar <> nil);
-end;
-
-procedure TAsyncDiceRollCommand.DoPrepare;
-begin
 end;
 
 procedure TAsyncDiceRollCommand.DoExecute;
@@ -92,10 +86,6 @@ begin
     [MaxDiceValue, fRollsCount]));
   for i := 1 to MaxDiceValue do
     ReportMemo.Lines.Add(Format('  [%d] : %d', [i, fResultDistribution[i]]));
-end;
-
-procedure TAsyncDiceRollCommand.DoTeardown;
-begin
 end;
 
 end.
