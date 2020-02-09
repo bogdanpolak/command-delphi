@@ -29,7 +29,6 @@ type
     fAfterFinishEvent: TProc;
     fThread: TThread;
     fIsThreadTermianed: boolean;
-    fStopwatch: TStopwatch;
     fTimer: TTimer;
     procedure Synchronize(aProc: TThreadProcedure);
     function GetIsThreadTerminated: boolean;
@@ -41,9 +40,7 @@ type
     function WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
     function WithEventOnUpdate(aOnUpdateProc: TProc): TAsyncCommand;
     procedure Execute; override;
-    function IsFinished: boolean;
-    function GetElapsedTime: TTimeSpan;
-    function GetElapsedTimeMs: integer;
+    function IsBusy: boolean; override;
     property UpdateInterval: integer read fUpdateInterval
       write fUpdateInterval;
   end;
@@ -71,7 +68,7 @@ end;
 
 destructor TAsyncCommand.Destroy;
 begin
-  Self.IsFinished; // call to tear down all internal structures
+  Self.IsBusy; // call to tear down all internal structures
   fTimer.Free;
   inherited;
 end;
@@ -98,16 +95,6 @@ begin
   fThread.Start;
 end;
 
-function TAsyncCommand.GetElapsedTime: TTimeSpan;
-begin
-  Result := fStopwatch.Elapsed;
-end;
-
-function TAsyncCommand.GetElapsedTimeMs: integer;
-begin
-  Result := fStopwatch.ElapsedMilliseconds;
-end;
-
 function TAsyncCommand.GetIsThreadTerminated: boolean;
 begin
   TMonitor.Enter(Self);
@@ -128,22 +115,26 @@ begin
   end;
 end;
 
-function TAsyncCommand.IsFinished: boolean;
+function TAsyncCommand.IsBusy: boolean;
+var
+  IsTerminatedFlag: boolean;
 begin
-  Result := GetIsThreadTerminated;
-  if Result and (fThread <> nil) then
+  IsTerminatedFlag := GetIsThreadTerminated;
+  if IsTerminatedFlag and (fThread <> nil) then
   begin
+    fTimer.Enabled := False;
     FreeAndNil (fThread);
     fStopwatch.Stop;
     if Assigned(fAfterFinishEvent) then
       fAfterFinishEvent();
   end;
+  Result := not IsTerminatedFlag;
 end;
 
 procedure TAsyncCommand.OnUpdateTimer(Sender: TObject);
 begin
-  fTimer.Enabled := not(IsFinished);
-  if Assigned(fOnUpdateProc) then
+  fTimer.Enabled := Self.IsBusy;
+  if fTimer.Enabled and Assigned(fOnUpdateProc) then
     fOnUpdateProc;
 end;
 

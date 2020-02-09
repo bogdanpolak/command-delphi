@@ -15,7 +15,6 @@ type
   TDiceRollCommand = class(TCommand)
   const
     MaxDiceValue = 6;
-    ReportEveryRolls = 10;
   private
     fRolls: TArray<Integer>;
     fResultDistribution: TArray<Integer>;
@@ -44,13 +43,11 @@ procedure TDiceRollCommand.DoExecute;
 var
   i: Integer;
   number: Integer;
-  counterReport: Integer;
 begin
   fProgressBar.Max := fRollsCount;
   fProgressBar.Position := 0;
   SetLength(fRolls, fRollsCount);
   SetLength(fResultDistribution, MaxDiceValue + 1);
-  counterReport := 0;
   for i := 1 to MaxDiceValue do
     fResultDistribution[i] := 0;
   for i := 0 to fRollsCount - 1 do
@@ -58,12 +55,11 @@ begin
     number := RandomRange(1, MaxDiceValue + 1);
     fResultDistribution[number] := fResultDistribution[number] + 1;
     fRolls[i] := number;
-    if counterReport = 0 then
+    if i mod 10 = 0 then
     begin
-      counterReport := ReportEveryRolls;
       fProgressBar.Position := i + 1;
+      // Application.ProcessMessages;
     end;
-    dec(counterReport);
     Sleep(2);
   end;
   ReportResults;
@@ -74,6 +70,8 @@ var
   i: Integer;
 begin
   fProgressBar.Position := fRollsCount;
+  ReportMemo.Lines.Add(Format('Elapsed time: %.1f seconds',
+    [GetElapsedTime.TotalSeconds]));
   ReportMemo.Lines.Add
     (Format('Dice results (%d-sided dice) (number of rolls: %d)',
     [MaxDiceValue, fRollsCount]));

@@ -8,7 +8,9 @@ interface
 uses
   System.Classes,
   System.SysUtils,
-  System.TypInfo;
+  System.TypInfo,
+  System.Diagnostics,
+  System.TimeSpan;
 
 type
   ICommand = interface
@@ -19,7 +21,8 @@ type
   private const
     Version = '0.7';
   protected
-    // procedure Guard; - assert injections of all required properties
+    fStopwatch: TStopwatch;
+    fBusy: boolean;
     procedure DoGuard; virtual;
     procedure DoExecute; virtual; abstract;
   public
@@ -27,6 +30,9 @@ type
       : array of const); static;
     function WithInjections(const Injections: array of const): TCommand;
     procedure Execute; virtual;
+    function GetElapsedTime: TTimeSpan;
+    function GetElapsedTimeMs: integer;
+    function IsBusy: boolean; virtual;
   end;
 
 
@@ -71,7 +77,29 @@ const
 procedure TCommand.Execute;
 begin
   DoGuard;
-  DoExecute;
+  fStopwatch := TStopwatch.StartNew;
+  fBusy := True;
+  try
+    DoExecute;
+  finally
+    fBusy := False;
+    fStopwatch.Stop;
+  end;
+end;
+
+function TCommand.GetElapsedTime: TTimeSpan;
+begin
+  Result := fStopwatch.Elapsed;
+end;
+
+function TCommand.GetElapsedTimeMs: integer;
+begin
+  Result := fStopwatch.ElapsedMilliseconds;
+end;
+
+function TCommand.IsBusy: boolean;
+begin
+  Result := fBusy;
 end;
 
 procedure TCommand.DoGuard;

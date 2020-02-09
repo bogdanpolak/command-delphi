@@ -12,7 +12,7 @@ uses
 
   Command.DiceRoll,
   Command.AsyncDiceRoll,
-  Command.AsyncDiceRoll2;
+  Command.AsyncDiceRollExtra;
 
 type
   TForm1 = class(TForm)
@@ -24,16 +24,20 @@ type
     btnDiceRollCommand: TButton;
     Timer1: TTimer;
     btnAsycDiceRollCmdTwo: TButton;
+    ProgressBar2: TProgressBar;
+    ProgressBar3: TProgressBar;
+    chkShowProgressPanel: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure btnAsycDiceRollCmdClick(Sender: TObject);
     procedure btnDiceRollCommandClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure btnAsycDiceRollCmdTwoClick(Sender: TObject);
+    procedure chkShowProgressPanelClick(Sender: TObject);
   private
     fCommand: TDiceRollCommand;
     fAsyncCommand: TAsyncDiceRollCommand;
-    fAsyncCommand2: TAsyncDiceRollCommandTwo;
+    fAsyncCommandEx: TAsyncDiceRollCommandEx;
     procedure DiceRoll_GenerateReport;
   public
   end;
@@ -47,8 +51,9 @@ implementation
 
 procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  CanClose := fAsyncCommand.IsFinished;
-  if not fAsyncCommand.IsFinished then
+  CanClose := not(fCommand.IsBusy) and not(fAsyncCommand.IsBusy) and
+    not(fAsyncCommandEx.IsBusy);
+  if not CanClose then
     ShowMessage('Can''t close application - async command in progress');
 end;
 
@@ -57,26 +62,32 @@ begin
   Memo1.Clear;
   fCommand := TDiceRollCommand.Create(Self);
   fAsyncCommand := TAsyncDiceRollCommand.Create(Self);
-  fAsyncCommand2 := TAsyncDiceRollCommandTwo.Create(Self);
+  fAsyncCommandEx := TAsyncDiceRollCommandEx.Create(Self);
   ReportMemoryLeaksOnShutdown := True;
+end;
+
+procedure TForm1.chkShowProgressPanelClick(Sender: TObject);
+begin
+  pnProgressBar.Visible := chkShowProgressPanel.Checked;
 end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
-  btnAsycDiceRollCmd.Enabled := fAsyncCommand.IsFinished;
-  btnAsycDiceRollCmdTwo.Enabled := fAsyncCommand2.IsFinished;
-end;
-
-procedure TForm1.btnAsycDiceRollCmdClick(Sender: TObject);
-begin
-  fAsyncCommand.WithInjections([ProgressBar1, Memo1, 500]);
-  fAsyncCommand.Execute;
+  btnDiceRollCommand.Enabled := not fCommand.IsBusy;
+  btnAsycDiceRollCmd.Enabled := not fAsyncCommand.IsBusy;
+  btnAsycDiceRollCmdTwo.Enabled := not fAsyncCommandEx.IsBusy;
 end;
 
 procedure TForm1.btnDiceRollCommandClick(Sender: TObject);
 begin
-  fCommand.WithInjections([ProgressBar1, Memo1, 100]);
+  fCommand.WithInjections([ProgressBar1, Memo1, 500]);
   fCommand.Execute;
+end;
+
+procedure TForm1.btnAsycDiceRollCmdClick(Sender: TObject);
+begin
+  fAsyncCommand.WithInjections([ProgressBar2, Memo1, 500]);
+  fAsyncCommand.Execute;
 end;
 
 procedure TForm1.DiceRoll_GenerateReport;
@@ -84,32 +95,32 @@ var
   aDistribution: TArray<Integer>;
   i: Integer;
 begin
-  ProgressBar1.Position := ProgressBar1.Max;
-  aDistribution := fAsyncCommand2.GetDistribution;
+  ProgressBar3.Position := fAsyncCommandEx.RollsCount;
+  aDistribution := fAsyncCommandEx.GetDistribution;
   Memo1.Lines.Add(Format('Elapsed time: %.1f seconds',
-    [fAsyncCommand2.GetElapsedTime.TotalSeconds]));
+    [fAsyncCommandEx.GetElapsedTime.TotalSeconds]));
   Memo1.Lines.Add(Format('Dice results (%d-sided dice) (number of rolls: %d)',
-    [fAsyncCommand2.MaxDiceValue, fAsyncCommand2.RollsCount]));
+    [fAsyncCommandEx.MaxDiceValue, fAsyncCommandEx.RollsCount]));
   for i := 1 to High(aDistribution) do
     Memo1.Lines.Add(Format('  [%d] : %d', [i, aDistribution[i]]));
 end;
 
 procedure TForm1.btnAsycDiceRollCmdTwoClick(Sender: TObject);
 begin
-  fAsyncCommand2.RollsCount := 500;
-  fAsyncCommand2.WithEventBeforeStart(
+  fAsyncCommandEx.RollsCount := 500;
+  fAsyncCommandEx.WithEventBeforeStart(
     procedure
     begin
-      ProgressBar1.Position := 0;
-      ProgressBar1.Max := fAsyncCommand2.RollsCount;
+      ProgressBar3.Position := 0;
+      ProgressBar3.Max := fAsyncCommandEx.RollsCount;
     end);
-  fAsyncCommand2.WithEventOnUpdate(
+  fAsyncCommandEx.WithEventOnUpdate(
     procedure
     begin
-      ProgressBar1.Position := fAsyncCommand2.CurrentRoll;
+      ProgressBar3.Position := fAsyncCommandEx.CurrentRoll;
     end);
-  fAsyncCommand2.WithEventAfterFinish(DiceRoll_GenerateReport);
-  fAsyncCommand2.Execute;
+  fAsyncCommandEx.WithEventAfterFinish(DiceRoll_GenerateReport);
+  fAsyncCommandEx.Execute;
 end;
 
 end.

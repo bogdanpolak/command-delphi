@@ -7,7 +7,7 @@ uses
   Command.AsyncDiceRoll in 'Command.AsyncDiceRoll.pas',
   Command.DiceRoll in 'Command.DiceRoll.pas',
   Form.Main in 'Form.Main.pas' {Form1},
-  Command.AsyncDiceRoll2 in 'Command.AsyncDiceRoll2.pas';
+  Command.AsyncDiceRollExtra in 'Command.AsyncDiceRollExtra.pas';
 
 {$R *.res}
 
