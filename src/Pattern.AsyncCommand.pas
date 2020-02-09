@@ -77,8 +77,6 @@ end;
 procedure TAsyncCommand.Execute;
 begin
   DoGuard;
-  if Assigned(fBeforeStartEvent) then
-    fBeforeStartEvent();
   fThread := TThread.CreateAnonymousThread(
     procedure
     begin
@@ -97,6 +95,8 @@ begin
     end);
   fThread.FreeOnTerminate := false;
   fTimer.Enabled := True;
+  if Assigned(fBeforeStartEvent) then
+    fBeforeStartEvent();
   fStopwatch := TStopwatch.StartNew;
   fThread.Start;
 end;
