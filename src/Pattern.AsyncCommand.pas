@@ -9,6 +9,8 @@ uses
   System.Classes,
   System.SysUtils,
   System.TypInfo,
+  System.Diagnostics,
+  System.TimeSpan,
 
   Pattern.Command;
 
@@ -16,19 +18,27 @@ type
   TAsyncCommand = class(TCommand)
   private const
     Version = '0.7';
+  private
+    fProgressInterval: integer;
   protected
     fBeforeStartEvent: TProc;
     fAfterFinishEvent: TProc;
     fThread: TThread;
     fIsThreadTermianed: boolean;
+    fStopwatch: TStopwatch;
     procedure Synchronize(aProc: TThreadProcedure);
   public
     constructor Create(AOwner: TComponent); override;
     function WithEventBeforeStart(aBeforeStart: TProc): TAsyncCommand;
     function WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
+    function WithEventOnProgress(aOnProgressProc: TProc): TAsyncCommand;
     procedure Execute; override;
     function IsFinished: boolean;
+    function GetElapsedTime: TTimeSpan;
+    function GetElapsedTimeMs: integer;
+    property ProgressInterval: integer read fProgressInterval write fProgressInterval;
   end;
+
 
 implementation
 
@@ -70,6 +80,16 @@ begin
   fThread.Start;
 end;
 
+function TAsyncCommand.GetElapsedTime: TTimeSpan;
+begin
+
+end;
+
+function TAsyncCommand.GetElapsedTimeMs: integer;
+begin
+
+end;
+
 function TAsyncCommand.IsFinished: boolean;
 begin
   if fThread = nil then
@@ -107,6 +127,12 @@ function TAsyncCommand.WithEventBeforeStart(aBeforeStart: TProc): TAsyncCommand;
 begin
   fBeforeStartEvent := aBeforeStart;
   Result := Self;
+end;
+
+function TAsyncCommand.WithEventOnProgress(
+  aOnProgressProc: TProc): TAsyncCommand;
+begin
+
 end;
 
 end.
