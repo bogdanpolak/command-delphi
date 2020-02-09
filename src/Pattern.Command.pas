@@ -21,8 +21,8 @@ type
   private const
     Version = '0.7';
   protected
-    // procedure Guard; - assert injections of all required properties
     fStopwatch: TStopwatch;
+    fBusy: boolean;
     procedure DoGuard; virtual;
     procedure DoExecute; virtual; abstract;
   public
@@ -32,6 +32,7 @@ type
     procedure Execute; virtual;
     function GetElapsedTime: TTimeSpan;
     function GetElapsedTimeMs: integer;
+    function IsBusy: boolean; virtual;
   end;
 
 
@@ -77,8 +78,13 @@ procedure TCommand.Execute;
 begin
   DoGuard;
   fStopwatch := TStopwatch.StartNew;
-  DoExecute;
-  fStopwatch.Stop;
+  fBusy := True;
+  try
+    DoExecute;
+  finally
+    fBusy := False;
+    fStopwatch.Stop;
+  end;
 end;
 
 function TCommand.GetElapsedTime: TTimeSpan;
@@ -89,6 +95,11 @@ end;
 function TCommand.GetElapsedTimeMs: integer;
 begin
   Result := fStopwatch.ElapsedMilliseconds;
+end;
+
+function TCommand.IsBusy: boolean;
+begin
+  Result := fBusy;
 end;
 
 procedure TCommand.DoGuard;

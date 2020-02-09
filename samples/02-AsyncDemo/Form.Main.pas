@@ -51,7 +51,8 @@ implementation
 
 procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  CanClose := not(fAsyncCommand.IsBusy) and not(fAsyncCommandEx.IsBusy);
+  CanClose := not(fCommand.IsBusy) and not(fAsyncCommand.IsBusy) and
+    not(fAsyncCommandEx.IsBusy);
   if not CanClose then
     ShowMessage('Can''t close application - async command in progress');
 end;
@@ -72,6 +73,7 @@ end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
+  btnDiceRollCommand.Enabled := not fCommand.IsBusy;
   btnAsycDiceRollCmd.Enabled := not fAsyncCommand.IsBusy;
   btnAsycDiceRollCmdTwo.Enabled := not fAsyncCommandEx.IsBusy;
 end;

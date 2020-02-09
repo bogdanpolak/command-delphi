@@ -40,7 +40,7 @@ type
     function WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
     function WithEventOnUpdate(aOnUpdateProc: TProc): TAsyncCommand;
     procedure Execute; override;
-    function IsBusy: boolean;
+    function IsBusy: boolean; override;
     property UpdateInterval: integer read fUpdateInterval
       write fUpdateInterval;
   end;
