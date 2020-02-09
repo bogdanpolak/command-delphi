@@ -74,6 +74,8 @@ var
   i: Integer;
 begin
   fProgressBar.Position := fRollsCount;
+  ReportMemo.Lines.Add(Format('Elapsed time: %.1f seconds',
+    [GetElapsedTime.TotalSeconds]));
   ReportMemo.Lines.Add
     (Format('Dice results (%d-sided dice) (number of rolls: %d)',
     [MaxDiceValue, fRollsCount]));
