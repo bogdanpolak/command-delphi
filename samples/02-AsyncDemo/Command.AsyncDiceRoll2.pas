@@ -6,34 +6,33 @@ uses
   System.SysUtils,
   System.Classes,
   System.Math,
-  Vcl.ComCtrls, // for TProgressBar class (needs refactoring)
   Pattern.AsyncCommand;
 
 type
   TAsyncDiceRollCommandTwo = class(TAsyncCommand)
   const
     MaxDiceValue = 6;
-    ReportEveryRolls = 10;
   private
     fRolls: TArray<Integer>;
     fResultDistribution: TArray<Integer>;
-    fProgressBar: TProgressBar;
+    fCurrentRoll: Integer;
     fRollsCount: Integer;
+    function GetCurrentRoll: Integer;
+    procedure SetCurrentRoll(aCurrentRoll: Integer);
   protected
     procedure DoGuard; override;
     procedure DoExecute; override;
   public
     function GetDistribution: TArray<Integer>;
   published
-    property ProgressBar: TProgressBar read fProgressBar write fProgressBar;
     property RollsCount: Integer read fRollsCount write fRollsCount;
+    property CurrentRoll: Integer read GetCurrentRoll write SetCurrentRoll;
   end;
 
 implementation
 
 procedure TAsyncDiceRollCommandTwo.DoGuard;
 begin
-  System.Assert(fProgressBar <> nil);
 end;
 
 function TAsyncDiceRollCommandTwo.GetDistribution: TArray<Integer>;
@@ -41,21 +40,34 @@ begin
   Result := fResultDistribution;
 end;
 
+function TAsyncDiceRollCommandTwo.GetCurrentRoll: Integer;
+begin
+  TMonitor.Enter(Self);
+  try
+    Result := fCurrentRoll;
+  finally
+    TMonitor.Exit(Self);
+  end;
+end;
+
+procedure TAsyncDiceRollCommandTwo.SetCurrentRoll(aCurrentRoll: Integer);
+begin
+  TMonitor.Enter(Self);
+  try
+    fCurrentRoll := aCurrentRoll;
+  finally
+    TMonitor.Exit(Self);
+  end;
+end;
+
 procedure TAsyncDiceRollCommandTwo.DoExecute;
 var
   i: Integer;
   number: Integer;
-  counterReport: Integer;
 begin
-  Synchronize(
-    procedure
-    begin
-      fProgressBar.Max := fRollsCount;
-      fProgressBar.Position := 0;
-    end);
+  SetCurrentRoll(0);
   SetLength(fRolls, fRollsCount);
   SetLength(fResultDistribution, MaxDiceValue + 1);
-  counterReport := 0;
   for i := 1 to MaxDiceValue do
     fResultDistribution[i] := 0;
   for i := 0 to fRollsCount - 1 do
@@ -63,16 +75,7 @@ begin
     number := RandomRange(1, MaxDiceValue + 1);
     fResultDistribution[number] := fResultDistribution[number] + 1;
     fRolls[i] := number;
-    if counterReport = 0 then
-    begin
-      counterReport := ReportEveryRolls;
-      Synchronize(
-        procedure
-        begin
-          fProgressBar.Position := i + 1;
-        end);
-    end;
-    dec(counterReport);
+    SetCurrentRoll(i);
     fThread.Sleep(2);
   end;
 end;

@@ -9,6 +9,10 @@ uses
   System.Classes,
   System.SysUtils,
   System.TypInfo,
+  System.Diagnostics,
+  System.TimeSpan,
+
+  Vcl.ExtCtrls, // TTimer (VCL)
 
   Pattern.Command;
 
@@ -16,18 +20,32 @@ type
   TAsyncCommand = class(TCommand)
   private const
     Version = '0.7';
+  private
+    fUpdateInterval: integer;
+    fOnUpdateProc: TProc;
+    procedure OnUpdateTimer(Sender: TObject);
   protected
     fBeforeStartEvent: TProc;
     fAfterFinishEvent: TProc;
     fThread: TThread;
     fIsThreadTermianed: boolean;
+    fStopwatch: TStopwatch;
+    fTimer: TTimer;
     procedure Synchronize(aProc: TThreadProcedure);
+    function GetIsThreadTerminated: boolean;
+    procedure SetIsThreadTerminated(aIsTermianted: boolean);
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     function WithEventBeforeStart(aBeforeStart: TProc): TAsyncCommand;
     function WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
+    function WithEventOnUpdate(aOnUpdateProc: TProc): TAsyncCommand;
     procedure Execute; override;
     function IsFinished: boolean;
+    function GetElapsedTime: TTimeSpan;
+    function GetElapsedTimeMs: integer;
+    property UpdateInterval: integer read fUpdateInterval
+      write fUpdateInterval;
   end;
 
 implementation
@@ -43,52 +61,90 @@ begin
   fBeforeStartEvent := nil;
   fAfterFinishEvent := nil;
   fIsThreadTermianed := true;
+  fUpdateInterval := 100;
+  // --- Timer ---
+  fTimer := TTimer.Create(nil);
+  fTimer.Enabled := false;
+  fTimer.Interval := fUpdateInterval;
+  fTimer.OnTimer := OnUpdateTimer;
+end;
+
+destructor TAsyncCommand.Destroy;
+begin
+  Self.IsFinished; // call to tear down all internal structures
+  fTimer.Free;
+  inherited;
 end;
 
 procedure TAsyncCommand.Execute;
 begin
   DoGuard;
-  if Assigned(fBeforeStartEvent) then
-    fBeforeStartEvent();
   fThread := TThread.CreateAnonymousThread(
     procedure
     begin
       TThread.NameThreadForDebugging('Command: ' + Self.ClassName);
       try
-        fIsThreadTermianed := False;
+        SetIsThreadTerminated(false);
         DoExecute;
       finally
-        TMonitor.Enter(Self);
-        try
-          fIsThreadTermianed := true;
-        finally
-          TMonitor.Exit(Self);
-        end;
+        SetIsThreadTerminated(true);
       end;
     end);
-  fThread.FreeOnTerminate := False;
+  fThread.FreeOnTerminate := false;
+  fTimer.Enabled := True;
+  if Assigned(fBeforeStartEvent) then
+    fBeforeStartEvent();
+  fStopwatch := TStopwatch.StartNew;
   fThread.Start;
 end;
 
-function TAsyncCommand.IsFinished: boolean;
+function TAsyncCommand.GetElapsedTime: TTimeSpan;
 begin
-  if fThread = nil then
-    Exit(true);
-  // ---
+  Result := fStopwatch.Elapsed;
+end;
+
+function TAsyncCommand.GetElapsedTimeMs: integer;
+begin
+  Result := fStopwatch.ElapsedMilliseconds;
+end;
+
+function TAsyncCommand.GetIsThreadTerminated: boolean;
+begin
   TMonitor.Enter(Self);
   try
     Result := fIsThreadTermianed;
   finally
     TMonitor.Exit(Self);
   end;
-  // ---
+end;
+
+procedure TAsyncCommand.SetIsThreadTerminated(aIsTermianted: boolean);
+begin
+  TMonitor.Enter(Self);
+  try
+    fIsThreadTermianed := aIsTermianted;
+  finally
+    TMonitor.Exit(Self);
+  end;
+end;
+
+function TAsyncCommand.IsFinished: boolean;
+begin
+  Result := GetIsThreadTerminated;
   if Result and (fThread <> nil) then
   begin
-    fThread.Free;
-    fThread := nil;
+    FreeAndNil (fThread);
+    fStopwatch.Stop;
     if Assigned(fAfterFinishEvent) then
       fAfterFinishEvent();
   end;
+end;
+
+procedure TAsyncCommand.OnUpdateTimer(Sender: TObject);
+begin
+  fTimer.Enabled := not(IsFinished);
+  if Assigned(fOnUpdateProc) then
+    fOnUpdateProc;
 end;
 
 procedure TAsyncCommand.Synchronize(aProc: TThreadProcedure);
@@ -106,6 +162,12 @@ end;
 function TAsyncCommand.WithEventBeforeStart(aBeforeStart: TProc): TAsyncCommand;
 begin
   fBeforeStartEvent := aBeforeStart;
+  Result := Self;
+end;
+
+function TAsyncCommand.WithEventOnUpdate(aOnUpdateProc: TProc): TAsyncCommand;
+begin
+  fOnUpdateProc := aOnUpdateProc;
   Result := Self;
 end;
 
