@@ -2,7 +2,7 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 434
+  ClientHeight = 484
   ClientWidth = 629
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -17,24 +17,54 @@ object Form1: TForm1
   TextHeight = 13
   object pnProgressBar: TPanel
     Left = 0
-    Top = 393
+    Top = 380
     Width = 629
-    Height = 41
+    Height = 104
     Align = alBottom
-    Caption = 'pnProgressBar'
+    Caption = ' '
     TabOrder = 0
+    ExplicitTop = 376
     object ProgressBar1: TProgressBar
       AlignWithMargins = True
       Left = 9
       Top = 9
       Width = 611
-      Height = 23
+      Height = 22
       Margins.Left = 8
       Margins.Top = 8
       Margins.Right = 8
-      Margins.Bottom = 8
-      Align = alClient
+      Margins.Bottom = 4
+      Align = alTop
       TabOrder = 0
+      ExplicitTop = 4
+    end
+    object ProgressBar2: TProgressBar
+      AlignWithMargins = True
+      Left = 9
+      Top = 39
+      Width = 611
+      Height = 22
+      Margins.Left = 8
+      Margins.Top = 4
+      Margins.Right = 8
+      Margins.Bottom = 4
+      Align = alTop
+      TabOrder = 1
+      ExplicitLeft = 8
+    end
+    object ProgressBar3: TProgressBar
+      AlignWithMargins = True
+      Left = 9
+      Top = 69
+      Width = 611
+      Height = 22
+      Margins.Left = 8
+      Margins.Top = 4
+      Margins.Right = 8
+      Margins.Bottom = 4
+      Align = alTop
+      TabOrder = 2
+      ExplicitTop = 9
     end
   end
   object Memo1: TMemo
@@ -42,7 +72,7 @@ object Form1: TForm1
     Left = 191
     Top = 3
     Width = 435
-    Height = 387
+    Height = 374
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -54,16 +84,18 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1
+    ExplicitHeight = 387
   end
   object GroupBoxDiceRolls: TGroupBox
     AlignWithMargins = True
     Left = 3
     Top = 3
     Width = 182
-    Height = 387
+    Height = 374
     Align = alLeft
     Caption = 'Dice Rolls'
     TabOrder = 2
+    ExplicitHeight = 387
     object btnAsycDiceRollCmd: TButton
       AlignWithMargins = True
       Left = 5
@@ -71,7 +103,7 @@ object Form1: TForm1
       Width = 172
       Height = 34
       Align = alTop
-      Caption = 'Asynchrous Dice Roll'
+      Caption = 'Asynchrous Command'
       TabOrder = 1
       OnClick = btnAsycDiceRollCmdClick
     end
@@ -82,7 +114,7 @@ object Form1: TForm1
       Width = 172
       Height = 34
       Align = alTop
-      Caption = 'Standard Dice Roll'
+      Caption = 'Standard Command'
       TabOrder = 0
       OnClick = btnDiceRollCommandClick
     end
@@ -93,9 +125,28 @@ object Form1: TForm1
       Width = 172
       Height = 34
       Align = alTop
-      Caption = 'Asynchrous Dice Roll (2)'
+      Caption = 'Asynchrous Command Extra'
       TabOrder = 2
       OnClick = btnAsycDiceRollCmdTwoClick
+    end
+    object chkShowProgressPanel: TCheckBox
+      AlignWithMargins = True
+      Left = 7
+      Top = 347
+      Width = 168
+      Height = 17
+      Margins.Left = 5
+      Margins.Right = 5
+      Margins.Bottom = 8
+      Align = alBottom
+      Caption = 'Show ProgressBars panel'
+      Checked = True
+      State = cbChecked
+      TabOrder = 3
+      OnClick = chkShowProgressPanelClick
+      ExplicitLeft = 40
+      ExplicitTop = 176
+      ExplicitWidth = 97
     end
   end
   object Timer1: TTimer
