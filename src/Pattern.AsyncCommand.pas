@@ -29,7 +29,6 @@ type
     fAfterFinishEvent: TProc;
     fThread: TThread;
     fIsThreadTermianed: boolean;
-    fStopwatch: TStopwatch;
     fTimer: TTimer;
     procedure Synchronize(aProc: TThreadProcedure);
     function GetIsThreadTerminated: boolean;
@@ -42,8 +41,6 @@ type
     function WithEventOnUpdate(aOnUpdateProc: TProc): TAsyncCommand;
     procedure Execute; override;
     function IsFinished: boolean;
-    function GetElapsedTime: TTimeSpan;
-    function GetElapsedTimeMs: integer;
     property UpdateInterval: integer read fUpdateInterval
       write fUpdateInterval;
   end;
@@ -96,16 +93,6 @@ begin
     fBeforeStartEvent();
   fStopwatch := TStopwatch.StartNew;
   fThread.Start;
-end;
-
-function TAsyncCommand.GetElapsedTime: TTimeSpan;
-begin
-  Result := fStopwatch.Elapsed;
-end;
-
-function TAsyncCommand.GetElapsedTimeMs: integer;
-begin
-  Result := fStopwatch.ElapsedMilliseconds;
 end;
 
 function TAsyncCommand.GetIsThreadTerminated: boolean;
