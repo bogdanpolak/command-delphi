@@ -70,6 +70,7 @@ end;
 destructor TAsyncCommand.Destroy;
 begin
   Self.IsFinished; // call to tear down all internal structures
+  fTimer.Free;
   inherited;
 end;
 
@@ -95,6 +96,7 @@ begin
       end;
     end);
   fThread.FreeOnTerminate := false;
+  fTimer.Enabled := True;
   fStopwatch := TStopwatch.StartNew;
   fThread.Start;
 end;
@@ -123,10 +125,7 @@ begin
   // ---
   if Result and (fThread <> nil) then
   begin
-    fThread.Free;
-    fThread := nil;
-    if fTimer <> nil then
-      FreeAndNil(fTimer);
+    FreeAndNil (fThread);
     fStopwatch.Stop;
     if Assigned(fAfterFinishEvent) then
       fAfterFinishEvent();
@@ -135,6 +134,7 @@ end;
 
 procedure TAsyncCommand.OnUpdateTimer(Sender: TObject);
 begin
+  fTimer.Enabled := not(IsFinished);
   if Assigned(fOnUpdateProc) then
     fOnUpdateProc;
 end;
