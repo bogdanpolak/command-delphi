@@ -33,7 +33,7 @@ type
   private
     fCommand: TDiceRollCommand;
     fAsyncCommand: TAsyncDiceRollCommand;
-    fAsyncCommand2: TAsyncDiceRollCommandTwo;
+    fAsyncCommand2: TAsyncDiceRollCommandEx;
     procedure DiceRoll_GenerateReport;
   public
   end;
@@ -57,7 +57,7 @@ begin
   Memo1.Clear;
   fCommand := TDiceRollCommand.Create(Self);
   fAsyncCommand := TAsyncDiceRollCommand.Create(Self);
-  fAsyncCommand2 := TAsyncDiceRollCommandTwo.Create(Self);
+  fAsyncCommand2 := TAsyncDiceRollCommandEx.Create(Self);
   ReportMemoryLeaksOnShutdown := True;
 end;
 

@@ -9,7 +9,7 @@ uses
   Pattern.AsyncCommand;
 
 type
-  TAsyncDiceRollCommandTwo = class(TAsyncCommand)
+  TAsyncDiceRollCommandEx = class(TAsyncCommand)
   const
     MaxDiceValue = 6;
   private
@@ -31,16 +31,16 @@ type
 
 implementation
 
-procedure TAsyncDiceRollCommandTwo.DoGuard;
+procedure TAsyncDiceRollCommandEx.DoGuard;
 begin
 end;
 
-function TAsyncDiceRollCommandTwo.GetDistribution: TArray<Integer>;
+function TAsyncDiceRollCommandEx.GetDistribution: TArray<Integer>;
 begin
   Result := fResultDistribution;
 end;
 
-function TAsyncDiceRollCommandTwo.GetCurrentRoll: Integer;
+function TAsyncDiceRollCommandEx.GetCurrentRoll: Integer;
 begin
   TMonitor.Enter(Self);
   try
@@ -50,7 +50,7 @@ begin
   end;
 end;
 
-procedure TAsyncDiceRollCommandTwo.SetCurrentRoll(aCurrentRoll: Integer);
+procedure TAsyncDiceRollCommandEx.SetCurrentRoll(aCurrentRoll: Integer);
 begin
   TMonitor.Enter(Self);
   try
@@ -60,7 +60,7 @@ begin
   end;
 end;
 
-procedure TAsyncDiceRollCommandTwo.DoExecute;
+procedure TAsyncDiceRollCommandEx.DoExecute;
 var
   i: Integer;
   number: Integer;
