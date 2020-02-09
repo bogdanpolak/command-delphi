@@ -69,7 +69,7 @@ end;
 
 destructor TAsyncCommand.Destroy;
 begin
-  Self.IsFinished;  // call to tear down all internal structures
+  Self.IsFinished; // call to tear down all internal structures
   inherited;
 end;
 
@@ -83,7 +83,7 @@ begin
     begin
       TThread.NameThreadForDebugging('Command: ' + Self.ClassName);
       try
-        fIsThreadTermianed := False;
+        fIsThreadTermianed := false;
         DoExecute;
       finally
         TMonitor.Enter(Self);
@@ -94,7 +94,7 @@ begin
         end;
       end;
     end);
-  fThread.FreeOnTerminate := False;
+  fThread.FreeOnTerminate := false;
   fStopwatch := TStopwatch.StartNew;
   fThread.Start;
 end;
