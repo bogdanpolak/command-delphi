@@ -37,7 +37,7 @@ type
   private
     fCommand: TDiceRollCommand;
     fAsyncCommand: TAsyncDiceRollCommand;
-    fAsyncCommand2: TAsyncDiceRollCommandEx;
+    fAsyncCommandEx: TAsyncDiceRollCommandEx;
     procedure DiceRoll_GenerateReport;
   public
   end;
@@ -51,8 +51,8 @@ implementation
 
 procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  CanClose := fAsyncCommand.IsFinished;
-  if not fAsyncCommand.IsFinished then
+  CanClose := not(fAsyncCommand.IsBusy) and not(fAsyncCommandEx.IsBusy);
+  if not CanClose then
     ShowMessage('Can''t close application - async command in progress');
 end;
 
@@ -61,7 +61,7 @@ begin
   Memo1.Clear;
   fCommand := TDiceRollCommand.Create(Self);
   fAsyncCommand := TAsyncDiceRollCommand.Create(Self);
-  fAsyncCommand2 := TAsyncDiceRollCommandEx.Create(Self);
+  fAsyncCommandEx := TAsyncDiceRollCommandEx.Create(Self);
   ReportMemoryLeaksOnShutdown := True;
 end;
 
@@ -72,8 +72,8 @@ end;
 
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
-  btnAsycDiceRollCmd.Enabled := fAsyncCommand.IsFinished;
-  btnAsycDiceRollCmdTwo.Enabled := fAsyncCommand2.IsFinished;
+  btnAsycDiceRollCmd.Enabled := not fAsyncCommand.IsBusy;
+  btnAsycDiceRollCmdTwo.Enabled := not fAsyncCommandEx.IsBusy;
 end;
 
 procedure TForm1.btnDiceRollCommandClick(Sender: TObject);
@@ -93,32 +93,32 @@ var
   aDistribution: TArray<Integer>;
   i: Integer;
 begin
-  ProgressBar3.Position := fAsyncCommand2.RollsCount;
-  aDistribution := fAsyncCommand2.GetDistribution;
+  ProgressBar3.Position := fAsyncCommandEx.RollsCount;
+  aDistribution := fAsyncCommandEx.GetDistribution;
   Memo1.Lines.Add(Format('Elapsed time: %.1f seconds',
-    [fAsyncCommand2.GetElapsedTime.TotalSeconds]));
+    [fAsyncCommandEx.GetElapsedTime.TotalSeconds]));
   Memo1.Lines.Add(Format('Dice results (%d-sided dice) (number of rolls: %d)',
-    [fAsyncCommand2.MaxDiceValue, fAsyncCommand2.RollsCount]));
+    [fAsyncCommandEx.MaxDiceValue, fAsyncCommandEx.RollsCount]));
   for i := 1 to High(aDistribution) do
     Memo1.Lines.Add(Format('  [%d] : %d', [i, aDistribution[i]]));
 end;
 
 procedure TForm1.btnAsycDiceRollCmdTwoClick(Sender: TObject);
 begin
-  fAsyncCommand2.RollsCount := 500;
-  fAsyncCommand2.WithEventBeforeStart(
+  fAsyncCommandEx.RollsCount := 500;
+  fAsyncCommandEx.WithEventBeforeStart(
     procedure
     begin
       ProgressBar3.Position := 0;
-      ProgressBar3.Max := fAsyncCommand2.RollsCount;
+      ProgressBar3.Max := fAsyncCommandEx.RollsCount;
     end);
-  fAsyncCommand2.WithEventOnUpdate(
+  fAsyncCommandEx.WithEventOnUpdate(
     procedure
     begin
-      ProgressBar3.Position := fAsyncCommand2.CurrentRoll;
+      ProgressBar3.Position := fAsyncCommandEx.CurrentRoll;
     end);
-  fAsyncCommand2.WithEventAfterFinish(DiceRoll_GenerateReport);
-  fAsyncCommand2.Execute;
+  fAsyncCommandEx.WithEventAfterFinish(DiceRoll_GenerateReport);
+  fAsyncCommandEx.Execute;
 end;
 
 end.

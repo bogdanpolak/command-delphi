@@ -40,7 +40,7 @@ type
     function WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
     function WithEventOnUpdate(aOnUpdateProc: TProc): TAsyncCommand;
     procedure Execute; override;
-    function IsFinished: boolean;
+    function IsBusy: boolean;
     property UpdateInterval: integer read fUpdateInterval
       write fUpdateInterval;
   end;
@@ -68,7 +68,7 @@ end;
 
 destructor TAsyncCommand.Destroy;
 begin
-  Self.IsFinished; // call to tear down all internal structures
+  Self.IsBusy; // call to tear down all internal structures
   fTimer.Free;
   inherited;
 end;
@@ -115,10 +115,12 @@ begin
   end;
 end;
 
-function TAsyncCommand.IsFinished: boolean;
+function TAsyncCommand.IsBusy: boolean;
+var
+  IsTerminatedFlag: boolean;
 begin
-  Result := GetIsThreadTerminated;
-  if Result and (fThread <> nil) then
+  IsTerminatedFlag := GetIsThreadTerminated;
+  if IsTerminatedFlag and (fThread <> nil) then
   begin
     fTimer.Enabled := False;
     FreeAndNil (fThread);
@@ -126,11 +128,12 @@ begin
     if Assigned(fAfterFinishEvent) then
       fAfterFinishEvent();
   end;
+  Result := not IsTerminatedFlag;
 end;
 
 procedure TAsyncCommand.OnUpdateTimer(Sender: TObject);
 begin
-  fTimer.Enabled := not(IsFinished);
+  fTimer.Enabled := Self.IsBusy;
   if Assigned(fOnUpdateProc) then
     fOnUpdateProc;
 end;
