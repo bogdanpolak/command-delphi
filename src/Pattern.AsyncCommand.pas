@@ -77,17 +77,18 @@ begin
       end;
     end);
   fThread.FreeOnTerminate := False;
+  fStopwatch := TStopwatch.StartNew;
   fThread.Start;
 end;
 
 function TAsyncCommand.GetElapsedTime: TTimeSpan;
 begin
-
+  Result := fStopwatch.Elapsed;
 end;
 
 function TAsyncCommand.GetElapsedTimeMs: integer;
 begin
-
+  Result := fStopwatch.ElapsedMilliseconds;
 end;
 
 function TAsyncCommand.IsFinished: boolean;
@@ -106,6 +107,7 @@ begin
   begin
     fThread.Free;
     fThread := nil;
+    fStopwatch.Stop;
     if Assigned(fAfterFinishEvent) then
       fAfterFinishEvent();
   end;

@@ -86,6 +86,8 @@ var
 begin
   ProgressBar1.Position := ProgressBar1.Max;
   aDistribution := fAsyncCommand2.GetDistribution;
+  Memo1.Lines.Add(Format('Elapsed time: %.1f seconds',
+    [fAsyncCommand2.GetElapsedTime.TotalSeconds]));
   Memo1.Lines.Add(Format('Dice results (%d-sided dice) (number of rolls: %d)',
     [fAsyncCommand2.MaxDiceValue, fAsyncCommand2.RollsCount]));
   for i := 1 to High(aDistribution) do
