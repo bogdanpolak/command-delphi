@@ -12,6 +12,8 @@ uses
   System.Diagnostics,
   System.TimeSpan,
 
+  Vcl.ExtCtrls, // TTimer (VCL)
+
   Pattern.Command;
 
 type
@@ -20,15 +22,19 @@ type
     Version = '0.7';
   private
     fProgressInterval: integer;
+    fOnProgressProc: TProc;
+    procedure OnProgressTimer(Sender: TObject);
   protected
     fBeforeStartEvent: TProc;
     fAfterFinishEvent: TProc;
     fThread: TThread;
     fIsThreadTermianed: boolean;
     fStopwatch: TStopwatch;
+    fTimer: TTimer;
     procedure Synchronize(aProc: TThreadProcedure);
   public
     constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     function WithEventBeforeStart(aBeforeStart: TProc): TAsyncCommand;
     function WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
     function WithEventOnProgress(aOnProgressProc: TProc): TAsyncCommand;
@@ -53,6 +59,18 @@ begin
   fBeforeStartEvent := nil;
   fAfterFinishEvent := nil;
   fIsThreadTermianed := true;
+  fProgressInterval := 100;
+  // --- Timer ---
+  fTimer := TTimer.Create(nil);
+  fTimer.Enabled := false;
+  fTimer.Interval := fProgressInterval;
+  fTimer.OnTimer := OnProgressTimer;
+end;
+
+destructor TAsyncCommand.Destroy;
+begin
+  Self.IsFinished;  // call to tear down all internal structures
+  inherited;
 end;
 
 procedure TAsyncCommand.Execute;
@@ -107,10 +125,18 @@ begin
   begin
     fThread.Free;
     fThread := nil;
+    if fTimer <> nil then
+      FreeAndNil(fTimer);
     fStopwatch.Stop;
     if Assigned(fAfterFinishEvent) then
       fAfterFinishEvent();
   end;
+end;
+
+procedure TAsyncCommand.OnProgressTimer(Sender: TObject);
+begin
+  if Assigned(fOnProgressProc) then
+    fOnProgressProc;
 end;
 
 procedure TAsyncCommand.Synchronize(aProc: TThreadProcedure);
@@ -134,7 +160,8 @@ end;
 function TAsyncCommand.WithEventOnProgress(
   aOnProgressProc: TProc): TAsyncCommand;
 begin
-
+  fOnProgressProc := aOnProgressProc;
+  Result := Self;
 end;
 
 end.
