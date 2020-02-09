@@ -58,7 +58,7 @@ begin
     if i mod 10 = 0 then
     begin
       fProgressBar.Position := i + 1;
-      Application.ProcessMessages;
+      // Application.ProcessMessages;
     end;
     Sleep(2);
   end;
