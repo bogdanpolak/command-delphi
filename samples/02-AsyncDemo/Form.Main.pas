@@ -34,7 +34,7 @@ type
     fCommand: TDiceRollCommand;
     fAsyncCommand: TAsyncDiceRollCommand;
     fAsyncCommand2: TAsyncDiceRollCommandTwo;
-    procedure WriteReport;
+    procedure DiceRoll_GenerateReport;
   public
   end;
 
@@ -79,7 +79,7 @@ begin
   fCommand.Execute;
 end;
 
-procedure TForm1.WriteReport;
+procedure TForm1.DiceRoll_GenerateReport;
 var
   aDistribution: TArray<Integer>;
   i: Integer;
@@ -96,9 +96,20 @@ end;
 
 procedure TForm1.btnAsycDiceRollCmdTwoClick(Sender: TObject);
 begin
-  fAsyncCommand2.WithInjections([ProgressBar1, 500]);
-  fAsyncCommand2 //--+
-    .WithEventAfterFinish(WriteReport).Execute;
+  fAsyncCommand2.RollsCount := 500;
+  fAsyncCommand2.WithEventBeforeStart(
+    procedure
+    begin
+      ProgressBar1.Position := 0;
+      ProgressBar1.Max := fAsyncCommand2.RollsCount;
+    end);
+  fAsyncCommand2.WithEventOnUpdate(
+    procedure
+    begin
+      ProgressBar1.Position := fAsyncCommand2.CurrentRoll;
+    end);
+  fAsyncCommand2.WithEventAfterFinish(DiceRoll_GenerateReport);
+  fAsyncCommand2.Execute;
 end;
 
 end.
