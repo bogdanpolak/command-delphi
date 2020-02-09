@@ -134,7 +134,7 @@ end;
 procedure TAsyncCommand.OnUpdateTimer(Sender: TObject);
 begin
   fTimer.Enabled := Self.IsBusy;
-  if Assigned(fOnUpdateProc) then
+  if fTimer.Enabled and Assigned(fOnUpdateProc) then
     fOnUpdateProc;
 end;
 
