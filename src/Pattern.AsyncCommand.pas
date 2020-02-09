@@ -32,6 +32,8 @@ type
     fStopwatch: TStopwatch;
     fTimer: TTimer;
     procedure Synchronize(aProc: TThreadProcedure);
+    function GetIsThreadTerminated: boolean;
+    procedure SetIsThreadTerminated(aIsTermianted: boolean);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -82,15 +84,10 @@ begin
     begin
       TThread.NameThreadForDebugging('Command: ' + Self.ClassName);
       try
-        fIsThreadTermianed := false;
+        SetIsThreadTerminated(false);
         DoExecute;
       finally
-        TMonitor.Enter(Self);
-        try
-          fIsThreadTermianed := true;
-        finally
-          TMonitor.Exit(Self);
-        end;
+        SetIsThreadTerminated(true);
       end;
     end);
   fThread.FreeOnTerminate := false;
@@ -111,18 +108,29 @@ begin
   Result := fStopwatch.ElapsedMilliseconds;
 end;
 
-function TAsyncCommand.IsFinished: boolean;
+function TAsyncCommand.GetIsThreadTerminated: boolean;
 begin
-  if fThread = nil then
-    Exit(true);
-  // ---
   TMonitor.Enter(Self);
   try
     Result := fIsThreadTermianed;
   finally
     TMonitor.Exit(Self);
   end;
-  // ---
+end;
+
+procedure TAsyncCommand.SetIsThreadTerminated(aIsTermianted: boolean);
+begin
+  TMonitor.Enter(Self);
+  try
+    fIsThreadTermianed := aIsTermianted;
+  finally
+    TMonitor.Exit(Self);
+  end;
+end;
+
+function TAsyncCommand.IsFinished: boolean;
+begin
+  Result := GetIsThreadTerminated;
   if Result and (fThread <> nil) then
   begin
     FreeAndNil (fThread);
