@@ -120,6 +120,7 @@ begin
   Result := GetIsThreadTerminated;
   if Result and (fThread <> nil) then
   begin
+    fTimer.Enabled := False;
     FreeAndNil (fThread);
     fStopwatch.Stop;
     if Assigned(fAfterFinishEvent) then
