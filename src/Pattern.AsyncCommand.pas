@@ -21,9 +21,9 @@ type
   private const
     Version = '0.7';
   private
-    fProgressInterval: integer;
-    fOnProgressProc: TProc;
-    procedure OnProgressTimer(Sender: TObject);
+    fUpdateInterval: integer;
+    fOnUpdateProc: TProc;
+    procedure OnUpdateTimer(Sender: TObject);
   protected
     fBeforeStartEvent: TProc;
     fAfterFinishEvent: TProc;
@@ -37,14 +37,14 @@ type
     destructor Destroy; override;
     function WithEventBeforeStart(aBeforeStart: TProc): TAsyncCommand;
     function WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
-    function WithEventOnProgress(aOnProgressProc: TProc): TAsyncCommand;
+    function WithEventOnUpdate(aOnUpdateProc: TProc): TAsyncCommand;
     procedure Execute; override;
     function IsFinished: boolean;
     function GetElapsedTime: TTimeSpan;
     function GetElapsedTimeMs: integer;
-    property ProgressInterval: integer read fProgressInterval write fProgressInterval;
+    property UpdateInterval: integer read fUpdateInterval
+      write fUpdateInterval;
   end;
-
 
 implementation
 
@@ -59,12 +59,12 @@ begin
   fBeforeStartEvent := nil;
   fAfterFinishEvent := nil;
   fIsThreadTermianed := true;
-  fProgressInterval := 100;
+  fUpdateInterval := 100;
   // --- Timer ---
   fTimer := TTimer.Create(nil);
   fTimer.Enabled := false;
-  fTimer.Interval := fProgressInterval;
-  fTimer.OnTimer := OnProgressTimer;
+  fTimer.Interval := fUpdateInterval;
+  fTimer.OnTimer := OnUpdateTimer;
 end;
 
 destructor TAsyncCommand.Destroy;
@@ -133,10 +133,10 @@ begin
   end;
 end;
 
-procedure TAsyncCommand.OnProgressTimer(Sender: TObject);
+procedure TAsyncCommand.OnUpdateTimer(Sender: TObject);
 begin
-  if Assigned(fOnProgressProc) then
-    fOnProgressProc;
+  if Assigned(fOnUpdateProc) then
+    fOnUpdateProc;
 end;
 
 procedure TAsyncCommand.Synchronize(aProc: TThreadProcedure);
@@ -157,10 +157,9 @@ begin
   Result := Self;
 end;
 
-function TAsyncCommand.WithEventOnProgress(
-  aOnProgressProc: TProc): TAsyncCommand;
+function TAsyncCommand.WithEventOnUpdate(aOnUpdateProc: TProc): TAsyncCommand;
 begin
-  fOnProgressProc := aOnProgressProc;
+  fOnUpdateProc := aOnUpdateProc;
   Result := Self;
 end;
 
