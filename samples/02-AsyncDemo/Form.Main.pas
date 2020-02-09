@@ -12,7 +12,7 @@ uses
 
   Command.DiceRoll,
   Command.AsyncDiceRoll,
-  Command.AsyncDiceRoll2;
+  Command.AsyncDiceRollExtra;
 
 type
   TForm1 = class(TForm)

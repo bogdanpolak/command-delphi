@@ -1,4 +1,4 @@
-unit Command.AsyncDiceRoll2;
+unit Command.AsyncDiceRollExtra;
 
 interface
 
