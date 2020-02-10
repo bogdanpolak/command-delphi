@@ -77,6 +77,8 @@ begin
     fRolls[i] := number;
     SetCurrentRoll(i);
     fThread.Sleep(2);
+    if TThread.CheckTerminated then
+      Break;
   end;
 end;
 
