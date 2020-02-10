@@ -40,6 +40,7 @@ type
     function WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
     function WithEventOnUpdate(aOnUpdateProc: TProc): TAsyncCommand;
     procedure Execute; override;
+    procedure Terminate;
     function IsBusy: boolean; override;
     property UpdateInterval: integer read fUpdateInterval
       write fUpdateInterval;
@@ -143,6 +144,12 @@ procedure TAsyncCommand.Synchronize(aProc: TThreadProcedure);
 begin
   if (fThread <> nil) and Assigned(aProc) then
     TThread.Synchronize(fThread, aProc);
+end;
+
+procedure TAsyncCommand.Terminate;
+begin
+  if (fThread<>nil) and not GetIsCommandDone then
+    fThread.Terminate;
 end;
 
 function TAsyncCommand.WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
