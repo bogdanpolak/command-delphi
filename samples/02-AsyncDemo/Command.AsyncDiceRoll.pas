@@ -67,6 +67,8 @@ begin
         end);
     end;
     fThread.Sleep(2);
+    if TThread.CheckTerminated then
+      Break;
   end;
   Synchronize(ReportResults);
 end;
