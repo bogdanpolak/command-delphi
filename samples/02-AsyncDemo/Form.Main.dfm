@@ -23,7 +23,6 @@ object Form1: TForm1
     Align = alBottom
     Caption = ' '
     TabOrder = 0
-    ExplicitTop = 376
     object ProgressBar1: TProgressBar
       AlignWithMargins = True
       Left = 9
@@ -36,7 +35,6 @@ object Form1: TForm1
       Margins.Bottom = 4
       Align = alTop
       TabOrder = 0
-      ExplicitTop = 4
     end
     object ProgressBar2: TProgressBar
       AlignWithMargins = True
@@ -50,7 +48,6 @@ object Form1: TForm1
       Margins.Bottom = 4
       Align = alTop
       TabOrder = 1
-      ExplicitLeft = 8
     end
     object ProgressBar3: TProgressBar
       AlignWithMargins = True
@@ -64,7 +61,6 @@ object Form1: TForm1
       Margins.Bottom = 4
       Align = alTop
       TabOrder = 2
-      ExplicitTop = 9
     end
   end
   object Memo1: TMemo
@@ -84,7 +80,6 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1
-    ExplicitHeight = 387
   end
   object GroupBoxDiceRolls: TGroupBox
     AlignWithMargins = True
@@ -95,7 +90,6 @@ object Form1: TForm1
     Align = alLeft
     Caption = 'Dice Rolls'
     TabOrder = 2
-    ExplicitHeight = 387
     object btnAsycDiceRollCmd: TButton
       AlignWithMargins = True
       Left = 5
@@ -132,21 +126,32 @@ object Form1: TForm1
     object chkShowProgressPanel: TCheckBox
       AlignWithMargins = True
       Left = 7
-      Top = 347
+      Top = 345
       Width = 168
       Height = 17
       Margins.Left = 5
       Margins.Right = 5
-      Margins.Bottom = 8
+      Margins.Bottom = 10
       Align = alBottom
       Caption = 'Show ProgressBars panel'
       Checked = True
       State = cbChecked
       TabOrder = 3
       OnClick = chkShowProgressPanelClick
-      ExplicitLeft = 40
-      ExplicitTop = 176
-      ExplicitWidth = 97
+      ExplicitTop = 347
+    end
+    object btnTermianteAllBackgroundJobs: TButton
+      AlignWithMargins = True
+      Left = 5
+      Top = 295
+      Width = 172
+      Height = 37
+      Margins.Bottom = 10
+      Align = alBottom
+      Caption = 'Termiante All background Jobs'
+      TabOrder = 4
+      OnClick = btnTermianteAllBackgroundJobsClick
+      ExplicitTop = 304
     end
   end
   object Timer1: TTimer

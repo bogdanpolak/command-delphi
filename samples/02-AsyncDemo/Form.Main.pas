@@ -27,6 +27,7 @@ type
     ProgressBar2: TProgressBar;
     ProgressBar3: TProgressBar;
     chkShowProgressPanel: TCheckBox;
+    btnTermianteAllBackgroundJobs: TButton;
     procedure FormCreate(Sender: TObject);
     procedure btnAsycDiceRollCmdClick(Sender: TObject);
     procedure btnDiceRollCommandClick(Sender: TObject);
@@ -34,6 +35,7 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure btnAsycDiceRollCmdTwoClick(Sender: TObject);
     procedure chkShowProgressPanelClick(Sender: TObject);
+    procedure btnTermianteAllBackgroundJobsClick(Sender: TObject);
   private
     fCommand: TDiceRollCommand;
     fAsyncCommand: TAsyncDiceRollCommand;
@@ -82,6 +84,12 @@ procedure TForm1.btnDiceRollCommandClick(Sender: TObject);
 begin
   fCommand.WithInjections([ProgressBar1, Memo1, 500]);
   fCommand.Execute;
+end;
+
+procedure TForm1.btnTermianteAllBackgroundJobsClick(Sender: TObject);
+begin
+  fAsyncCommand.Terminate;
+  fAsyncCommandEx.Terminate;
 end;
 
 procedure TForm1.btnAsycDiceRollCmdClick(Sender: TObject);
