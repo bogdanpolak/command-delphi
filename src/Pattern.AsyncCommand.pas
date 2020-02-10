@@ -28,11 +28,11 @@ type
     fBeforeStartEvent: TProc;
     fAfterFinishEvent: TProc;
     fThread: TThread;
-    fIsThreadTermianed: boolean;
+    fIsCommandDone: boolean;
     fTimer: TTimer;
     procedure Synchronize(aProc: TThreadProcedure);
-    function GetIsThreadTerminated: boolean;
-    procedure SetIsThreadTerminated(aIsTermianted: boolean);
+    function GetIsCommandDone: boolean;
+    procedure SetIsCommandDone(aIsTermianted: boolean);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -57,7 +57,7 @@ begin
   fThread := nil;
   fBeforeStartEvent := nil;
   fAfterFinishEvent := nil;
-  fIsThreadTermianed := true;
+  fIsCommandDone := true;
   fUpdateInterval := 100;
   // --- Timer ---
   fTimer := TTimer.Create(nil);
@@ -75,16 +75,17 @@ end;
 
 procedure TAsyncCommand.Execute;
 begin
+  SetIsCommandDone(false);
   DoGuard;
   fThread := TThread.CreateAnonymousThread(
     procedure
     begin
       TThread.NameThreadForDebugging('Command: ' + Self.ClassName);
       try
-        SetIsThreadTerminated(false);
+        SetIsCommandDone(false);
         DoExecute;
       finally
-        SetIsThreadTerminated(true);
+        SetIsCommandDone(true);
       end;
     end);
   fThread.FreeOnTerminate := false;
@@ -95,21 +96,21 @@ begin
   fThread.Start;
 end;
 
-function TAsyncCommand.GetIsThreadTerminated: boolean;
+function TAsyncCommand.GetIsCommandDone: boolean;
 begin
   TMonitor.Enter(Self);
   try
-    Result := fIsThreadTermianed;
+    Result := fIsCommandDone;
   finally
     TMonitor.Exit(Self);
   end;
 end;
 
-procedure TAsyncCommand.SetIsThreadTerminated(aIsTermianted: boolean);
+procedure TAsyncCommand.SetIsCommandDone(aIsTermianted: boolean);
 begin
   TMonitor.Enter(Self);
   try
-    fIsThreadTermianed := aIsTermianted;
+    fIsCommandDone := aIsTermianted;
   finally
     TMonitor.Exit(Self);
   end;
@@ -117,10 +118,10 @@ end;
 
 function TAsyncCommand.IsBusy: boolean;
 var
-  IsTerminatedFlag: boolean;
+  IsCommandDone: boolean;
 begin
-  IsTerminatedFlag := GetIsThreadTerminated;
-  if IsTerminatedFlag and (fThread <> nil) then
+  IsCommandDone := GetIsCommandDone;
+  if IsCommandDone and (fThread <> nil) then
   begin
     fTimer.Enabled := False;
     FreeAndNil (fThread);
@@ -128,7 +129,7 @@ begin
     if Assigned(fAfterFinishEvent) then
       fAfterFinishEvent();
   end;
-  Result := not IsTerminatedFlag;
+  Result := not IsCommandDone;
 end;
 
 procedure TAsyncCommand.OnUpdateTimer(Sender: TObject);
