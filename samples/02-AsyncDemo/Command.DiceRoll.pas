@@ -48,7 +48,7 @@ end;
 
 procedure TDiceRollCommand.Terminate;
 begin
-  fIsTerminated:= True;
+  fIsTerminated := True;
 end;
 
 procedure TDiceRollCommand.DoDisplayStepInfo;
@@ -86,13 +86,10 @@ begin
   for idx := 0 to fRollsCount - 1 do
   begin
     fStep := idx + 1;
+    DoDisplayStepInfo;
     number := RandomRange(1, MaxDiceValue + 1);
     fResultDistribution[number] := fResultDistribution[number] + 1;
     fRolls[idx] := number;
-    if idx mod 10 = 0 then
-    begin
-      DoDisplayStepInfo
-    end;
     if fIsTerminated then
       Break;
     Application.ProcessMessages;

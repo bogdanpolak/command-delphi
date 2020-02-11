@@ -80,11 +80,10 @@ begin
   for idx := 0 to fRollsCount - 1 do
   begin
     fStep := idx + 1;
+    Synchronize(DoDisplayStepInfo);
     number := RandomRange(1, MaxDiceValue + 1);
     fResultDistribution[number] := fResultDistribution[number] + 1;
     fRolls[idx] := number;
-    if idx mod 10 = 0 then
-      Synchronize(DoDisplayStepInfo);
     fThread.Sleep(2);
     if TThread.CheckTerminated then
       Break;
