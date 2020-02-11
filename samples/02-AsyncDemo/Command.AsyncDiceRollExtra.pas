@@ -6,6 +6,7 @@ uses
   System.SysUtils,
   System.Classes,
   System.Math,
+  System.Diagnostics,
   Pattern.AsyncCommand;
 
 type
@@ -19,6 +20,7 @@ type
     fRollsCount: Integer;
     function GetStep: Integer;
     procedure SetStep(aStep: Integer);
+    procedure DoSomeOtherWork(aSpendMiliseconds: double);
   protected
     procedure DoGuard; override;
     procedure DoExecute; override;
@@ -60,6 +62,15 @@ begin
   end;
 end;
 
+procedure TAsyncDiceRollCommandEx.DoSomeOtherWork (aSpendMiliseconds: double);
+var
+  sw: TStopwatch;
+begin
+  sw := TStopWatch.Create;
+  sw.Start;
+  while sw.Elapsed.Milliseconds<aSpendMiliseconds do;
+end;
+
 procedure TAsyncDiceRollCommandEx.DoExecute;
 var
   i: Integer;
@@ -76,7 +87,7 @@ begin
     number := RandomRange(1, MaxDiceValue + 1);
     fResultDistribution[number] := fResultDistribution[number] + 1;
     fRolls[i] := number;
-    fThread.Sleep(2);
+    DoSomeOtherWork(1.5);
     if TThread.CheckTerminated then
       Break;
   end;

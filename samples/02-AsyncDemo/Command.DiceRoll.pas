@@ -6,6 +6,7 @@ uses
   System.SysUtils,
   System.Classes,
   System.Math,
+  System.Diagnostics,
   Pattern.Command,
   Vcl.Forms,
   Vcl.StdCtrls,
@@ -26,6 +27,7 @@ type
     fIsTerminated: boolean;
     procedure DoDisplayStepInfo;
     procedure DoDisplaySummaryInfo;
+    procedure DoSomeOtherWork(aSpendMiliseconds: double);
   protected
     procedure DoGuard; override;
     procedure DoExecute; override;
@@ -71,6 +73,15 @@ begin
     ReportMemo.Lines.Add(Format('  [%d] : %d', [i, fResultDistribution[i]]));
 end;
 
+procedure TDiceRollCommand.DoSomeOtherWork (aSpendMiliseconds: double);
+var
+  sw: TStopwatch;
+begin
+  sw := TStopWatch.Create;
+  sw.Start;
+  while sw.Elapsed.Milliseconds<aSpendMiliseconds do;
+end;
+
 procedure TDiceRollCommand.DoExecute;
 var
   idx: Integer;
@@ -90,10 +101,10 @@ begin
     number := RandomRange(1, MaxDiceValue + 1);
     fResultDistribution[number] := fResultDistribution[number] + 1;
     fRolls[idx] := number;
+    DoSomeOtherWork(1.5);
+    Application.ProcessMessages;
     if fIsTerminated then
       Break;
-    Application.ProcessMessages;
-    Sleep(2);
   end;
   DoDisplaySummaryInfo;
   DoDisplayStepInfo;

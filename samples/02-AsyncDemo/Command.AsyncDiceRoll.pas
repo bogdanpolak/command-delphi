@@ -6,6 +6,7 @@ uses
   System.SysUtils,
   System.Classes,
   System.Math,
+  System.Diagnostics,
   Vcl.ComCtrls, // for TProgressBar class (needs refactoring)
   Vcl.StdCtrls, // for TMemo class (needs refactoring)
   Pattern.AsyncCommand;
@@ -24,6 +25,7 @@ type
     fRollsCount: Integer;
     procedure DoDisplayStepInfo;
     procedure DoDisplaySummaryInfo;
+    procedure DoSomeOtherWork(aSpendMiliseconds: double);
   protected
     procedure DoGuard; override;
     procedure DoExecute; override;
@@ -62,6 +64,15 @@ begin
     ReportMemo.Lines.Add(Format('  [%d] : %d', [i, fResultDistribution[i]]));
 end;
 
+procedure TAsyncDiceRollCommand.DoSomeOtherWork (aSpendMiliseconds: double);
+var
+  sw: TStopwatch;
+begin
+  sw := TStopWatch.Create;
+  sw.Start;
+  while sw.Elapsed.Milliseconds<aSpendMiliseconds do;
+end;
+
 procedure TAsyncDiceRollCommand.DoExecute;
 var
   idx: Integer;
@@ -84,7 +95,7 @@ begin
     number := RandomRange(1, MaxDiceValue + 1);
     fResultDistribution[number] := fResultDistribution[number] + 1;
     fRolls[idx] := number;
-    fThread.Sleep(2);
+    DoSomeOtherWork(1.5);
     if TThread.CheckTerminated then
       Break;
   end;
