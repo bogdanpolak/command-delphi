@@ -15,16 +15,16 @@ type
   private
     fRolls: TArray<Integer>;
     fResultDistribution: TArray<Integer>;
-    fCurrentRoll: Integer;
+    fStep: Integer;
     fRollsCount: Integer;
-    function GetCurrentRoll: Integer;
-    procedure SetCurrentRoll(aCurrentRoll: Integer);
+    function GetStep: Integer;
+    procedure SetStep(aStep: Integer);
   protected
     procedure DoGuard; override;
     procedure DoExecute; override;
   public
     function GetDistribution: TArray<Integer>;
-    property CurrentRoll: Integer read GetCurrentRoll write SetCurrentRoll;
+    property Step: Integer read GetStep write SetStep;
   published
     property RollsCount: Integer read fRollsCount write fRollsCount;
   end;
@@ -40,21 +40,21 @@ begin
   Result := fResultDistribution;
 end;
 
-function TAsyncDiceRollCommandEx.GetCurrentRoll: Integer;
+function TAsyncDiceRollCommandEx.GetStep: Integer;
 begin
   TMonitor.Enter(Self);
   try
-    Result := fCurrentRoll;
+    Result := fStep;
   finally
     TMonitor.Exit(Self);
   end;
 end;
 
-procedure TAsyncDiceRollCommandEx.SetCurrentRoll(aCurrentRoll: Integer);
+procedure TAsyncDiceRollCommandEx.SetStep(aStep: Integer);
 begin
   TMonitor.Enter(Self);
   try
-    fCurrentRoll := aCurrentRoll;
+    fStep := aStep;
   finally
     TMonitor.Exit(Self);
   end;
@@ -65,17 +65,17 @@ var
   i: Integer;
   number: Integer;
 begin
-  SetCurrentRoll(0);
+  SetStep(0);
   SetLength(fRolls, fRollsCount);
   SetLength(fResultDistribution, MaxDiceValue + 1);
   for i := 1 to MaxDiceValue do
     fResultDistribution[i] := 0;
   for i := 0 to fRollsCount - 1 do
   begin
+    SetStep(i);
     number := RandomRange(1, MaxDiceValue + 1);
     fResultDistribution[number] := fResultDistribution[number] + 1;
     fRolls[i] := number;
-    SetCurrentRoll(i);
     fThread.Sleep(2);
     if TThread.CheckTerminated then
       Break;

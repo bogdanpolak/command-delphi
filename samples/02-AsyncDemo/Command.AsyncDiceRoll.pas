@@ -20,9 +20,10 @@ type
     fReportMemo: TMemo;
     fProgressBar: TProgressBar;
     fProgressLabel: TLabel;
+    fStep: Integer;
     fRollsCount: Integer;
-    procedure ReportResults;
-    procedure DoShowProgress(aStep: Integer);
+    procedure DoDisplayStepInfo;
+    procedure DoDisplaySummaryInfo;
   protected
     procedure DoGuard; override;
     procedure DoExecute; override;
@@ -41,25 +42,29 @@ begin
   System.Assert(fProgressBar <> nil);
 end;
 
-procedure TAsyncDiceRollCommand.DoShowProgress(aStep: Integer);
+procedure TAsyncDiceRollCommand.DoDisplayStepInfo;
 begin
-  if aStep mod 10 = 0 then
-  begin
-    Synchronize(
-      procedure
-      begin
-        fProgressBar.Position := aStep + 1;
-        if fProgressLabel <> nil then
-          fProgressLabel.Caption := Format('calculating %d/%d',
-            [aStep, fRollsCount]);
-      end);
-  end;
+  fProgressBar.Position := fStep;
+  if fProgressLabel <> nil then
+    fProgressLabel.Caption := Format('calculating %d/%d', [fStep, fRollsCount]);
+end;
+
+procedure TAsyncDiceRollCommand.DoDisplaySummaryInfo;
+var
+  i: Integer;
+begin
+  ReportMemo.Lines.Add(Format('Elapsed time: %.1f seconds',
+    [GetElapsedTime.TotalSeconds]));
+  ReportMemo.Lines.Add
+    (Format('Dice results (%d-sided dice) (number of rolls: %d)',
+    [MaxDiceValue, fRollsCount]));
+  for i := 1 to MaxDiceValue do
+    ReportMemo.Lines.Add(Format('  [%d] : %d', [i, fResultDistribution[i]]));
 end;
 
 procedure TAsyncDiceRollCommand.DoExecute;
 var
   idx: Integer;
-  aStep: Integer;
   number: Integer;
 begin
   Synchronize(
@@ -72,31 +77,20 @@ begin
   SetLength(fResultDistribution, MaxDiceValue + 1);
   for idx := 1 to MaxDiceValue do
     fResultDistribution[idx] := 0;
-  for aStep := 0 to fRollsCount - 1 do
+  for idx := 0 to fRollsCount - 1 do
   begin
+    fStep := idx + 1;
     number := RandomRange(1, MaxDiceValue + 1);
     fResultDistribution[number] := fResultDistribution[number] + 1;
-    fRolls[aStep] := number;
-    DoShowProgress(aStep);
+    fRolls[idx] := number;
+    if idx mod 10 = 0 then
+      Synchronize(DoDisplayStepInfo);
     fThread.Sleep(2);
     if TThread.CheckTerminated then
       Break;
   end;
-  Synchronize(ReportResults);
-end;
-
-procedure TAsyncDiceRollCommand.ReportResults;
-var
-  i: Integer;
-begin
-  fProgressBar.Position := fRollsCount;
-  ReportMemo.Lines.Add(Format('Elapsed time: %.1f seconds',
-    [GetElapsedTime.TotalSeconds]));
-  ReportMemo.Lines.Add
-    (Format('Dice results (%d-sided dice) (number of rolls: %d)',
-    [MaxDiceValue, fRollsCount]));
-  for i := 1 to MaxDiceValue do
-    ReportMemo.Lines.Add(Format('  [%d] : %d', [i, fResultDistribution[i]]));
+  Synchronize(DoDisplayStepInfo);
+  Synchronize(DoDisplaySummaryInfo);
 end;
 
 end.

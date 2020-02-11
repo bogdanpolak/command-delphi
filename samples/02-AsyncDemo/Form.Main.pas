@@ -43,7 +43,8 @@ type
     fCommand: TDiceRollCommand;
     fAsyncCommand: TAsyncDiceRollCommand;
     fAsyncCommandEx: TAsyncDiceRollCommandEx;
-    procedure DiceRoll_GenerateReport;
+    procedure DiceRoll_DoDisplayStepInfo;
+    procedure DiceRoll_DoDisplaySummaryInfo;
   public
   end;
 
@@ -97,6 +98,7 @@ end;
 
 procedure TForm1.btnTermianteAllBackgroundJobsClick(Sender: TObject);
 begin
+  fCommand.Terminate;
   fAsyncCommand.Terminate;
   fAsyncCommandEx.Terminate;
 end;
@@ -107,12 +109,18 @@ begin
     NumberOfRolls]).Execute;
 end;
 
-procedure TForm1.DiceRoll_GenerateReport;
+procedure TForm1.DiceRoll_DoDisplayStepInfo;
+begin
+  ProgressBar3.Position := fAsyncCommandEx.Step;
+  lblProgress3.Caption := Format('calculating %d/%d',
+    [fAsyncCommandEx.Step, fAsyncCommandEx.RollsCount]);
+end;
+
+procedure TForm1.DiceRoll_DoDisplaySummaryInfo;
 var
   aDistribution: TArray<integer>;
   i: integer;
 begin
-  ProgressBar3.Position := fAsyncCommandEx.RollsCount;
   aDistribution := fAsyncCommandEx.GetDistribution;
   Memo1.Lines.Add(Format('Elapsed time: %.1f seconds',
     [fAsyncCommandEx.GetElapsedTime.TotalSeconds]));
@@ -132,15 +140,15 @@ begin
       begin
         ProgressBar3.Position := 0;
         ProgressBar3.Max := fAsyncCommandEx.RollsCount;
+        lblProgress3.Caption := '';
       end);
-    WithEventOnUpdate(
+    WithEventOnUpdate(DiceRoll_DoDisplayStepInfo);
+    WithEventAfterFinish(
       procedure
       begin
-        ProgressBar3.Position := fAsyncCommandEx.CurrentRoll;
-        lblProgress3.Caption := Format('calculating %d/%d',
-          [fAsyncCommandEx.CurrentRoll, fAsyncCommandEx.RollsCount]);
+        DiceRoll_DoDisplayStepInfo;
+        DiceRoll_DoDisplaySummaryInfo;
       end);
-    WithEventAfterFinish(DiceRoll_GenerateReport);
     Execute;
   end;
 end;
