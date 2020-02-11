@@ -24,10 +24,10 @@ type
   protected
     procedure DoGuard; override;
     procedure DoExecute; override;
-    property RollsCount: Integer read fRollsCount write fRollsCount;
   published
     property ReportMemo: TMemo read fReportMemo write fReportMemo;
     property ProgressBar: TProgressBar read fProgressBar write fProgressBar;
+    property RollsCount: Integer read fRollsCount write fRollsCount;
   end;
 
 implementation
