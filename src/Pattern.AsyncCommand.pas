@@ -36,6 +36,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    function WithInjections(const Injections: array of const): TAsyncCommand;
     function WithEventBeforeStart(aBeforeStart: TProc): TAsyncCommand;
     function WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
     function WithEventOnUpdate(aOnUpdateProc: TProc): TAsyncCommand;
@@ -150,6 +151,12 @@ procedure TAsyncCommand.Terminate;
 begin
   if (fThread<>nil) and not GetIsCommandDone then
     fThread.Terminate;
+end;
+
+function TAsyncCommand.WithInjections(const Injections: array of const): TAsyncCommand;
+begin
+  TComponentInjector.InjectProperties(Self, Injections);
+  Result := Self;
 end;
 
 function TAsyncCommand.WithEventAfterFinish(aAfterFinish: TProc): TAsyncCommand;
