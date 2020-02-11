@@ -20,14 +20,17 @@ type
     fResultDistribution: TArray<Integer>;
     fReportMemo: TMemo;
     fProgressBar: TProgressBar;
+    fProgressLabel: TLabel;
     fRollsCount: Integer;
     procedure ReportResults;
+    procedure DoShowProgress(aStep: Integer);
   protected
     procedure DoGuard; override;
     procedure DoExecute; override;
   published
     property ReportMemo: TMemo read fReportMemo write fReportMemo;
     property ProgressBar: TProgressBar read fProgressBar write fProgressBar;
+    property ProgressLabel: TLabel read fProgressLabel write fProgressLabel;
     property RollsCount: Integer read fRollsCount write fRollsCount;
   end;
 
@@ -39,27 +42,36 @@ begin
   System.Assert(fProgressBar <> nil);
 end;
 
+procedure TDiceRollCommand.DoShowProgress(aStep: Integer);
+begin
+  if aStep mod 10 = 0 then
+  begin
+    fProgressBar.Position := aStep + 1;
+    if fProgressLabel <> nil then
+      fProgressLabel.Caption := Format('calculating %d/%d',
+        [aStep, fRollsCount]);
+  end;
+  Application.ProcessMessages;
+end;
+
 procedure TDiceRollCommand.DoExecute;
 var
-  i: Integer;
+  idx: Integer;
+  aStep: Integer;
   number: Integer;
 begin
   fProgressBar.Max := fRollsCount;
   fProgressBar.Position := 0;
   SetLength(fRolls, fRollsCount);
   SetLength(fResultDistribution, MaxDiceValue + 1);
-  for i := 1 to MaxDiceValue do
-    fResultDistribution[i] := 0;
-  for i := 0 to fRollsCount - 1 do
+  for idx := 1 to MaxDiceValue do
+    fResultDistribution[idx] := 0;
+  for aStep := 0 to fRollsCount - 1 do
   begin
     number := RandomRange(1, MaxDiceValue + 1);
     fResultDistribution[number] := fResultDistribution[number] + 1;
-    fRolls[i] := number;
-    if i mod 10 = 0 then
-    begin
-      fProgressBar.Position := i + 1;
-      // Application.ProcessMessages;
-    end;
+    fRolls[aStep] := number;
+    DoShowProgress(aStep);
     Sleep(2);
   end;
   ReportResults;
