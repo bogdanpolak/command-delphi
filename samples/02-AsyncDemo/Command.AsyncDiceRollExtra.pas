@@ -24,9 +24,9 @@ type
     procedure DoExecute; override;
   public
     function GetDistribution: TArray<Integer>;
+    property CurrentRoll: Integer read GetCurrentRoll write SetCurrentRoll;
   published
     property RollsCount: Integer read fRollsCount write fRollsCount;
-    property CurrentRoll: Integer read GetCurrentRoll write SetCurrentRoll;
   end;
 
 implementation
