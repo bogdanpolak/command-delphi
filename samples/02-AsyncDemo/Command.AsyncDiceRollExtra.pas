@@ -72,7 +72,7 @@ begin
     fResultDistribution[i] := 0;
   for i := 0 to fRollsCount - 1 do
   begin
-    SetStep(i);
+    SetStep(i+1);
     number := RandomRange(1, MaxDiceValue + 1);
     fResultDistribution[number] := fResultDistribution[number] + 1;
     fRolls[i] := number;
