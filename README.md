@@ -6,9 +6,6 @@
 -----------------------------------------
 PLAN
 
-1. TCommandAction methods:
-   * WithCaption, WithCommand, WithShortCut, WithInjection
-   * WithEventOnUpdate, WithEventAfterExecution
 1. TAsyncCommand documentation
    - events: WithEventBeforeStart, WithEventAfterFinish
    - methods: GetElapsedTime: TTimeSpan; IsBusy; Terminate; GetElapsedTime / GetElapsedTimeMs
@@ -199,28 +196,29 @@ Sample construction on `TCommandAction` invoker:
 
 ```pas
 Button1.Action := TCommandAction.Create(Button1)
-  .SetupCaption('Run sample command')
-  .SetupCommand(TSampleCommand.Create(Button1)
-    .Inject([Memo1, Edit1])
-  );
+  .WithCaption('Run sample command')
+  .WithCommand(TSampleCommand.Create(Button1))
+  .WithInjections([Memo1, Edit1]);
 ```
 
-`TCommandAction` has some utility methods which allows to quickly initialize its behavior:
+### TCommandAction methods
 
 | Utility method | Description |
 | --- | --- |
-| `SetupCaption(ACaption)` | Sets action caption which is displayed in a control |
-| `SetupShortCut(AShorcut)` | Sets shortcut which is activating action |
-| `SetupCommand(ACommand)` | Sets command to execute |
-| `SetupEventOnUpdate(...)` | Sets on update event (using anonymous method) |
+| `WithCaption(aCaption)` | Sets an action caption which is displayed in a control |
+| `WithShortCut(aShortcut)` | Sets a shortcut which is activating an action |
+| `WithCommand(aCommand)` | Sets a command to execute |
+| `WithInjections(aInjections)` | Injects values into the command's properties |
+| `WithEventOnUpdate(aProc)` | Event triggered after action onUpdate event |
+| `WithEventAfterExecution(aProc)` | Event triggered when command will be finished |
 
 Sample setup OnUpdate event in `TCommandAction`:
 
 ```pas
 Button2.Action := TCommandAction.Create(Self)
-  .SetupCaption('Run sample command')
-  .SetupCommand(MySampleCommand)
-  .SetupEventOnUpdate(
+  .WithCaption('Run sample command')
+  .WithCommand(MySampleCommand)
+  .WithEventOnUpdate(
     procedure(cmd: TCommandAction)
     begin
       cmd.Enabled := CheckBox1.Checked;
@@ -242,15 +240,6 @@ Creates command and inject dependencies:
 ```pas
 cmdSampleCommand := TSampleCommand.Create(AOwner);
 cmdSampleCommand.Inject([Memo1, Edit1]);
-```
-
-Create invoker `TCommandAction`:
-```pas
-Button1.Action := TCommandAction.Create(Button1)
-  .SetupCaption('Run sample command')
-  .SetupCommand(TSampleCommand.Create(Button1)
-    .Inject([Memo1, Edit1])
-  );
 ```
 
 Sample `TCommand` component:
