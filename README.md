@@ -3,6 +3,25 @@
 ![ Delphi Support ](https://img.shields.io/badge/Delphi%20Support-%20XE8%20..%2010.3%20Rio-blue.svg)
 ![ version ](https://img.shields.io/badge/version-%200.7-yellow.svg)
 
+-----------------------------------------
+PLAN
+-----------------------------------------
+1. Section [TCommand memory management]
+   - TBD: Describe advantages of management base on `TComponent` solution using owner.
+1. TCommandAction methods:
+   * WithCaption, WithCommand, WithShortCut, WithInjection
+   * WithEventOnUpdate, WithEventAfterExecution
+1. TAsyncCommand documentation
+   - events: WithEventBeforeStart, WithEventAfterFinish
+   - methods: GetElapsedTime: TTimeSpan; IsBusy; Terminate; GetElapsedTime / GetElapsedTimeMs
+   - thread name for the debugging 
+      - `fThread.NameThreadForDebugging('TAsyncCommand - '+Self.ClassName);`
+   - sample
+1. TAsyncCommand - OnUpdate with TTimer
+   * WithEventOnProgress(aProc)
+   * property ProgressInterval: integer;
+-----------------------------------------
+
 ## Overview
 
 Simplified version of the GoF Command Pattern, created for the purposes of modernization of VCL projects. Also added action factory to this project, which is wrapping a command into VCL action.
