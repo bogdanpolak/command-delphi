@@ -5,9 +5,7 @@
 
 -----------------------------------------
 PLAN
------------------------------------------
-1. Section [TCommand memory management]
-   - TBD: Describe advantages of management base on `TComponent` solution using owner.
+
 1. TCommandAction methods:
    * WithCaption, WithCommand, WithShortCut, WithInjection
    * WithEventOnUpdate, WithEventAfterExecution
@@ -20,6 +18,8 @@ PLAN
 1. TAsyncCommand - OnUpdate with TTimer
    * WithEventOnProgress(aProc)
    * property ProgressInterval: integer;
+1. Command evolution 
+   - describe evolution from component and injection via property to Command Pattern with constructor injection
 -----------------------------------------
 
 ## Overview
@@ -189,10 +189,6 @@ Although the change is very simple, but in general, multi-threaded processing is
 
 You can easily deal with them, but this requires more general multithread processing knowledge. More info you can find in dedicated documentation: [Asynchronous Command](docs/AsyncCommand.md)
 
-## TCommand memory management
-
-> TBD: Describe advantages of management base on `TComponent` solution using owner.
-
 ## TCommandAction - VCL command invoker
 
 `TCommandAction` is a wrapper class based on `TAction` and is able to execute commands based on `TCommand` class. Developer, when building VCL application, can easily bind this action to many controls (visual components which are driven by actions or are action-aware). For example `TCheckBox` has `Action` property which is executed when used is changing checkbox state (checked). Actions have some other advantages like build in notification system, precisely two such engines: one for updating visual state and another, more internal, for notifying about creation of new and deletion of existing components. Both engines are too complex to be described in this section, more information can be found in the Delphi online documentation.
@@ -231,6 +227,9 @@ Button2.Action := TCommandAction.Create(Self)
     end);
 ```
 
+## Command evolution 
+
+TBD - describe evolution from component and injection via property to Command Pattern with constructor injection
 
 ## Samples
 
