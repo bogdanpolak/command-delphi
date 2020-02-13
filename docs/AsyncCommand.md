@@ -40,6 +40,28 @@ The only difference between command executed in main thread and this one execute
 TSimpleAsyncCommand.Create(aOwner).Execute;
 ```
 
+## Main and background thread
+
+This is very important to be sure which code on the async command is executed in background thread and which in main thread. Writing code working in background developer has very restricted access to outside "world". To force some portion of code to be executed in main thread you can use Synchronize method:
+
+```pas
+procedure TSimpleAsyncCommand.DoExecute;
+begin
+   for i:=0 to fDataNames.Count-1 do
+   begin
+      LoadData (fDataNames[i]);
+      Synchronize(procedure begin 
+        fReportMemo.Lines.Add('Step '+i.ToString
+          +',  Data: '+fDataNames[i]);
+      end);
+   end;
+end;
+```
+
+In this sample adding report line into TMemo component has to be done in main thread and data can be loaded in background thread.
+
+> **Warning!** Whereas using Synchronize looks like very simple solution it not recommended one. This should be used with full understanding that switching to main thread is very costly and during this time working thread (DoExecute code) is blocked, till the end of the Synchronize method.
+
 ## Async Command Rules
 
 1) Remove code manipulating UI controls
