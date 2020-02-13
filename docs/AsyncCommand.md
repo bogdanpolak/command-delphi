@@ -6,6 +6,26 @@ Command component (`TCommand`) can be  converted into asynchronous one using `TA
 
 Introducing parallel programing into your project is not very simple in general, usually developers are struggling with many issues coming from that area, but in this days there is no other alternative and `TAsyncCommand` pattern can make this transition much easier.
 
+One of the simplest async commands can look like this code:
+```pas
+type
+  TSimpleAsyncCommand = class(TAsyncCommand)
+  protected
+    procedure DoExecute; override;
+  end;
+
+procedure TSimpleAsyncCommand.DoExecute;
+begin
+   DoSampleJobInBackgroundThread;
+end;
+```
+
+The only difference between command executed in main thread and this one executed in background thread is base class `TAsyncCommand`. This command launching looks the same like any other command:
+
+```pas
+TSimpleAsyncCommand.Create(aOwner).Execute;
+```
+
 ## Async Command Rules
 
 1) Remove code manipulating UI controls
