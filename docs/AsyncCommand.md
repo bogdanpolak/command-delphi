@@ -57,4 +57,4 @@ TSimpleAsyncCommand.Create(aOwner).Execute;
    - Use proper concurrency control structures like `TMonitor` to prevent parallel access to the same memory area by many threads
 1) Avoid memory sharing between multiple background threads
    - Try to avoid such memory sharing because this is the most challenging scenario of parallel computing
-   - Proper solutions and patterns covering this senarion are far beyond the scope of this documentation
+   - Proper solutions and patterns covering that scenario are far beyond the scope of this documentation
