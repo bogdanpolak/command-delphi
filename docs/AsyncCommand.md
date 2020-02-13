@@ -1,5 +1,19 @@
 # Asynchronous command
 
+-----------------------------------------
+PLAN
+
+1. TAsyncCommand documentation
+   - events: WithEventBeforeStart, WithEventAfterFinish
+   - methods: GetElapsedTime: TTimeSpan; IsBusy; Terminate; GetElapsedTime / GetElapsedTimeMs
+   - thread name for the debugging 
+      - `fThread.NameThreadForDebugging('TAsyncCommand - '+Self.ClassName);`
+   - sample
+1. TAsyncCommand - OnUpdate with TTimer
+   * WithEventOnProgress(aProc)
+   * property ProgressInterval: integer;
+-----------------------------------------
+
 ## Introduction
 
 Command component (`TCommand`) can be  converted into asynchronous one using `TAsyncCommand` class. Asynchronous means that all code implemented in `DoExecute` method will be processed in a separate background thread. Today when each machine has access multiple CPU cores this functionality will allow to execute domain code in background, even in parallel, without any negative influence on displayed UI.

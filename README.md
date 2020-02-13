@@ -6,15 +6,6 @@
 -----------------------------------------
 PLAN
 
-1. TAsyncCommand documentation
-   - events: WithEventBeforeStart, WithEventAfterFinish
-   - methods: GetElapsedTime: TTimeSpan; IsBusy; Terminate; GetElapsedTime / GetElapsedTimeMs
-   - thread name for the debugging 
-      - `fThread.NameThreadForDebugging('TAsyncCommand - '+Self.ClassName);`
-   - sample
-1. TAsyncCommand - OnUpdate with TTimer
-   * WithEventOnProgress(aProc)
-   * property ProgressInterval: integer;
 1. Command evolution 
    - describe evolution from component and injection via property to Command Pattern with constructor injection
 -----------------------------------------
