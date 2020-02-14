@@ -3,12 +3,8 @@
 -----------------------------------------
 PLAN
 
-1. TAsyncCommand documentation
-   - events: WithEventBeforeStart, WithEventAfterFinish
-   - methods: GetElapsedTime: TTimeSpan; IsBusy; Terminate; GetElapsedTime / GetElapsedTimeMs
    - thread name for the debugging 
       - `fThread.NameThreadForDebugging('TAsyncCommand - '+Self.ClassName);`
-   - sample
 1. TAsyncCommand - OnUpdate with TTimer
    * WithEventOnProgress(aProc)
    * property ProgressInterval: integer;
@@ -61,6 +57,46 @@ end;
 In this sample adding report line into TMemo component has to be done in main thread and data can be loaded in background thread.
 
 > **Warning!** Whereas using Synchronize looks like very simple solution it not recommended one. This should be used with full understanding that switching to main thread is very costly and during this time working thread (DoExecute code) is blocked, till the end of the Synchronize method.
+
+## TAsyncCommand methods
+
+| Method | Description |
+| --- | --- |
+| `Execute` | Starts a new background thread and run DoExecute |
+| `WithEventBeforeStart( aProc )` | Provided method is called before DoExecute |
+| `WithEventAfterFinish( aProc )` | Provided method is called when DoExecute will finish |
+| `WithEventOnProgress( aProc )` | Provided method is called during command executing once a defined time (`ProgressInterval`) |
+| `Terminate` | Allows to break execution of background thread |
+| `IsBusy: boolean` | Returns is command started and being processed |
+| `GetElapsedTime` | Returns time consumed by commands |
+
+Events defined in methods: `WithEventBeforeStart`, `WithEventAfterFinish` and `WithEventOnProgress` are processed in the main thread and can access all the VCL resources, but not directly background threads data and structures (this requires thread safe, critical section solution).
+
+Sample execution of TAsyncCommand:
+
+```pas
+cmdGenerateSampelCSV
+  .WithInjections([fCustomerID,fOrdersProxy])
+  .WithEventBeforeStart(
+    procedure
+    begin
+      aProgressBar.Position := 0;
+    end)
+  .WithEventOnUpdate(
+    procedure
+    begin
+      aProgressBar.Position := fMyAsyncCommand.GetProgressPercent;
+    end)
+  .WithEventAfterFinish(
+    procedure
+    begin
+      aProgressBar.Position := 100;
+      fCSVExporter.SaveToFile(aFileName, fMyAsyncCommand.ReportData);
+      aSeconds := cmdGenerateSampelCSV.GetElapsedTime.TotalSeconds;
+      LogAppPerformance(aReportName, aSeconds);
+    end)
+  .Execute;
+```
 
 ## Async Command Rules
 
