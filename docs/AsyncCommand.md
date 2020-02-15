@@ -5,9 +5,6 @@ PLAN
 
    - thread name for the debugging 
       - `fThread.NameThreadForDebugging('TAsyncCommand - '+Self.ClassName);`
-1. TAsyncCommand - OnUpdate with TTimer
-   * WithEventOnProgress(aProc)
-   * property ProgressInterval: integer;
 -----------------------------------------
 
 ## Introduction
@@ -71,6 +68,13 @@ In this sample adding report line into TMemo component has to be done in main th
 | `GetElapsedTime` | Returns time consumed by commands |
 
 Events defined in methods: `WithEventBeforeStart`, `WithEventAfterFinish` and `WithEventOnProgress` are processed in the main thread and can access all the VCL resources, but not directly background threads data and structures (this requires thread safe, critical section solution).
+
+Event defined in `WithEventOnProgress` method is called every defined interval (in milliseconds). The AsyncCommand is using an internal timer which is triggered with that interval. Then OnProgress event is executed in the main thread and if developer wants to access thread (command internal) data structures he has to use proper thread safe mechanism.
+
+| Property | Description |
+| --- | --- |
+| `ProgressInterval: integer` | Defined interval of internal command timer (in milliseconds) which is calling OnProgress event. Default value = 100 ms |
+
 
 Sample execution of TAsyncCommand:
 
