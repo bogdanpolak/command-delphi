@@ -170,10 +170,6 @@ Although the change is very simple, but in general, multi-threaded processing is
 
 You can easily deal with them, but this requires more general multithread processing knowledge. More info you can find in dedicated documentation: [Asynchronous Command](docs/AsyncCommand.md)
 
-## TCommand memory management
-
-> TBD: Describe advantages of management base on `TComponent` solution using owner.
-
 ## TCommandAction - VCL command invoker
 
 `TCommandAction` is a wrapper class based on `TAction` and is able to execute commands based on `TCommand` class. Developer, when building VCL application, can easily bind this action to many controls (visual components which are driven by actions or are action-aware). For example `TCheckBox` has `Action` property which is executed when used is changing checkbox state (checked). Actions have some other advantages like build in notification system, precisely two such engines: one for updating visual state and another, more internal, for notifying about creation of new and deletion of existing components. Both engines are too complex to be described in this section, more information can be found in the Delphi online documentation.
@@ -184,34 +180,42 @@ Sample construction on `TCommandAction` invoker:
 
 ```pas
 Button1.Action := TCommandAction.Create(Button1)
-  .SetupCaption('Run sample command')
-  .SetupCommand(TSampleCommand.Create(Button1)
-    .Inject([Memo1, Edit1])
-  );
+  .WithCaption('Run sample command')
+  .WithCommand(TSampleCommand.Create(Button1))
+  .WithInjections([Memo1, Edit1]);
 ```
 
-`TCommandAction` has some utility methods which allows to quickly initialize its behavior:
+### TCommandAction methods
 
 | Utility method | Description |
 | --- | --- |
-| `SetupCaption(ACaption)` | Sets action caption which is displayed in a control |
-| `SetupShortCut(AShorcut)` | Sets shortcut which is activating action |
-| `SetupCommand(ACommand)` | Sets command to execute |
-| `SetupEventOnUpdate(...)` | Sets on update event (using anonymous method) |
+| `WithCaption(aCaption)` | Sets an action caption which is displayed in a control |
+| `WithShortCut(aShortcut)` | Sets a shortcut which is activating an action |
+| `WithCommand(aCommand)` | Sets a command to execute |
+| `WithInjections(aInjections)` | Injects values into the command's properties |
+| `WithEventOnUpdate(aProc)` | Event triggered after action onUpdate event |
+| `WithEventAfterExecution(aProc)` | Event triggered when command will be finished |
 
 Sample setup OnUpdate event in `TCommandAction`:
 
 ```pas
 Button2.Action := TCommandAction.Create(Self)
-  .SetupCaption('Run sample command')
-  .SetupCommand(MySampleCommand)
-  .SetupEventOnUpdate(
+  .WithCaption('Run sample command')
+  .WithCommand(MySampleCommand)
+  .WithEventOnUpdate(
     procedure(cmd: TCommandAction)
     begin
       cmd.Enabled := CheckBox1.Checked;
     end);
 ```
 
+## Command Evolution 
+
+TCommand Pattern allow developers to extract the valuable business code and make applications less coupled. Simultaneously developers can still use well known component practices and compose more complex code using command components. Developers can even expand Command Pattern with their own properties and events. However this approach is a temporary solution and should be evolved into more object oriented design.
+
+TCommand Pattern is compatible to GoF Command Pattern (see diagrams above) and can be modernized. This moderation should be started when the refactoring phase will be finished and logic will be covered by unit tests. During refactoring  all the visual dependencies should be removed, also all irrelevant dependencies and the code should be breaking down into smaller more logical methods or classes.
+
+After modernization all dependencies should be inject through constructor, the command should be accessed through the interface, access to command internal items should be through getter and setter methods.  Composed objects should be created using DI container, like Spring4D `GlobalContainer` method.
 
 ## Samples
 
@@ -224,15 +228,6 @@ Creates command and inject dependencies:
 ```pas
 cmdSampleCommand := TSampleCommand.Create(AOwner);
 cmdSampleCommand.Inject([Memo1, Edit1]);
-```
-
-Create invoker `TCommandAction`:
-```pas
-Button1.Action := TCommandAction.Create(Button1)
-  .SetupCaption('Run sample command')
-  .SetupCommand(TSampleCommand.Create(Button1)
-    .Inject([Memo1, Edit1])
-  );
 ```
 
 Sample `TCommand` component:
