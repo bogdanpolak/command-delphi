@@ -216,9 +216,13 @@ Button2.Action := TCommandAction.Create(Self)
     end);
 ```
 
-## Command evolution 
+## Command Evolution 
 
-TBD - describe evolution from component and injection via property to Command Pattern with constructor injection
+TCommand Pattern allow developers to extract the valuable business code and make applications less coupled. Simultaneously developers can still use well known component practices and compose more complex code using command components. Developers can even expand Command Pattern with their own properties and events. However this approach is a temporary solution and should be evolved into more object oriented design.
+
+TCommand Pattern is compatible to GoF Command Pattern (see diagrams above) and can be modernized. This moderation should be started when the refactoring phase will be finished and logic will be covered by unit tests. During refactoring  all the visual dependencies should be removed, also all irrelevant dependencies and the code should be breaking down into smaller more logical methods or classes.
+
+After modernization all dependencies should be inject through constructor, the command should be accessed through the interface, access to command internal items should be through getter and setter methods.  Composed objects should be created using DI container, like Spring4D `GlobalContainer` method.
 
 ## Samples
 
