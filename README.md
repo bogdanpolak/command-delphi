@@ -3,13 +3,6 @@
 ![ Delphi Support ](https://img.shields.io/badge/Delphi%20Support-%20XE8%20..%2010.3%20Rio-blue.svg)
 ![ version ](https://img.shields.io/badge/version-%200.7-yellow.svg)
 
------------------------------------------
-PLAN
-
-1. Command evolution 
-   - describe evolution from component and injection via property to Command Pattern with constructor injection
------------------------------------------
-
 ## Overview
 
 Simplified version of the GoF Command Pattern, created for the purposes of modernization of VCL projects. Also added action factory to this project, which is wrapping a command into VCL action.
