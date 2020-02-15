@@ -1,12 +1,5 @@
 # Asynchronous command
 
------------------------------------------
-PLAN
-
-   - thread name for the debugging 
-      - `fThread.NameThreadForDebugging('TAsyncCommand - '+Self.ClassName);`
------------------------------------------
-
 ## Introduction
 
 Command component (`TCommand`) can be  converted into asynchronous one using `TAsyncCommand` class. Asynchronous means that all code implemented in `DoExecute` method will be processed in a separate background thread. Today when each machine has access multiple CPU cores this functionality will allow to execute domain code in background, even in parallel, without any negative influence on displayed UI.
@@ -55,7 +48,11 @@ In this sample adding report line into TMemo component has to be done in main th
 
 > **Warning!** Whereas using Synchronize looks like very simple solution it not recommended one. This should be used with full understanding that switching to main thread is very costly and during this time working thread (DoExecute code) is blocked, till the end of the Synchronize method.
 
-## TAsyncCommand methods
+### Debugging background thread
+
+Delphi gives developers a very easy method of testing background thread processing. Usually it's enough to set a breakpoint inside DoExecute method and verify processing flow and inspect a variable values. In more complex situations there could be needed to define thread name, by default TAsyncCommand background thread is named using following formula: `'TAsyncCommand - '+ClassName`, where ClassName is a name of this particular command class.
+
+## TAsyncCommand methods and properties
 
 | Method | Description |
 | --- | --- |
