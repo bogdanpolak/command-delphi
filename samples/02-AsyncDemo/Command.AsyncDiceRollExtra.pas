@@ -88,7 +88,7 @@ begin
     fResultDistribution[number] := fResultDistribution[number] + 1;
     fRolls[i] := number;
     DoSomeOtherWork(1.5);
-    if TThread.CheckTerminated then
+    if IsTerminated then
       Break;
   end;
 end;
