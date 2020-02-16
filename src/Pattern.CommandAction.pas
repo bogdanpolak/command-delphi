@@ -33,7 +33,7 @@ type
     function WithShortCut(aShorcut: TShortCut): TCommandAction;
     function WithEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
       : TCommandAction;
-    function SetupEventAfterExecution(aAfterProc: TProc<TCommandAction>)
+    function WitEventAfterExecution(aAfterProc: TProc<TCommandAction>)
       : TCommandAction;
     function WithInjections(const Injections: array of const): TCommandAction;
     property Command: TCommand read fCommand write fCommand;
@@ -109,7 +109,7 @@ begin
   Result := Self;
 end;
 
-function TCommandAction.SetupEventAfterExecution
+function TCommandAction.WitEventAfterExecution
   (aAfterProc: TProc<TCommandAction>): TCommandAction;
 begin
   fOnAfterProc := aAfterProc;
