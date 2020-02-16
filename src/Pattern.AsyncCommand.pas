@@ -19,7 +19,7 @@ uses
 type
   TAsyncCommand = class(TCommand)
   private const
-    Version = '0.7';
+    Version = '1.0';
   private
     fUpdateInterval: integer;
     fOnUpdateProc: TProc;

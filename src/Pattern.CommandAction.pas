@@ -15,7 +15,7 @@ uses
 type
   TCommandAction = class(TAction)
   private const
-    Version = '0.7';
+    Version = '1.0';
   private
     fCommand: TCommand;
     fOnUpdateProc: TProc<TCommandAction>;

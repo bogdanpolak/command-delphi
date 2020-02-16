@@ -19,7 +19,7 @@ type
 
   TCommand = class(TComponent, ICommand)
   private const
-    Version = '0.7';
+    Version = '1.0';
   protected
     fStopwatch: TStopwatch;
     fBusy: boolean;
