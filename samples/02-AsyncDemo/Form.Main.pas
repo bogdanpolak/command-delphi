@@ -125,7 +125,7 @@ begin
   Memo1.Lines.Add(Format('Elapsed time: %.1f seconds',
     [fAsyncCommandEx.GetElapsedTime.TotalSeconds]));
   Memo1.Lines.Add(Format('Dice results (%d-sided dice) (number of rolls: %d)',
-    [fAsyncCommandEx.MaxDiceValue, fAsyncCommandEx.RollsCount]));
+    [fAsyncCommandEx.MaxDiceValue, fAsyncCommandEx.Step]));
   for i := 1 to High(aDistribution) do
     Memo1.Lines.Add(Format('  [%d] : %d', [i, aDistribution[i]]));
 end;

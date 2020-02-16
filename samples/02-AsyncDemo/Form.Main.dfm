@@ -23,7 +23,6 @@ object Form1: TForm1
     Align = alBottom
     Caption = ' '
     TabOrder = 0
-    ExplicitTop = 424
     object lblProgress3: TLabel
       AlignWithMargins = True
       Left = 4
@@ -75,7 +74,6 @@ object Form1: TForm1
       Margins.Bottom = 0
       Align = alTop
       TabOrder = 0
-      ExplicitTop = 8
     end
     object ProgressBar2: TProgressBar
       AlignWithMargins = True
@@ -89,7 +87,6 @@ object Form1: TForm1
       Margins.Bottom = 4
       Align = alTop
       TabOrder = 1
-      ExplicitTop = 39
     end
     object ProgressBar3: TProgressBar
       AlignWithMargins = True
@@ -103,7 +100,6 @@ object Form1: TForm1
       Margins.Bottom = 4
       Align = alTop
       TabOrder = 2
-      ExplicitTop = 69
     end
   end
   object Memo1: TMemo
@@ -123,7 +119,6 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 1
-    ExplicitHeight = 374
   end
   object GroupBoxDiceRolls: TGroupBox
     AlignWithMargins = True
@@ -134,7 +129,6 @@ object Form1: TForm1
     Align = alLeft
     Caption = 'Dice Rolls'
     TabOrder = 2
-    ExplicitHeight = 374
     object btnAsycDiceRollCmd: TButton
       AlignWithMargins = True
       Left = 5
@@ -181,9 +175,8 @@ object Form1: TForm1
       Caption = 'Show ProgressBars panel'
       Checked = True
       State = cbChecked
-      TabOrder = 3
+      TabOrder = 4
       OnClick = chkShowProgressPanelClick
-      ExplicitTop = 345
     end
     object btnTermianteAllBackgroundJobs: TButton
       AlignWithMargins = True
@@ -194,9 +187,8 @@ object Form1: TForm1
       Margins.Bottom = 10
       Align = alBottom
       Caption = 'Termiante All background Jobs'
-      TabOrder = 4
+      TabOrder = 3
       OnClick = btnTermianteAllBackgroundJobsClick
-      ExplicitTop = 295
     end
   end
   object Timer1: TTimer
