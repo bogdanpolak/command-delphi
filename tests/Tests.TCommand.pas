@@ -76,18 +76,11 @@ type
     FActive: boolean;
     FCount: Integer;
   strict protected
-    procedure DoGuard; override;
     procedure DoExecute; override;
   public
     property Active: boolean read FActive write FActive;
     property Count: Integer read FCount write FCount;
   end;
-
-
-procedure TCommandA.DoGuard;
-begin
-  // System.Assert( check is injected required property );
-end;
 
 procedure TCommandA.DoExecute;
 begin
