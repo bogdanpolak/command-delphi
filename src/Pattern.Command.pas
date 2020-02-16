@@ -104,8 +104,6 @@ end;
 
 procedure TCommand.DoGuard;
 begin
-  raise EAbort.Create
-    ('Define Guard method for the child Command class. Do not call `inherited` in Guard method.');
 end;
 
 function TCommand.WithInjections(const Injections: array of const): TCommand;
