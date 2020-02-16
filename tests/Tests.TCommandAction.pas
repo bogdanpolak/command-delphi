@@ -31,6 +31,7 @@ type
     procedure ActionWithCommand;
     procedure ActionWithShotcut;
     procedure ActionWitnEventOnUpdate;
+    procedure ActionWitEventAfterExecution;
     procedure ActionWithInjections;
     procedure ActionCaption_WillChangeButtonCaption;
   end;
@@ -93,8 +94,6 @@ begin
 end;
 
 procedure TestCommandAction.ActionWithCaption;
-var
-  act: TCommandAction;
 begin
   // Arrage & Act:
   fAction.WithCaption('Execute test command');
@@ -135,6 +134,22 @@ begin
     end);
   fAction.Update;
   Assert.AreEqual(1, fAction.Tag);
+end;
+
+procedure TestCommandAction.ActionWitEventAfterExecution;
+begin
+  fAction.Tag := -1;
+  fAction.Command := TTestCommand.Create(fOwnerComponent);
+  fAction.Command.WithInjections([fStringList]);
+  fAction.WitEventAfterExecution(
+    procedure(act: TCommandAction)
+    begin
+      act.Tag := 99;
+    end);
+
+  fAction.Execute;
+
+  Assert.AreEqual(99, fAction.Tag);
 end;
 
 procedure TestCommandAction.ActionWithInjections;
