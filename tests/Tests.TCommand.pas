@@ -67,7 +67,7 @@ type
 implementation
 
 // ------------------------------------------------------------------------
-// TestCommndFactory_BasicCommand: TCommandA
+// Test Basic Command - TCommandA
 // ------------------------------------------------------------------------
 
 type
@@ -83,7 +83,6 @@ type
     property Count: Integer read FCount write FCount;
   end;
 
-{$REGION 'implementation of the Basic command = TCommandA'}
 
 procedure TCommandA.DoGuard;
 begin
@@ -96,7 +95,7 @@ begin
   Count := Count + 1;
 end;
 
-{$ENDREGION}
+// ------------------------------------------------------------------------
 
 procedure TestCommnd_Basic.Setup;
 begin
