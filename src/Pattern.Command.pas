@@ -1,7 +1,5 @@
 ﻿{* ------------------------------------------------------------------------ *
- * ♥   Command Parttern
- * Components:     TCommand, TAsyncCommand
- * Project:        https://github.com/bogdanpolak/command-delphi
+ * Command Parttern  ♥  TCommand
  * ------------------------------------------------------------------------ *}
 unit Pattern.Command;
 
@@ -10,7 +8,9 @@ interface
 uses
   System.Classes,
   System.SysUtils,
-  System.TypInfo;
+  System.TypInfo,
+  System.Diagnostics,
+  System.TimeSpan;
 
 type
   ICommand = interface
@@ -19,29 +19,22 @@ type
 
   TCommand = class(TComponent, ICommand)
   private const
-    Version = '0.7';
+    Version = '1.0';
   protected
-    // procedure Guard; - assert injections of all required properties
+    fStopwatch: TStopwatch;
+    fBusy: boolean;
     procedure DoGuard; virtual;
     procedure DoExecute; virtual; abstract;
   public
     class procedure AdhocExecute<T: TCommand>(const Injections
       : array of const); static;
-    function Inject(const Injections: array of const): TCommand;
+    function WithInjections(const Injections: array of const): TCommand;
     procedure Execute; virtual;
+    function GetElapsedTime: TTimeSpan;
+    function GetElapsedTimeMs: integer;
+    function IsBusy: boolean; virtual;
   end;
 
-  TAsyncCommand = class(TCommand)
-  protected
-    fThread: TThread;
-    fIsThreadTermianed: boolean;
-    procedure DoPrepare; virtual; abstract;
-    procedure DoTeardown; virtual; abstract;
-  public
-    constructor Create(AOwner: TComponent); override;
-    procedure Execute; override;
-    function IsFinished: boolean;
-  end;
 
   TPropertyInfo = record
     Kind: TTypeKind;
@@ -84,16 +77,36 @@ const
 procedure TCommand.Execute;
 begin
   DoGuard;
-  DoExecute;
+  fStopwatch := TStopwatch.StartNew;
+  fBusy := True;
+  try
+    DoExecute;
+  finally
+    fBusy := False;
+    fStopwatch.Stop;
+  end;
+end;
+
+function TCommand.GetElapsedTime: TTimeSpan;
+begin
+  Result := fStopwatch.Elapsed;
+end;
+
+function TCommand.GetElapsedTimeMs: integer;
+begin
+  Result := fStopwatch.ElapsedMilliseconds;
+end;
+
+function TCommand.IsBusy: boolean;
+begin
+  Result := fBusy;
 end;
 
 procedure TCommand.DoGuard;
 begin
-  raise EAbort.Create
-    ('Define Guard method for the child Command class. Do not call `inherited` in Guard method.');
 end;
 
-function TCommand.Inject(const Injections: array of const): TCommand;
+function TCommand.WithInjections(const Injections: array of const): TCommand;
 begin
   TComponentInjector.InjectProperties(Self, Injections);
   Result := Self;
@@ -117,49 +130,6 @@ begin
   end;
 end;
 
-
-// ------------------------------------------------------------------------
-// TAsyncCommand
-// ------------------------------------------------------------------------
-
-constructor TAsyncCommand.Create(AOwner: TComponent);
-begin
-  inherited;
-  fThread := nil;
-  fIsThreadTermianed := true;
-end;
-
-procedure TAsyncCommand.Execute;
-begin
-  DoGuard;
-  DoPrepare;
-  fThread := TThread.CreateAnonymousThread(
-    procedure
-    begin
-      try
-        fIsThreadTermianed := False;
-        DoExecute;
-      finally
-        // TODO: lock or critical section is required bellow (critical !!!)
-        fIsThreadTermianed := true;
-      end;
-    end);
-  fThread.FreeOnTerminate := False;
-  fThread.Start;
-end;
-
-function TAsyncCommand.IsFinished: boolean;
-begin
-  if fThread = nil then
-    Exit(true);
-  Result := fIsThreadTermianed;
-  if Result and (fThread <> nil) then
-  begin
-    fThread.Free;
-    fThread := nil;
-    DoTeardown;
-  end;
-end;
 
 // ------------------------------------------------------------------------
 // TComponentInjector

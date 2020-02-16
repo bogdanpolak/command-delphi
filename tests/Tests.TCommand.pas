@@ -67,7 +67,7 @@ type
 implementation
 
 // ------------------------------------------------------------------------
-// TestCommndFactory_BasicCommand: TCommandA
+// Test Basic Command - TCommandA
 // ------------------------------------------------------------------------
 
 type
@@ -76,19 +76,11 @@ type
     FActive: boolean;
     FCount: Integer;
   strict protected
-    procedure DoGuard; override;
     procedure DoExecute; override;
   public
     property Active: boolean read FActive write FActive;
     property Count: Integer read FCount write FCount;
   end;
-
-{$REGION 'implementation of the Basic command = TCommandA'}
-
-procedure TCommandA.DoGuard;
-begin
-  // System.Assert( check is injected required property );
-end;
 
 procedure TCommandA.DoExecute;
 begin
@@ -96,7 +88,7 @@ begin
   Count := Count + 1;
 end;
 
-{$ENDREGION}
+// ------------------------------------------------------------------------
 
 procedure TestCommnd_Basic.Setup;
 begin
@@ -195,7 +187,7 @@ var
   CommandStrings: TCommandStringList;
 begin
   CommandStrings := TCommandStringList.Create(FOwnerComponent);
-  CommandStrings.Inject([FStrings]);
+  CommandStrings.WithInjections([FStrings]);
   CommandStrings.Execute;
   CommandStrings.Execute;
   FStrings.Delete(0);

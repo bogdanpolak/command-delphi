@@ -1,7 +1,5 @@
 ﻿{* ------------------------------------------------------------------------ *
- * ♥   Command Invoker
- * Components:     TCommandAction
- * Project:        https://github.com/bogdanpolak/command-delphi
+ * Command Parttern  ♥  TCommandAction = command invoker
  * ------------------------------------------------------------------------ *}
 unit Pattern.CommandAction;
 
@@ -17,25 +15,27 @@ uses
 type
   TCommandAction = class(TAction)
   private const
-    Version = '0.7';
+    Version = '1.0';
   private
     fCommand: TCommand;
     fOnUpdateProc: TProc<TCommandAction>;
     fOnAfterProc: TProc<TCommandAction>;
     fDisableDuringExecution: boolean;
+    fActionList: TActionList;
     procedure OnExecuteEvent(Sender: TObject);
     procedure OnUpdateEvent(Sender: TObject);
     procedure DoExecuteAction(Sender: TObject);
   public
     constructor Create(aOwner: TComponent); override;
-    function SetupCaption(const aCaption: string): TCommandAction;
-    function SetupCommand(aCommand: TCommand): TCommandAction;
-    function SetupShortCut(aShorcut: TShortCut): TCommandAction;
-    function SetupEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
+    destructor Destroy; override;
+    function WithCaption(const aCaption: string): TCommandAction;
+    function WithCommand(aCommand: TCommand): TCommandAction;
+    function WithShortCut(aShorcut: TShortCut): TCommandAction;
+    function WithEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
       : TCommandAction;
-    function SetupEventAfterExecution(aAfterProc: TProc<TCommandAction>)
+    function WitEventAfterExecution(aAfterProc: TProc<TCommandAction>)
       : TCommandAction;
-    function Inject(const Injections: array of const): TCommandAction;
+    function WithInjections(const Injections: array of const): TCommandAction;
     property Command: TCommand read fCommand write fCommand;
     property DisableDuringExecution: boolean read fDisableDuringExecution
       write fDisableDuringExecution;
@@ -47,10 +47,16 @@ constructor TCommandAction.Create(aOwner: TComponent);
 begin
   inherited;
   DisableDuringExecution := False;
+  fActionList := nil;
   fCommand := nil;
   fOnUpdateProc := nil;
   fOnAfterProc := nil;
   Self.OnExecute := OnExecuteEvent;
+end;
+
+destructor TCommandAction.Destroy;
+begin
+  inherited;
 end;
 
 procedure TCommandAction.DoExecuteAction(Sender: TObject);
@@ -60,12 +66,12 @@ begin
     fOnAfterProc(Self)
 end;
 
-function TCommandAction.Inject(const Injections: array of const)
+function TCommandAction.WithInjections(const Injections: array of const)
   : TCommandAction;
 begin
   System.Assert(fCommand <> nil,
     'Command have to be created and provided before injection');
-  fCommand.Inject(Injections);
+  fCommand.WithInjections(Injections);
   Result := Self;
 end;
 
@@ -91,26 +97,26 @@ begin
     fOnUpdateProc(Self);
 end;
 
-function TCommandAction.SetupCaption(const aCaption: string): TCommandAction;
+function TCommandAction.WithCaption(const aCaption: string): TCommandAction;
 begin
   Caption := aCaption;
   Result := Self;
 end;
 
-function TCommandAction.SetupCommand(aCommand: TCommand): TCommandAction;
+function TCommandAction.WithCommand(aCommand: TCommand): TCommandAction;
 begin
   fCommand := aCommand;
   Result := Self;
 end;
 
-function TCommandAction.SetupEventAfterExecution
+function TCommandAction.WitEventAfterExecution
   (aAfterProc: TProc<TCommandAction>): TCommandAction;
 begin
   fOnAfterProc := aAfterProc;
   Result := Self;
 end;
 
-function TCommandAction.SetupEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
+function TCommandAction.WithEventOnUpdate(AUpdateProc: TProc<TCommandAction>)
   : TCommandAction;
 begin
   fOnUpdateProc := AUpdateProc;
@@ -118,8 +124,21 @@ begin
   Result := Self;
 end;
 
-function TCommandAction.SetupShortCut(aShorcut: TShortCut): TCommandAction;
+function TCommandAction.WithShortCut(aShorcut: TShortCut): TCommandAction;
 begin
+  // ------------------------------------------------------------------
+  // Too support shortcuts action requires TActionList assigned
+  // ---
+  // this code is constructing a new ActionList only once when a new
+  // shortcut is assigned to this action (deleyed construction)
+  // ---
+  // Memory of fActionList is not released by Free but managed by Owner
+  // ------------------------------------------------------------------
+  if (Owner <> nil) and (Self.ActionList = nil) and (fActionList = nil) then
+  begin
+    fActionList := TActionList.Create(Owner);
+    Self.ActionList := fActionList;
+  end;
   Self.ShortCut := aShorcut;
   Result := Self;
 end;

@@ -1,7 +1,7 @@
 ﻿# Command Pattern for Delphi
 
 ![ Delphi Support ](https://img.shields.io/badge/Delphi%20Support-%20XE8%20..%2010.3%20Rio-blue.svg)
-![ version ](https://img.shields.io/badge/version-%200.7-yellow.svg)
+![ version ](https://img.shields.io/badge/version-%201.0-yellow.svg)
 
 ## Overview
 
@@ -35,25 +35,17 @@ Diagram of TCommand usage in the VCL application:
 
 ## Creating / implementing new command
 
-Developer to build new command needs to define new class derived from `TCommand` (unit: `Pattern.Command.pas`). He has to implement two protected methods: `DoGuard` and `DoExecute`: 
-* *method* `DoGuard` - can be empty if there is no injection (injection system is explained bellow)
-* *method* `DoExecute` - contains code which is main logic of the command
-
-Both methods are `virtual` then defining their interface have to use `override` keyword. You can remove (not to add) `inherited` call from `DoExecute` implementation and you have to remove this call from `DoGuard` implementation, if not then during first call exception will be raise with message that you cant call base `TCommand.DoGuard` code. This safeguards that developer implemented its own `DoGuard` logic.
+Developer to build new command needs to define new class derived from `TCommand` (unit: `Pattern.Command.pas`) and implements a protected method `DoExecute`, which contains a main command logic.
+ 
+Developer can implement a method `DoGuard` also, which is called before `DoExecute` and allow to verify all mandatory injections (injection system is explained bellow). Usually all injections are checked with Assert call.
 
 Sample command without injection (empty guard):
 ```pas
 type
   TDiceRollCommand = class (TCommand)
   protected
-    procedure DoGuard; override;
     procedure DoExecute; override;
   end;
-
-procedure TDiceRollCommand.DoGuard;
-begin
-  // Required: even if no injection are provided 
-end;
 
 procedure TDiceRollCommand.DoExecute;
 begin
@@ -61,9 +53,7 @@ begin
 end;
 ```
 
-To execute command you should create object and call `Execute` public method, which call `DoGuard` and then `DoExecute`. You shouldn't put any business logic into guard method, see bellow section about injection system for more details.
-
-Sample call:
+To execute command you should create object and call `Execute` public method, which call `DoGuard` and then `DoExecute`:
 
 ```pas
 cmd := TDiceRollCommand.Ceate(Self);
@@ -81,30 +71,30 @@ type
   const
     RollCount = 100;
   private
-    FOutput: TStrings;
-    FProgressBar: TProgressBar;
+    fOutput: TStrings;
+    fProgressBar: TProgressBar;
     procedure ShowProgress(aRoll: integer);
   protected
     procedure DoGuard; override;
     procedure DoExecute; override;
   published
-    property OutputRolls: TStrings read FOutput 
-      write FOutput;
-    property ProgressBar: TProgressBar read FProgressBar 
-      write FProgressBar;
+    property OutputRolls: TStrings read fOutput 
+      write fOutput;
+    property ProgressBar: TProgressBar read fProgressBar 
+      write fProgressBar;
   end;
 
 procedure TDiceRollCommand.DoGuard;
 begin
-  System.Assert(FOutput<>nil); 
+  System.Assert(fOutput<>nil); 
 end;
 
 procedure TDiceRollCommand.ShowProgress(aRoll: integer);
 begin
-  if Assigned(ProgressBar) then begin
+  if Assigned(fProgressBar) then begin
     if aRoll=0 then
-      ProgressBar.Max := RollCount;
-    ProgressBar.Position := aRoll;
+      fProgressBar.Max := RollCount;
+    fProgressBar.Position := aRoll;
   end;
 end
 
@@ -113,10 +103,7 @@ begin
   ShowProgress(0);
   for var i := 0 to RollCount-1 do
   begin
-    var number := RandomRange(1,6);
-    FOutput.Add(number.ToString);
-    if (FReportingMemo<>nil) then
-      FReportingMemo.Lines.Add(number.ToString);
+    fOutput.Add(RandomRange(1,7).ToString);
     ShowProgress(i+1);
   end;
 end;
@@ -153,9 +140,25 @@ Most popular and usually advised method of injecting dependencies is a construct
     * `TCommandAction` class is classic VCL action
     * This class has special methods to allow rapid construction and initialization
 
-## TCommand memory management
+## Asynchronous Command
 
-> TBD: Describe advantages of management base on `TComponent` solution using owner.
+Business logic, extracted into the command, can be easily converted into asynchronous command, processed in a separate background thread. Replacing `TCommand` class with `TAsyncCommand` is first steep in such transformation:
+
+```pas
+uses
+  Pattern.AsyncCommand;
+type
+  TAsyncDiceRollCommand = class (TAsyncCommand)
+     ...
+  end;
+```
+
+Although the change is very simple, but in general, multi-threaded processing is a much more serious subject and requires deeper knowledge of this area. In this example (`TDiceRollCommand`) two topics are problematic:
+
+1. Access to UI control `fProgressBar: TProgressBar`
+1. Access to shared memory `fOutputRolls: TStrings`
+
+You can easily deal with them, but this requires more general multithread processing knowledge. More info you can find in dedicated documentation: [Asynchronous Command](docs/AsyncCommand.md)
 
 ## TCommandAction - VCL command invoker
 
@@ -167,34 +170,42 @@ Sample construction on `TCommandAction` invoker:
 
 ```pas
 Button1.Action := TCommandAction.Create(Button1)
-  .SetupCaption('Run sample command')
-  .SetupCommand(TSampleCommand.Create(Button1)
-    .Inject([Memo1, Edit1])
-  );
+  .WithCaption('Run sample command')
+  .WithCommand(TSampleCommand.Create(Button1))
+  .WithInjections([Memo1, Edit1]);
 ```
 
-`TCommandAction` has some utility methods which allows to quickly initialize its behavior:
+### TCommandAction methods
 
 | Utility method | Description |
 | --- | --- |
-| `SetupCaption(ACaption)` | Sets action caption which is displayed in a control |
-| `SetupShortCut(AShorcut)` | Sets shortcut which is activating action |
-| `SetupCommand(ACommand)` | Sets command to execute |
-| `SetupEventOnUpdate(...)` | Sets on update event (using anonymous method) |
+| `WithCaption(aCaption)` | Sets an action caption which is displayed in a control |
+| `WithShortCut(aShortcut)` | Sets a shortcut which is activating an action |
+| `WithCommand(aCommand)` | Sets a command to execute |
+| `WithInjections(aInjections)` | Injects values into the command's properties |
+| `WithEventOnUpdate(aProc)` | Event triggered after action onUpdate event |
+| `WithEventAfterExecution(aProc)` | Event triggered when command will be finished |
 
 Sample setup OnUpdate event in `TCommandAction`:
 
 ```pas
 Button2.Action := TCommandAction.Create(Self)
-  .SetupCaption('Run sample command')
-  .SetupCommand(MySampleCommand)
-  .SetupEventOnUpdate(
+  .WithCaption('Run sample command')
+  .WithCommand(MySampleCommand)
+  .WithEventOnUpdate(
     procedure(cmd: TCommandAction)
     begin
       cmd.Enabled := CheckBox1.Checked;
     end);
 ```
 
+## Command Evolution 
+
+TCommand Pattern allow developers to extract the valuable business code and make applications less coupled. Simultaneously developers can still use well known component practices and compose more complex code using command components. Developers can even expand Command Pattern with their own properties and events. However this approach is a temporary solution and should be evolved into more object oriented design.
+
+TCommand Pattern is compatible to GoF Command Pattern (see diagrams above) and can be modernized. This moderation should be started when the refactoring phase will be finished and logic will be covered by unit tests. During refactoring  all the visual dependencies should be removed, also all irrelevant dependencies and the code should be breaking down into smaller more logical methods or classes.
+
+After modernization all dependencies should be inject through constructor, the command should be accessed through the interface, access to command internal items should be through getter and setter methods.  Composed objects should be created using DI container, like Spring4D `GlobalContainer` method.
 
 ## Samples
 
@@ -207,15 +218,6 @@ Creates command and inject dependencies:
 ```pas
 cmdSampleCommand := TSampleCommand.Create(AOwner);
 cmdSampleCommand.Inject([Memo1, Edit1]);
-```
-
-Create invoker `TCommandAction`:
-```pas
-Button1.Action := TCommandAction.Create(Button1)
-  .SetupCaption('Run sample command')
-  .SetupCommand(TSampleCommand.Create(Button1)
-    .Inject([Memo1, Edit1])
-  );
 ```
 
 Sample `TCommand` component:
