@@ -43,6 +43,7 @@ type
     procedure Execute; override;
     procedure Terminate;
     function IsBusy: boolean; override;
+    function IsTerminated: boolean;
     property UpdateInterval: integer read fUpdateInterval
       write fUpdateInterval;
   end;
@@ -132,6 +133,11 @@ begin
       fAfterFinishEvent();
   end;
   Result := not IsCommandDone;
+end;
+
+function TAsyncCommand.IsTerminated: boolean;
+begin
+  Result := TThread.CheckTerminated;
 end;
 
 procedure TAsyncCommand.OnUpdateTimer(Sender: TObject);
