@@ -61,7 +61,8 @@ Delphi gives developers a very easy method of testing background thread processi
 | `WithEventAfterFinish( aProc )` | Provided method is called when DoExecute will finish |
 | `WithEventOnProgress( aProc )` | Provided method is called during command executing once a defined time (`ProgressInterval`) |
 | `Terminate` | Allows to break execution of background thread |
-| `IsBusy: boolean` | Returns is command started and being processed |
+| `IsBusy: boolean` | Returns true when command was started and being processed |
+| `IsTerminated: boolean` | Returns whether command processing should be terminated |
 | `GetElapsedTime` | Returns time consumed by commands |
 
 Events defined in methods: `WithEventBeforeStart`, `WithEventAfterFinish` and `WithEventOnProgress` are processed in the main thread and can access all the VCL resources, but not directly background threads data and structures (this requires thread safe, critical section solution).
