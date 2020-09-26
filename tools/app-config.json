@@ -1,6 +1,8 @@
 {
-	"sourceUnitsSearch": "..\\src\\Pattern.*.pas",
-	"readmeIsUpdateVersion": true,
-        "readmeFileName": "..\\README.md",
-        "readmeSearchPattern": "https://img.shields.io/badge/version"
+	"sourceUnits": [
+		"..\\src\\Pattern.*.pas"],
+	"bumpReadme": {
+		"fileName": "..\\README.md",
+		"versionPrefix": "https://img.shields.io/badge/version"
+	}
 }
