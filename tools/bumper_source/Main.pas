@@ -111,7 +111,6 @@ begin
     for aPath in aFiles do
     begin
       aSourceText := TFile.ReadAllText(aPath, TEncoding.UTF8);
-      writeln('Updating: ' + aPath);
       try
         aNewSource := TPascalUnitProcessor.ProcessUnit(aSourceText, aNewVersion);
       except
@@ -119,7 +118,10 @@ begin
           WriteProcessErrorAndHalt(E.Message);
       end;
       if aSourceText <> aNewSource then
+      begin
+        writeln('Updating: ' + aPath);
         TFile.WriteAllText(aPath, aNewSource, TEncoding.UTF8);
+      end;
     end;
   end;
 end;

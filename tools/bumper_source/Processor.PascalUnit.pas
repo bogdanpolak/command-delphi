@@ -72,10 +72,8 @@ begin
       aSource.Substring(idx2 + len2, 99999);
     write('      ');
     if aSource <> aNewSource then
-      writeln(Format('Updated. Version: %s -> %s', [aReleaseVersion,
-        aNewVersion]))
-    else
-      writeln('No changes. Nothing to update');
+      writeln(Format(' - [version updated] %s -> %s', [aReleaseVersion,
+        aNewVersion]));
     Result := aNewSource;
   end
   else
