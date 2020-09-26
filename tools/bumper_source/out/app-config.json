@@ -1,0 +1,9 @@
+{
+	"sourceUnits": [
+		"..\\test\\src\\*.pas",
+		"..\\test\\sample\\demo01\\Unit1Form.pas",
+		"..\\test\\sample\\demo02\\*.pas"],
+	"readmeIsUpdateVersion": true,
+	"readmeFileName": "..\\test\\README.md",
+	"readmeSearchPattern": "https://img.shields.io/badge/version"
+}
