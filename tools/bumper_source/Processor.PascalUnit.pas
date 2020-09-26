@@ -16,6 +16,7 @@ type
     class function TextLength(const aSource: string; aTextStartIdx: integer)
       : integer; static;
   public
+    class var OldVersion: string;
     class function ProcessUnit(const aSource: string; const aNewVersion: string)
       : string; static;
   end;
@@ -68,12 +69,10 @@ begin
   aReleaseVersion := aSource.Substring(idx2, len2);
   if len2 > 0 then
   begin
+    OldVersion := aReleaseVersion;
     aNewSource := aSource.Substring(0, idx2) + aNewVersion +
       aSource.Substring(idx2 + len2, 99999);
-    write('      ');
     if aSource <> aNewSource then
-      writeln(Format(' - [version updated] %s -> %s', [aReleaseVersion,
-        aNewVersion]));
     Result := aNewSource;
   end
   else

@@ -82,7 +82,6 @@ var
   aNewSource: string;
 begin
   aFilePath := fAppConfig.ReadmeFilePath;
-  writeln('Updating: ' + aFilePath);
   aSourceText := TFile.ReadAllText(aFilePath, TEncoding.UTF8);
   try
     aNewSource := TReadmeMarkdownProcessor.ProcessReadme(aSourceText, aNewVersion,
@@ -92,6 +91,7 @@ begin
       WriteProcessErrorAndHalt(E.Message);
   end;
   TFile.WriteAllText(aFilePath, aNewSource, TEncoding.UTF8);
+  writeln('   - bumped readme version to: '+aNewVersion);
 end;
 
 procedure TMainApplication.ProcessSourcePasFiles(const aNewVersion: string);
@@ -103,6 +103,7 @@ var
   aPath: string;
   aSourceText: string;
   aNewSource: string;
+  aOldVersion: string;
 begin
   for aSourcePath in fAppConfig.SourceUnits do
   begin
@@ -114,14 +115,15 @@ begin
       aSourceText := TFile.ReadAllText(aPath, TEncoding.UTF8);
       try
         aNewSource := TPascalUnitProcessor.ProcessUnit(aSourceText, aNewVersion);
+        aOldVersion := TPascalUnitProcessor.OldVersion;
       except
         on E: Processor.Utils.EProcessError do
           WriteProcessErrorAndHalt(E.Message);
       end;
       if aSourceText <> aNewSource then
       begin
-        writeln('Updating: ' + aPath);
         TFile.WriteAllText(aPath, aNewSource, TEncoding.UTF8);
+        writeln(Format('   - %s  -  %s => %s', [aPath, aOldVersion, aNewVersion]));
       end;
     end;
   end;
