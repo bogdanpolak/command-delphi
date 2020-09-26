@@ -48,7 +48,7 @@ end;
 
 procedure TMainApplication.ValidateSourceConfiguration();
 var
-  aIsError: Boolean;
+  aIsError: boolean;
   aSourceDir: string;
   aSourceUnit: string;
 begin
@@ -59,9 +59,9 @@ begin
     if not DirectoryExists(aSourceDir) then
     begin
       writeln(Format
-        ('Configured source directory [%s] didnt exists. Please update configuration!',
-        [aSourceDir]));
-      aIsError := True;
+          ('Configured source directory [%s] didnt exists. Please update configuration!',
+          [aSourceDir]));
+      aIsError := true;
     end;
   end;
   if aIsError then
@@ -85,8 +85,8 @@ begin
   writeln('Updating: ' + aFilePath);
   aSourceText := TFile.ReadAllText(aFilePath, TEncoding.UTF8);
   try
-    aNewSource := TReadmeMarkdownProcessor.ProcessReadme(aSourceText,
-      aNewVersion, fAppConfig.ReadmeSearchPattern);
+    aNewSource := TReadmeMarkdownProcessor.ProcessReadme(aSourceText, aNewVersion,
+        fAppConfig.ReadmeSearchPattern);
   except
     on E: Processor.Utils.EProcessError do
       WriteProcessErrorAndHalt(E.Message);
@@ -104,7 +104,8 @@ var
   aSourceText: string;
   aNewSource: string;
 begin
-  for aSourcePath in fAppConfig.SourceUnits do begin
+  for aSourcePath in fAppConfig.SourceUnits do
+  begin
     aSourceDir := ExtractFileDir(aSourcePath);
     aSourcePattern := ExtractFileName(aSourcePath);
     aFiles := TDirectory.GetFiles(aSourceDir, aSourcePattern);
@@ -135,7 +136,7 @@ begin
   if fAppConfig.ReadmeIsUpdate then
     ProcessReadmeMarkdown(aNewVersion);
   ProcessSourcePasFiles(aNewVersion);
-  if fSilentMode = false then
+  if fSilentMode = False then
   begin
     writeln('');
     write('All files was updated. Press [Enter] to close application ...');
@@ -149,7 +150,7 @@ var
 begin
   if ParamCount = 0 then
   begin
-    fSilentMode := false;
+    fSilentMode := False;
     writeln('+--------------------------------------------------------+');
     writeln('|   Class Helper Version Bumper                          |');
     writeln('+--------------------------------------------------------+');
