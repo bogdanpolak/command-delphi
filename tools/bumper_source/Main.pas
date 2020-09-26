@@ -18,6 +18,7 @@ type
     function ExtractInputParameters(): string;
     procedure ProcessReadmeMarkdown(const aNewVersion: string);
     procedure ProcessSourcePasFiles(const aNewVersion: string);
+    procedure ProcessOnePasFile(const aPath: string; const aNewVersion: string);
     procedure WriteProcessErrorAndHalt(const AErrorMsg: string);
   public
     constructor Create();
@@ -101,31 +102,44 @@ var
   aSourcePattern: string;
   aFiles: TArray<string>;
   aPath: string;
-  aSourceText: string;
-  aNewSource: string;
-  aOldVersion: string;
 begin
   for aSourcePath in fAppConfig.SourceUnits do
   begin
-    aSourceDir := ExtractFileDir(aSourcePath);
-    aSourcePattern := ExtractFileName(aSourcePath);
-    aFiles := TDirectory.GetFiles(aSourceDir, aSourcePattern);
-    for aPath in aFiles do
+    if FileExists(aSourcePath) then
     begin
-      aSourceText := TFile.ReadAllText(aPath, TEncoding.UTF8);
-      try
-        aNewSource := TPascalUnitProcessor.ProcessUnit(aSourceText, aNewVersion);
-        aOldVersion := TPascalUnitProcessor.OldVersion;
-      except
-        on E: Processor.Utils.EProcessError do
-          WriteProcessErrorAndHalt(E.Message);
-      end;
-      if aSourceText <> aNewSource then
+      ProcessOnePasFile(aSourcePath, aNewVersion)
+    end
+    else
+    begin
+      aSourceDir := ExtractFileDir(aSourcePath);
+      aSourcePattern := ExtractFileName(aSourcePath);
+      aFiles := TDirectory.GetFiles(aSourceDir, aSourcePattern);
+      for aPath in aFiles do
       begin
-        TFile.WriteAllText(aPath, aNewSource, TEncoding.UTF8);
-        writeln(Format('   - %s  -  %s => %s', [aPath, aOldVersion, aNewVersion]));
+        ProcessOnePasFile(aPath, aNewVersion);
       end;
     end;
+  end;
+end;
+
+procedure TMainApplication.ProcessOnePasFile(const aPath: string; const aNewVersion: string);
+var
+  aSourceText: string;
+  aOldVersion: string;
+  aNewSource: string;
+begin
+  aSourceText := TFile.ReadAllText(aPath, TEncoding.UTF8);
+  try
+    aNewSource := TPascalUnitProcessor.ProcessUnit(aSourceText, aNewVersion);
+    aOldVersion := TPascalUnitProcessor.OldVersion;
+  except
+    on E: Processor.Utils.EProcessError do
+      WriteProcessErrorAndHalt(E.Message);
+  end;
+  if aSourceText <> aNewSource then
+  begin
+    TFile.WriteAllText(aPath, aNewSource, TEncoding.UTF8);
+    writeln(Format('   - %s  -  %s => %s', [aPath, aOldVersion, aNewVersion]));
   end;
 end;
 
