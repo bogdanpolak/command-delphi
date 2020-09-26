@@ -1,7 +1,7 @@
 {
 	"sourceUnits": [
 		"..\\test\\src\\*.pas",
-		"..\\test\\sample\\demo01\\Unit1Form.pas",
+		"..\\test\\sample\\demo01\\UnitForm1.pas",
 		"..\\test\\sample\\demo02\\*.pas"],
 	"readmeIsUpdateVersion": true,
 	"readmeFileName": "..\\test\\README.md",
