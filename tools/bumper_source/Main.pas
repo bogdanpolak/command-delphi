@@ -83,6 +83,8 @@ var
   aNewSource: string;
 begin
   aFilePath := fAppConfig.ReadmeFilePath;
+  if not FileExists(aFilePath) then
+    raise EProcessError.CreateFmt('Error! Readme file not found %s',[aFilePath]);
   aSourceText := TFile.ReadAllText(aFilePath, TEncoding.UTF8);
   try
     aNewSource := TReadmeMarkdownProcessor.ProcessReadme(aSourceText, aNewVersion,
