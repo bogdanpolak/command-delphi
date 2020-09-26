@@ -19,7 +19,7 @@ begin
 end;
 
 const
-  APP_Version = '1.1';
+  APP_Version = '1.2';
   APP_Date = '2020-09-26';
 
 var
