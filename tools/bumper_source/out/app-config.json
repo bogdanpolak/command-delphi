@@ -1,0 +1,10 @@
+{
+	"sourceUnits": [
+		"..\\test\\src\\*.pas",
+		"..\\test\\sample\\demo01\\UnitForm1.pas",
+		"..\\test\\sample\\demo02\\*.pas"],
+	"bumpReadme": {
+		"fileName": "..\\test\\README.md",
+		"versionPrefix": "https://img.shields.io/badge/version"
+	}
+}

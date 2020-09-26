@@ -6,40 +6,43 @@ uses
   System.SysUtils,
   System.Classes,
   System.JSON,
-  System.IOUtils;
+  System.IOUtils,
+  System.Generics.Collections;
 
 type
   TAppConfiguration = class
   private const
-    KeySourceUnitsSearch = 'sourceUnitsSearch';
-    KeyReadmeIsUpdate = 'readmeIsUpdateVersion';
-    KeyReadmeFilePath = 'readmeFileName';
-    KeyReadmeSearchPattern = 'readmeSearchPattern';
+    KeySourceUnits = 'sourceUnits';
+    KeyReadmeSection = 'bumpReadme';
+    KeyReadmeFilePath = 'fileName';
+    KeyReadmeSearchPattern = 'versionPrefix';
   private
-    FSourceDir: string;
-    FSrcSearchPattern: string;
-    FReadmeIsUpdate: boolean;
+    FSourceUnits: TList<string>;
+    FDoReadmeBump: boolean;
     FReadmeFilePath: string;
     FReadmeSearchPattern: string;
-    function PosTrillingBackslash(const aText: string): integer;
   public
+    constructor Create;
+    destructor Destroy; override;
     procedure LoadFromFile;
-    property SourceDir: string read FSourceDir write FSourceDir;
-    property SrcSearchPattern: string read FSrcSearchPattern
-      write FSrcSearchPattern;
-    property ReadmeIsUpdate: boolean read FReadmeIsUpdate write FReadmeIsUpdate;
+    property SourceUnits: TList<string> read FSourceUnits write FSourceUnits;
+    property DoReadmeBump: boolean read FDoReadmeBump write FDoReadmeBump;
     property ReadmeFilePath: string read FReadmeFilePath write FReadmeFilePath;
     property ReadmeSearchPattern: string read FReadmeSearchPattern
-      write FReadmeSearchPattern;
+        write FReadmeSearchPattern;
   end;
 
 implementation
 
-function TAppConfiguration.PosTrillingBackslash(const aText: string): integer;
+constructor TAppConfiguration.Create;
 begin
-  Result := aText.Length;
-  while (Result > 0) and (aText[Result] <> '\') do
-    Result := Result - 1;
+  FSourceUnits := TList<string>.Create;
+end;
+
+destructor TAppConfiguration.Destroy;
+begin
+  FSourceUnits.Free;
+  inherited;
 end;
 
 procedure TAppConfiguration.LoadFromFile;
@@ -47,21 +50,46 @@ var
   aJsonData: string;
   jsObject: TJSONObject;
   jsTrue: TJSONTrue;
-  aSourceUnitsSearch: string;
+  jsValueSourceUnits: TJSONValue;
+  jsSourceUnitsArray: TJSONArray;
+  aSourcePath: string;
   i: integer;
+  jsReadmeBump: TJSONObject;
 begin
   aJsonData := TFile.ReadAllText('app-config.json');
   jsObject := TJSONObject.ParseJSONValue(aJsonData) as TJSONObject;
   jsTrue := TJSONTrue.Create;
   try
-    aSourceUnitsSearch := jsObject.GetValue(KeySourceUnitsSearch).Value;
-    i := PosTrillingBackslash(aSourceUnitsSearch);
-    SourceDir := aSourceUnitsSearch.Substring(0, i);
-    SrcSearchPattern := aSourceUnitsSearch.Substring(i);
-    ReadmeIsUpdate := (jsObject.GetValue(KeyReadmeIsUpdate)
-      .Value = jsTrue.Value);
-    ReadmeFilePath := jsObject.GetValue(KeyReadmeFilePath).Value;
-    ReadmeSearchPattern := jsObject.GetValue(KeyReadmeSearchPattern).Value;
+    // --- PAS Source ----
+    jsValueSourceUnits := jsObject.GetValue(KeySourceUnits);
+    if jsValueSourceUnits=nil then
+    begin
+      writeln(Format('Error! Mandatory configuration item: "%s" does not exist.',
+          [KeySourceUnits]));
+      Halt(2);
+    end;
+    if not(jsValueSourceUnits is TJSONArray) then
+    begin
+      writeln(Format('Error! Configuration item: "%s" is not array of strings',
+          [KeySourceUnits]));
+      Halt(2);
+    end;
+    jsSourceUnitsArray := jsValueSourceUnits as TJSONArray;
+    FSourceUnits.Clear;
+    for i := 0 to jsSourceUnitsArray.Count - 1 do
+    begin
+      aSourcePath := jsSourceUnitsArray.Items[i].Value;
+      FSourceUnits.Add(aSourcePath);
+    end;
+    // --- README ----
+
+    DoReadmeBump := (jsObject.GetValue(KeyReadmeSection) <> nil);
+    if DoReadmeBump then
+    begin
+      jsReadmeBump := jsObject.GetValue(KeyReadmeSection) as TJSONObject;
+      ReadmeFilePath := jsReadmeBump.GetValue(KeyReadmeFilePath).Value;
+      ReadmeSearchPattern := jsReadmeBump.GetValue(KeyReadmeSearchPattern).Value;
+    end;
   finally
     jsObject.Free;
     jsTrue.Free;

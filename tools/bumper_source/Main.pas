@@ -18,6 +18,7 @@ type
     function ExtractInputParameters(): string;
     procedure ProcessReadmeMarkdown(const aNewVersion: string);
     procedure ProcessSourcePasFiles(const aNewVersion: string);
+    procedure ProcessOnePasFile(const aPath: string; const aNewVersion: string);
     procedure WriteProcessErrorAndHalt(const AErrorMsg: string);
   public
     constructor Create();
@@ -48,16 +49,24 @@ end;
 
 procedure TMainApplication.ValidateSourceConfiguration();
 var
+  aIsError: boolean;
   aSourceDir: string;
+  aSourceUnit: string;
 begin
-  aSourceDir := fAppConfig.SourceDir;
-  if not DirectoryExists(aSourceDir) then
+  aIsError := False;
+  for aSourceUnit in fAppConfig.SourceUnits do
   begin
-    writeln(Format
-      ('Configured source directory [%s] didnt exists. Please update configuration!',
-      [aSourceDir]));
-    Halt(1);
+    aSourceDir := ExtractFileDir(aSourceUnit);
+    if not DirectoryExists(aSourceDir) then
+    begin
+      writeln(Format
+          ('Configured source directory [%s] didnt exists. Please update configuration!',
+          [aSourceDir]));
+      aIsError := true;
+    end;
   end;
+  if aIsError then
+    Halt(1);
 end;
 
 procedure TMainApplication.WriteProcessErrorAndHalt(const AErrorMsg: string);
@@ -74,57 +83,76 @@ var
   aNewSource: string;
 begin
   aFilePath := fAppConfig.ReadmeFilePath;
-  writeln('Updating: ' + aFilePath);
   aSourceText := TFile.ReadAllText(aFilePath, TEncoding.UTF8);
   try
-    aNewSource := TReadmeMarkdownProcessor.ProcessReadme(aSourceText,
-      aNewVersion, fAppConfig.ReadmeSearchPattern);
+    aNewSource := TReadmeMarkdownProcessor.ProcessReadme(aSourceText, aNewVersion,
+        fAppConfig.ReadmeSearchPattern);
   except
     on E: Processor.Utils.EProcessError do
       WriteProcessErrorAndHalt(E.Message);
   end;
   TFile.WriteAllText(aFilePath, aNewSource, TEncoding.UTF8);
+  writeln('   - bumped readme version to: '+aNewVersion);
 end;
 
 procedure TMainApplication.ProcessSourcePasFiles(const aNewVersion: string);
 var
+  aSourcePath: string;
   aSourceDir: string;
+  aSourcePattern: string;
   aFiles: TArray<string>;
   aPath: string;
+begin
+  for aSourcePath in fAppConfig.SourceUnits do
+  begin
+    if FileExists(aSourcePath) then
+    begin
+      ProcessOnePasFile(aSourcePath, aNewVersion)
+    end
+    else
+    begin
+      aSourceDir := ExtractFileDir(aSourcePath);
+      aSourcePattern := ExtractFileName(aSourcePath);
+      aFiles := TDirectory.GetFiles(aSourceDir, aSourcePattern);
+      for aPath in aFiles do
+      begin
+        ProcessOnePasFile(aPath, aNewVersion);
+      end;
+    end;
+  end;
+end;
+
+procedure TMainApplication.ProcessOnePasFile(const aPath: string; const aNewVersion: string);
+var
   aSourceText: string;
+  aOldVersion: string;
   aNewSource: string;
 begin
-  aSourceDir := fAppConfig.SourceDir;
-  aFiles := TDirectory.GetFiles(aSourceDir, fAppConfig.SrcSearchPattern);
-  for aPath in aFiles do
+  aSourceText := TFile.ReadAllText(aPath, TEncoding.UTF8);
+  try
+    aNewSource := TPascalUnitProcessor.ProcessUnit(aSourceText, aNewVersion);
+    aOldVersion := TPascalUnitProcessor.OldVersion;
+  except
+    on E: Processor.Utils.EProcessError do
+      WriteProcessErrorAndHalt(E.Message);
+  end;
+  if aSourceText <> aNewSource then
   begin
-    aSourceText := TFile.ReadAllText(aPath, TEncoding.UTF8);
-    writeln('Updating: ' + aPath);
-    try
-      aNewSource := TPascalUnitProcessor.ProcessUnit(aSourceText, aNewVersion);
-    except
-      on E: Processor.Utils.EProcessError do
-        WriteProcessErrorAndHalt(E.Message);
-    end;
-    if aSourceText <> aNewSource then
-      TFile.WriteAllText(aPath, aNewSource, TEncoding.UTF8);
+    TFile.WriteAllText(aPath, aNewSource, TEncoding.UTF8);
+    writeln(Format('   - %s  -  %s => %s', [aPath, aOldVersion, aNewVersion]));
   end;
 end;
 
 procedure TMainApplication.ExecuteApplication();
 var
   aNewVersion: string;
-  aFiles: TArray<string>;
-  aPath: string;
-  aSourceText: string;
-  aNewSource: string;
 begin
   ValidateSourceConfiguration;
   aNewVersion := ExtractInputParameters;
-  if fAppConfig.ReadmeIsUpdate then
+  if fAppConfig.DoReadmeBump then
     ProcessReadmeMarkdown(aNewVersion);
   ProcessSourcePasFiles(aNewVersion);
-  if fSilentMode = false then
+  if fSilentMode = False then
   begin
     writeln('');
     write('All files was updated. Press [Enter] to close application ...');
@@ -138,18 +166,8 @@ var
 begin
   if ParamCount = 0 then
   begin
-    fSilentMode := false;
-    writeln('+--------------------------------------------------------+');
-    writeln('|   Class Helper Version Bumper                          |');
-    writeln('+--------------------------------------------------------+');
-    writeln('| Can''t execute - required version string as parameter   |');
-    writeln('| Syntax: version_bumper.exe version                     |');
-    writeln('| Sample: version_bumper.exe "1.3"                       |');
-    writeln('+--------------------------------------------------------+');
-    writeln('');
-    writeln('New version number is required to update files!');
-    writeln('  Type new version ([Enter] exits application):');
-    Write('  New version: ');
+    fSilentMode := False;
+    Write('New version: ');
     readln(version);
     if Trim(version) = '' then
       Halt(2);

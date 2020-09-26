@@ -43,7 +43,6 @@ begin
       ('Invalid format of version stored in main README');
   Result := aSource.Substring(0, idx2+1) + '%20'+aNewVersion +
     aSource.Substring(idx3, 9999999);
-  writeln('      Bumped README.md version to: '+aNewVersion)
 end;
 
 end.

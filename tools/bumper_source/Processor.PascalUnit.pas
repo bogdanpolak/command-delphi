@@ -16,6 +16,7 @@ type
     class function TextLength(const aSource: string; aTextStartIdx: integer)
       : integer; static;
   public
+    class var OldVersion: string;
     class function ProcessUnit(const aSource: string; const aNewVersion: string)
       : string; static;
   end;
@@ -66,17 +67,16 @@ begin
   idx2 := FindSignature(aSource, 'Version');
   len2 := TextLength(aSource, idx2);
   aReleaseVersion := aSource.Substring(idx2, len2);
-  if len2 = 0 then
-    raise EProcessError.Create('No found Version const in class helper.');
-  aNewSource := aSource.Substring(0, idx2) + aNewVersion +
-    aSource.Substring(idx2 + len2, 99999);
-  write('      ');
-  if aSource <> aNewSource then
-    writeln(Format('Updated. Version: %s -> %s', [aReleaseVersion,
-      aNewVersion]))
+  if len2 > 0 then
+  begin
+    OldVersion := aReleaseVersion;
+    aNewSource := aSource.Substring(0, idx2) + aNewVersion +
+      aSource.Substring(idx2 + len2, 99999);
+    if aSource <> aNewSource then
+    Result := aNewSource;
+  end
   else
-    writeln('No changes. Nothing to update');
-  Result := aNewSource;
+    Result := aSource;
 end;
 
 end.
