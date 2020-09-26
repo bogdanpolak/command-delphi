@@ -48,16 +48,24 @@ end;
 
 procedure TMainApplication.ValidateSourceConfiguration();
 var
+  aIsError: Boolean;
   aSourceDir: string;
+  aSourceUnit: string;
 begin
-  aSourceDir := fAppConfig.SourceDir;
-  if not DirectoryExists(aSourceDir) then
+  aIsError := False;
+  for aSourceUnit in fAppConfig.SourceUnits do
   begin
-    writeln(Format
-      ('Configured source directory [%s] didnt exists. Please update configuration!',
-      [aSourceDir]));
-    Halt(1);
+    aSourceDir := ExtractFileDir(aSourceUnit);
+    if not DirectoryExists(aSourceDir) then
+    begin
+      writeln(Format
+        ('Configured source directory [%s] didnt exists. Please update configuration!',
+        [aSourceDir]));
+      aIsError := True;
+    end;
   end;
+  if aIsError then
+    Halt(1);
 end;
 
 procedure TMainApplication.WriteProcessErrorAndHalt(const AErrorMsg: string);
@@ -88,36 +96,37 @@ end;
 
 procedure TMainApplication.ProcessSourcePasFiles(const aNewVersion: string);
 var
+  aSourcePath: string;
   aSourceDir: string;
+  aSourcePattern: string;
   aFiles: TArray<string>;
   aPath: string;
   aSourceText: string;
   aNewSource: string;
 begin
-  aSourceDir := fAppConfig.SourceDir;
-  aFiles := TDirectory.GetFiles(aSourceDir, fAppConfig.SrcSearchPattern);
-  for aPath in aFiles do
-  begin
-    aSourceText := TFile.ReadAllText(aPath, TEncoding.UTF8);
-    writeln('Updating: ' + aPath);
-    try
-      aNewSource := TPascalUnitProcessor.ProcessUnit(aSourceText, aNewVersion);
-    except
-      on E: Processor.Utils.EProcessError do
-        WriteProcessErrorAndHalt(E.Message);
+  for aSourcePath in fAppConfig.SourceUnits do begin
+    aSourceDir := ExtractFileDir(aSourcePath);
+    aSourcePattern := ExtractFileName(aSourcePath);
+    aFiles := TDirectory.GetFiles(aSourceDir, aSourcePattern);
+    for aPath in aFiles do
+    begin
+      aSourceText := TFile.ReadAllText(aPath, TEncoding.UTF8);
+      writeln('Updating: ' + aPath);
+      try
+        aNewSource := TPascalUnitProcessor.ProcessUnit(aSourceText, aNewVersion);
+      except
+        on E: Processor.Utils.EProcessError do
+          WriteProcessErrorAndHalt(E.Message);
+      end;
+      if aSourceText <> aNewSource then
+        TFile.WriteAllText(aPath, aNewSource, TEncoding.UTF8);
     end;
-    if aSourceText <> aNewSource then
-      TFile.WriteAllText(aPath, aNewSource, TEncoding.UTF8);
   end;
 end;
 
 procedure TMainApplication.ExecuteApplication();
 var
   aNewVersion: string;
-  aFiles: TArray<string>;
-  aPath: string;
-  aSourceText: string;
-  aNewSource: string;
 begin
   ValidateSourceConfiguration;
   aNewVersion := ExtractInputParameters;
