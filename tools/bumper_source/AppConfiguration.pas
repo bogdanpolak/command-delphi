@@ -13,12 +13,12 @@ type
   TAppConfiguration = class
   private const
     KeySourceUnits = 'sourceUnits';
-    KeyReadmeIsUpdate = 'readmeIsUpdateVersion';
-    KeyReadmeFilePath = 'readmeFileName';
-    KeyReadmeSearchPattern = 'readmeSearchPattern';
+    KeyReadmeSection = 'bumpReadme';
+    KeyReadmeFilePath = 'fileName';
+    KeyReadmeSearchPattern = 'versionPrefix';
   private
     FSourceUnits: TList<string>;
-    FReadmeIsUpdate: boolean;
+    FDoReadmeBump: boolean;
     FReadmeFilePath: string;
     FReadmeSearchPattern: string;
   public
@@ -26,7 +26,7 @@ type
     destructor Destroy; override;
     procedure LoadFromFile;
     property SourceUnits: TList<string> read FSourceUnits write FSourceUnits;
-    property ReadmeIsUpdate: boolean read FReadmeIsUpdate write FReadmeIsUpdate;
+    property DoReadmeBump: boolean read FDoReadmeBump write FDoReadmeBump;
     property ReadmeFilePath: string read FReadmeFilePath write FReadmeFilePath;
     property ReadmeSearchPattern: string read FReadmeSearchPattern
         write FReadmeSearchPattern;
@@ -54,6 +54,7 @@ var
   jsSourceUnitsArray: TJSONArray;
   aSourcePath: string;
   i: integer;
+  jsReadmeBump: TJSONObject;
 begin
   aJsonData := TFile.ReadAllText('app-config.json');
   jsObject := TJSONObject.ParseJSONValue(aJsonData) as TJSONObject;
@@ -81,9 +82,14 @@ begin
       FSourceUnits.Add(aSourcePath);
     end;
     // --- README ----
-    ReadmeIsUpdate := (jsObject.GetValue(KeyReadmeIsUpdate).Value = jsTrue.Value);
-    ReadmeFilePath := jsObject.GetValue(KeyReadmeFilePath).Value;
-    ReadmeSearchPattern := jsObject.GetValue(KeyReadmeSearchPattern).Value;
+
+    DoReadmeBump := (jsObject.GetValue(KeyReadmeSection) <> nil);
+    if DoReadmeBump then
+    begin
+      jsReadmeBump := jsObject.GetValue(KeyReadmeSection) as TJSONObject;
+      ReadmeFilePath := jsReadmeBump.GetValue(KeyReadmeFilePath).Value;
+      ReadmeSearchPattern := jsReadmeBump.GetValue(KeyReadmeSearchPattern).Value;
+    end;
   finally
     jsObject.Free;
     jsTrue.Free;

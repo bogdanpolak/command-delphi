@@ -149,7 +149,7 @@ var
 begin
   ValidateSourceConfiguration;
   aNewVersion := ExtractInputParameters;
-  if fAppConfig.ReadmeIsUpdate then
+  if fAppConfig.DoReadmeBump then
     ProcessReadmeMarkdown(aNewVersion);
   ProcessSourcePasFiles(aNewVersion);
   if fSilentMode = False then
