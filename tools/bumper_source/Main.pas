@@ -167,17 +167,7 @@ begin
   if ParamCount = 0 then
   begin
     fSilentMode := False;
-    writeln('+--------------------------------------------------------+');
-    writeln('|   Class Helper Version Bumper                          |');
-    writeln('+--------------------------------------------------------+');
-    writeln('| Can''t execute - required version string as parameter   |');
-    writeln('| Syntax: version_bumper.exe version                     |');
-    writeln('| Sample: version_bumper.exe "1.3"                       |');
-    writeln('+--------------------------------------------------------+');
-    writeln('');
-    writeln('New version number is required to update files!');
-    writeln('  Type new version ([Enter] exits application):');
-    Write('  New version: ');
+    Write('New version: ');
     readln(version);
     if Trim(version) = '' then
       Halt(2);
